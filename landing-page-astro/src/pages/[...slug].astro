@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ProductPage from '../components/ProductPage';
+import { modulesData } from '../data/content';
+
+export function getStaticPaths() {
+  return modulesData.map((mod) => ({
+    params: { slug: mod.path.replace('/', '') },
+  }));
+}
+
+const { slug } = Astro.params;
+---
+
+<Layout title="Produto | Stellar Global Rails">
+  <ProductPage client:load slug={slug || ''} />
+</Layout>
