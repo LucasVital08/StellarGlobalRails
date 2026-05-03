@@ -3,7 +3,7 @@ import { RailsLogo } from './ui/Logo';
 export default function Footer() {
   return (
     <>
-      <footer className="text-white bg-black z-10 border-white/10 border-t pt-16 pr-6 pb-16 pl-6 relative">
+      <footer className="text-white bg-neutral-950 z-10 border-white/10 border-t pt-16 pr-6 pb-16 pl-6 relative">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12 gs-fade-up">
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-3">
