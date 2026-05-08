@@ -1,6 +1,23 @@
 import { motion } from 'motion/react';
+import { useState, useEffect } from 'react';
 
 export default function Hero() {
+  const [profile, setProfile] = useState<'ceo' | 'dev'>('ceo');
+
+  useEffect(() => {
+    const currentProfile = localStorage.getItem('kivo_profile') || 'ceo';
+    setProfile(currentProfile as 'ceo' | 'dev');
+
+    const handleProfileChange = (e: CustomEvent) => {
+      setProfile(e.detail);
+    };
+
+    window.addEventListener('kivo_profile_change', handleProfileChange as EventListener);
+    return () => window.removeEventListener('kivo_profile_change', handleProfileChange as EventListener);
+  }, []);
+
+  const isDev = profile === 'dev';
+
   return (
     <header className="relative w-full overflow-hidden flex flex-col justify-end pb-12 md:pb-24 min-h-screen md:h-screen perspective-1000">
       <div className="absolute inset-0 z-0 bg-black">
@@ -47,16 +64,16 @@ export default function Hero() {
           <h1 className="font-bricolage text-white leading-[0.85] tracking-tight font-semibold">
             <span className="block text-[12vw] md:text-[6rem] lg:text-[7rem] mix-blend-normal text-white drop-shadow-2xl">
               <span className="inline-block overflow-hidden pb-2">
-                <motion.span initial={{ y: "120%", rotateZ: 2, opacity: 0 }} animate={{ y: 0, rotateZ: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 1.0 }} className="inline-block">Um</motion.span>
+                <motion.span initial={{ y: "120%", rotateZ: 2, opacity: 0 }} animate={{ y: 0, rotateZ: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 1.0 }} className="inline-block">Uma</motion.span>
               </span>{' '}
               <span className="inline-block overflow-hidden pb-2">
-                <motion.span initial={{ y: "120%", rotateZ: 2, opacity: 0 }} animate={{ y: 0, rotateZ: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 1.1 }} className="inline-block">trilho</motion.span>
+                <motion.span initial={{ y: "120%", rotateZ: 2, opacity: 0 }} animate={{ y: 0, rotateZ: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 1.1 }} className="inline-block">{isDev ? "API" : "trilha"}</motion.span>
               </span>
             </span>
             <div className="flex flex-col gap-2 mt-4 md:mt-2">
               <span className="text-[10vw] md:text-[5rem] lg:text-[6rem] text-white/50 leading-none">
                 <span className="inline-block overflow-hidden pb-2">
-                  <motion.span initial={{ y: "120%", rotateZ: 2, opacity: 0 }} animate={{ y: 0, rotateZ: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 1.2 }} className="inline-block">financeiro</motion.span>
+                  <motion.span initial={{ y: "120%", rotateZ: 2, opacity: 0 }} animate={{ y: 0, rotateZ: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 1.2 }} className="inline-block">{isDev ? "composable" : "financeira"}</motion.span>
                 </span>{' '}
                 <span className="inline-block overflow-hidden pb-2">
                   <motion.span initial={{ y: "120%", rotateZ: 2, opacity: 0 }} animate={{ y: 0, rotateZ: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 1.3 }} className="inline-block">global.</motion.span>
@@ -66,7 +83,7 @@ export default function Hero() {
                 <span className="inline-block overflow-hidden pb-2"><motion.span initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.5, ease: "easeOut", delay: 1.4 }} className="inline-block">Construído</motion.span></span>{' '}
                 <span className="inline-block overflow-hidden pb-2"><motion.span initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.5, ease: "easeOut", delay: 1.48 }} className="inline-block">sobre</motion.span></span>{' '}
                 <span className="inline-block overflow-hidden pb-2"><motion.span initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.5, ease: "easeOut", delay: 1.56 }} className="inline-block">a</motion.span></span>{' '}
-                <span className="inline-block overflow-hidden pb-2"><motion.span initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.5, ease: "easeOut", delay: 1.64 }} className="inline-block">rede</motion.span></span>{' '}
+                <span className="inline-block overflow-hidden pb-2"><motion.span initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.5, ease: "easeOut", delay: 1.64 }} className="inline-block">{isDev ? "o ledger" : "a rede"}</motion.span></span>{' '}
                 <span className="inline-block overflow-hidden pb-2"><motion.span initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.5, ease: "easeOut", delay: 1.72 }} className="inline-block">Stellar.</motion.span></span>
               </span>
             </div>
@@ -84,7 +101,9 @@ export default function Hero() {
 
             <div className="relative z-10">
               <p className="text-lg md:text-xl text-white font-light leading-relaxed mb-8 antialiased drop-shadow-md">
-                Remessa familiar, payout institucional, certificado verificável e ponto de venda sem banco — tudo na mesma infraestrutura, com liquidação em segundos e taxa mínima.
+                {isDev 
+                  ? "SDKs TypeScript/Python, webhooks em tempo real e endpoints nativos — construa dApps financeiros com liquidação atômica de 3s e zero vendor lock-in." 
+                  : "Remessa familiar, payout institucional, certificado verificável e ponto de venda sem banco — tudo na mesma infraestrutura, com liquidação em segundos e taxa mínima."}
               </p>
 
               <div className="flex flex-col gap-6">

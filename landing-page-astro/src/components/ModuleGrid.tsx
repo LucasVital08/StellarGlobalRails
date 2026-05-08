@@ -1,6 +1,6 @@
 import { modulesData } from '../data/content';
 import { motion, useScroll, useTransform, MotionValue } from 'motion/react';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 function ModuleCard({ mod, idx, total, scrollYProgress }: { key?: any, mod: any, idx: number, total: number, scrollYProgress: MotionValue<number> }) {
   const target = idx / Math.max(1, (total - 1));
@@ -112,17 +112,33 @@ export default function ModuleGrid() {
   const targetRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: targetRef });
   
+  const [profile, setProfile] = useState<'ceo' | 'dev'>('ceo');
+
+  useEffect(() => {
+    const currentProfile = localStorage.getItem('kivo_profile') || 'ceo';
+    setProfile(currentProfile as 'ceo' | 'dev');
+
+    const handleProfileChange = (e: CustomEvent) => {
+      setProfile(e.detail);
+    };
+
+    window.addEventListener('kivo_profile_change', handleProfileChange as EventListener);
+    return () => window.removeEventListener('kivo_profile_change', handleProfileChange as EventListener);
+  }, []);
+
   const x = useTransform(scrollYProgress, [0, 1], ["0%", "-80%"]);
+  
+  const isDev = profile === 'dev';
 
   return (
     <section id="modules" ref={targetRef} className="h-[300vh] bg-neutral-950 relative">
       <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden border-t border-white/5 py-24">
         <div className="w-full max-w-[90rem] mx-auto px-6 md:px-12 relative z-10 mb-8 md:mb-16 shrink-0 gs-fade-up">
           <h3 className="text-4xl md:text-5xl lg:text-7xl font-bricolage font-medium text-white mb-6 leading-[0.9] tracking-tight">
-            Escolha o fluxo que resolve o seu problema.
+            {isDev ? "Escolha o endpoint que resolve o seu problema." : "Escolha o fluxo que resolve o seu problema."}
           </h3>
           <p className="text-white/50 text-xl font-light max-w-3xl">
-            Cada módulo é independente, mas todos compartilham o mesmo trilho. Deslize para explorar e conectar suas operações.
+            {isDev ? "Cada módulo é exposto via API REST, WebSockets e SDK. Faça requests isolados, todos liquidados atomicamente." : "Cada módulo é independente, mas todos compartilham o mesmo trilho. Deslize para explorar e conectar suas operações."}
           </p>
         </div>
 

@@ -1,5 +1,5 @@
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { RailsLogo } from './ui/Logo';
 
 export default function Navigation() {
@@ -14,6 +14,27 @@ export default function Navigation() {
       setHidden(false);
     }
   });
+
+  const [profile, setProfile] = useState<'ceo' | 'dev'>('ceo');
+
+  useEffect(() => {
+    // Sincroniza estado global do profile
+    const currentProfile = localStorage.getItem('kivo_profile') || 'ceo';
+    setProfile(currentProfile as 'ceo' | 'dev');
+
+    const handleProfileChange = (e: CustomEvent) => {
+      setProfile(e.detail);
+    };
+
+    window.addEventListener('kivo_profile_change', handleProfileChange as EventListener);
+    return () => window.removeEventListener('kivo_profile_change', handleProfileChange as EventListener);
+  }, []);
+
+  const toggleProfile = (newProfile: 'ceo' | 'dev') => {
+    setProfile(newProfile);
+    localStorage.setItem('kivo_profile', newProfile);
+    window.dispatchEvent(new CustomEvent('kivo_profile_change', { detail: newProfile }));
+  };
 
   return (
     <motion.div 
@@ -42,9 +63,24 @@ export default function Navigation() {
           <a href="/#modules" className="hover:text-white transition-colors">
             Módulos Ativos
           </a>
-          <a href="/investidores" className="hover:text-emerald-400 text-emerald-500 transition-colors">
-            Investidores
-          </a>
+          
+          <div className="h-4 w-px bg-white/10 mx-2"></div>
+          
+          {/* Profile Toggle Global */}
+          <div className="flex bg-black/50 p-1 rounded-full border border-white/5">
+            <button 
+              onClick={() => toggleProfile('ceo')}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${profile === 'ceo' ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'}`}
+            >
+              Negócios
+            </button>
+            <button 
+              onClick={() => toggleProfile('dev')}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${profile === 'dev' ? 'bg-white text-black shadow-lg shadow-white/20' : 'text-white/50 hover:text-white'}`}
+            >
+              Dev
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">

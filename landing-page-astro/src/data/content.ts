@@ -20,8 +20,8 @@ export const modulesData = [
       ]
     },
     solution: {
-      title: "Um envio simples, barato e rastreável.",
-      description: "O remetente paga em USDC. A Stellar liquida em segundos. O beneficiário recebe em BRL ou BRZ via Pix ou saldo digital. Comprovante gerado na hora, armazenado on-chain."
+      title: "Um envio simples, barato e rastreável via Kivo.",
+      description: "O remetente paga em USDC. O motor do Kivo Payouts liquida em segundos na rede Stellar. O beneficiário recebe em BRL via Pix. Comprovante gerado na hora pelo ecossistema Kivo."
     },
     steps: [
       "Remetente cria envio informando valor e destinatário",
@@ -55,7 +55,7 @@ export const modulesData = [
     }
 ],
     techDetails: {
-    "description": "FamilyBridge utiliza as capacidades nativas da Stellar para bridging de stablecoins (USDC) com rampas locais da rede (Pix no Brasil).",
+    "description": "FamilyBridge roda sobre a infraestrutura do Kivo Pay, delegando toda a ponte de stablecoins e conversão via Pix para as APIs do Kivo Payouts.",
     "points": [
         "Path Payment Strict Receive para conversão on-the-fly",
         "Integração com âncoras locais brasileiras (SEP-24)",
@@ -83,8 +83,8 @@ export const modulesData = [
     name: "Stellar Payouts",
     tagline: "Pague 200 bolsistas com um clique.",
     hero: {
-      title: "Pague 200 bolsistas com um clique.",
-      subtitle: "Upload de planilha, USDC depositado, pagamentos executados em lote. Dashboard mostra status de cada um em tempo real.",
+      title: "Kivo Payouts: Repasses e folha de pagamento em lote.",
+      subtitle: "Agora integrado ao Kivo Pay. Faça upload de planilha, deposite USDC e execute pagamentos em massa com liquidação instantânea. Ideal para pagar bolsistas e fornecedores.",
       ctas: ["Começar agora", "Falar com a equipe"]
     },
     problem: {
@@ -97,8 +97,8 @@ export const modulesData = [
       ]
     },
     solution: {
-      title: "Pagamento em lote com rastreabilidade total on-chain.",
-      description: "A instituição faz upload de uma lista, deposita saldo em USDC ou BRZ e executa os pagamentos com um clique. Cada beneficiário recebe comprovante verificável. O dashboard mostra status em tempo real: pendente, pago ou falhou."
+      title: "Pagamento em lote nativo no seu Dashboard Kivo.",
+      description: "Não é preciso usar ferramentas externas. Dentro do Kivo Pay, a instituição faz upload da lista e dispara os pagamentos em massa. O motor do Kivo processa tudo com liquidação em segundos."
     },
     steps: [
       "Instituição cadastra os beneficiários",
@@ -176,8 +176,8 @@ export const modulesData = [
       ]
     },
     solution: {
-      title: "Documento verificável. Pagamento vinculado. Escrow opcional.",
-      description: "O usuário envia o documento. O sistema gera o hash e registra na Stellar. O documento recebe um QR Code único. Qualquer pessoa pode verificar a autenticidade sem precisar da instituição. Em contratos de serviço, o valor pode ser depositado e liberado automaticamente após aceite."
+      title: "Documento inalterável integrado a pagamentos Kivo.",
+      description: "O sistema registra o hash do documento na Stellar. O diferencial? A integração total com o Kivo Gateway. Assinou o contrato? A API do Kivo já dispara a cobrança ou libera o pagamento em Escrow automaticamente."
     },
     steps: [
       "Usuário envia contrato ou certificado",
@@ -357,7 +357,7 @@ export const modulesData = [
     tagline: "Causas sociais que recebem do mundo todo.",
     hero: {
       title: "Sua causa. O mundo inteiro pode apoiar.",
-      subtitle: "Arrecadação global em USDC e BRL com transparência on-chain. Qualquer doador, de qualquer país, com comprovante verificável.",
+      subtitle: "Powered by Kivo Gateway. Arrecadação global em USDC e BRL com transparência on-chain. Qualquer doador paga com cartão ou Pix, e cai instantâneo na sua Vakinha.",
       ctas: ["Criar campanha", "Ver campanhas ativas"]
     },
     problem: {
@@ -370,8 +370,8 @@ export const modulesData = [
       ]
     },
     solution: {
-      title: "Vakinha global com transparência total on-chain.",
-      description: "Criador define a meta em BRL. Doadores de qualquer país enviam em USDC, BRZ ou BRL. Progresso atualiza em tempo real. Cada doação gera comprovante on-chain. O criador saca quando a meta é atingida."
+      title: "Arrecadação global transparente impulsionada pelo Kivo Gateway.",
+      description: "Criador define a meta. A mágica acontece via Kivo Gateway: doadores de qualquer país pagam via cartão (fiat) ou cripto. O Kivo converte, liquida e atualiza o progresso em tempo real."
     },
     steps: [
       "Criador define campanha, meta e prazo",
@@ -435,8 +435,8 @@ export const modulesData = [
     name: "Stellar Invoice",
     tagline: "Invoice internacional sem conta no exterior.",
     hero: {
-      title: "Invoice internacional sem conta no exterior.",
-      subtitle: "Crie, envie e receba em USDC. O cliente paga de qualquer lugar. O recibo sai automático.",
+      title: "Kivo Invoicing: Faturas globais sem fronteiras.",
+      subtitle: "O antigo Stellar Invoice agora é nativo do ecossistema Kivo Pay. Crie faturas, envie links de pagamento em USDC e gerencie tudo diretamente do painel do seu negócio.",
       ctas: ["Criar invoice", "Ver exemplo"]
     },
     problem: {
@@ -449,8 +449,8 @@ export const modulesData = [
       ]
     },
     solution: {
-      title: "Invoice simples, global e verificável.",
-      description: "O freelancer ou PME cria a invoice na plataforma, gera link ou QR Code e compartilha com o cliente. O cliente paga em USDC ou BRZ. O sistema detecta o pagamento on-chain, marca a invoice como paga e emite recibo automático."
+      title: "Faturamento global integrado ao seu painel Kivo.",
+      description: "Abandone ferramentas avulsas. Gere suas faturas (Invoices) B2B de dentro do Kivo Pay. Seu cliente internacional paga com a facilidade do Kivo Gateway, e a reconciliação é automática no seu saldo."
     },
     steps: [
       "Criar invoice com valor, descrição e prazo",
@@ -528,8 +528,8 @@ export const modulesData = [
       ]
     },
     solution: {
-      title: "Uma camada de pagamento que funciona em qualquer carregador.",
-      description: "Agnóstica de hardware. O usuário paga em moeda local, USDC, BRZ ou outro meio. O operador recebe liquidado via Stellar em segundos. Relatório de kWh, valor e repasse disponível no dashboard."
+      title: "Hardware Kivo Terminal acoplado ao seu posto elétrico.",
+      description: "Nós usamos o hardware do Kivo Terminal (com leitura NFC e 4G) e a API do Kivo Gateway para pré-autorizar o cartão do motorista e ir cobrando os micropagamentos da recarga em tempo real."
     },
     steps: [
       "Usuário chega no carregador e escaneia QR Code",
@@ -606,8 +606,8 @@ export const modulesData = [
       ]
     },
     solution: {
-      title: "Insira uma carteira. Receba score, grafo e relatório.",
-      description: "O usuário insere um endereço Stellar. O sistema busca todas as transações, monta o grafo de relacionamentos, calcula score de risco com heurísticas e gera relatório exportável. O hash do relatório pode ser registrado na própria Stellar."
+      title: "O motor de segurança que protege o ecossistema Kivo.",
+      description: "Toda transação que passa pelo Kivo Pay é auditada primeiro pelo ONYX. Usamos essa ferramenta super-poderosa para varrer fundos ilícitos em milissegundos antes do dinheiro tocar sua conta."
     },
     steps: [
       "Inserir endereço de carteira Stellar",
@@ -684,8 +684,8 @@ export const modulesData = [
       ]
     },
     solution: {
-      title: "Consentimento controlado pelo paciente. Remuneração automática.",
-      description: "O paciente controla quais finalidades autoriza, revoga acessos a qualquer momento e recebe em USDC quando seus dados são usados de forma permitida. Tudo registrado on-chain."
+      title: "Seus dados de saúde monetizados, liquidados no Kivo App.",
+      description: "Controle quem acessa seus dados. Quando um laboratório compra acesso a eles, os fundos são transferidos pelo Kivo Gateway e você recebe o saldo no app da carteira Kivo instantaneamente."
     },
     steps: [
       "Paciente cria perfil e carteira de dados",
@@ -749,8 +749,8 @@ export const modulesData = [
     name: "Marketplace B2B com Escrow",
     tagline: "Compre e venda sem risco para nenhum dos dois.",
     hero: {
-      title: "Compre e venda sem risco para nenhum dos dois.",
-      subtitle: "O comprador deposita. O fornecedor entrega. O pagamento é liberado automaticamente após confirmação. Sem intermediário financeiro.",
+      title: "Kivo Safe Checkout: Venda B2B sem risco.",
+      subtitle: "A mecânica de Escrow agora é uma flag nativa da API Kivo Gateway. O comprador paga no Kivo, o dinheiro fica retido on-chain, e só é liberado ao vendedor após a entrega.",
       ctas: ["Criar pedido", "Para fornecedores"]
     },
     problem: {
@@ -763,8 +763,8 @@ export const modulesData = [
       ]
     },
     solution: {
-      title: "Escrow automático com liberação por confirmação.",
-      description: "O comprador deposita o valor em USDC na Stellar. O fornecedor entrega. O comprador confirma o recebimento. O contrato libera o pagamento automaticamente. Sem banco, sem advogado, sem espera."
+      title: "Checkout Seguro nativo dentro do Kivo Gateway.",
+      description: "Ofereça compras 100% seguras. Com a flag de Escrow do Kivo Gateway, o dinheiro pago pelo seu cliente fica travado no Kivo Pay e só pinga na sua carteira após ele confirmar o recebimento."
     },
     steps: [
       "Comprador cria pedido com descrição e valor",

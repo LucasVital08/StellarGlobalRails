@@ -1,9 +1,12 @@
 import { RailsLogo } from './ui/Logo';
+import KivoA11yToggle from './kivo/KivoA11yToggle';
+import KivoLanguageSwitcher from './kivo/KivoLanguageSwitcher';
+import KivoTooltip from './kivo/KivoTooltip';
 
 export default function Footer() {
   return (
     <>
-      <footer className="text-white bg-neutral-950 z-10 border-white/10 border-t pt-16 pr-6 pb-16 pl-6 relative">
+      <footer className="text-white bg-neutral-950 border-white/10 border-t pt-16 pr-6 pb-16 pl-6 relative">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12 gs-fade-up">
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-3">
@@ -12,8 +15,8 @@ export default function Footer() {
               </div>
               <h2 className="text-2xl font-bricolage font-semibold">STELLAR RAILS</h2>
             </div>
-            <p className="text-white/50 max-w-xs">
-              Um trilho financeiro global. Construído sobre a rede Stellar.
+            <p className="text-white/50 max-w-xs leading-relaxed">
+              Um trilho financeiro global. Construído sobre a <KivoTooltip word="rede Stellar" explanation="Blockchain pública descentralizada projetada especificamente para pagamentos e emissão de ativos com baixíssima latência." />.
             </p>
           </div>
 
@@ -26,7 +29,7 @@ export default function Footer() {
         </div>
 
         <div className="w-full mt-24 overflow-hidden flex justify-center items-center pointer-events-none select-none gs-fade-up">
-          <h1 
+          <h1
             className="text-[12vw] leading-none text-white/5 whitespace-nowrap italic tracking-tighter"
             style={{ fontFamily: 'Georgia, serif' }}
           >
@@ -34,8 +37,12 @@ export default function Footer() {
           </h1>
         </div>
 
-        <div className="max-w-7xl mx-auto pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-sm text-white/40 gs-fade-up" data-delay="0.1">
-          <p>© 2026 AKS · Stellar 37°</p>
+        <div className="max-w-7xl mx-auto pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-white/40 gap-4">
+          <p>© 2026 AKS</p>
+          <div className="flex items-center gap-6">
+            <KivoLanguageSwitcher />
+            <KivoA11yToggle />
+          </div>
         </div>
       </footer>
     </>

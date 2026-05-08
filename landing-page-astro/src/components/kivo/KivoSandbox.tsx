@@ -3,6 +3,20 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function KivoSandbox() {
   const [status, setStatus] = useState<'idle' | 'processing' | 'success'>('idle');
+  const [code, setCode] = useState(`{
+  "apiKey": "pk_live_kivo_...",
+  "amount": 45.00,
+  "currency": "EUR"
+}`);
+  const [parsed, setParsed] = useState({ amount: 45, currency: 'EUR' });
+
+  const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCode(e.target.value);
+    try {
+      const j = JSON.parse(e.target.value);
+      setParsed({ amount: j.amount || 0, currency: j.currency || 'USD' });
+    } catch(e) {}
+  };
 
   const handleTest = () => {
     setStatus('processing');
@@ -39,24 +53,16 @@ export default function KivoSandbox() {
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
           </div>
           <p className="text-white/30 text-xs font-mono mb-4">// checkout.ts</p>
-          <pre className="text-sm font-mono text-emerald-300 leading-relaxed overflow-x-auto grow">
-            <code>
-{`import { KivoPayment } from '@kivo/sdk';
-
-const checkout = new KivoPayment({
-  apiKey: 'pk_live_...',
-  amount: 45.00,
-  currency: 'EUR',
-  
-  onSuccess: (receipt) => {
-    console.log('Liquidação on-chain');
-    // Destino recebe USDC instantaneamente
-  }
-});
-
-checkout.mount('#pay-btn');`}
-            </code>
-          </pre>
+          <div className="relative grow font-mono text-sm group">
+            <textarea
+              value={code}
+              onChange={handleCodeChange}
+              spellCheck={false}
+              className="absolute inset-0 w-full h-full bg-transparent text-emerald-300 p-4 font-mono text-sm resize-none outline-none border border-transparent focus:border-white/10 rounded-xl transition-colors z-10"
+            />
+            {/* Syntax Highlighting Fake Background */}
+            <div className="absolute inset-0 p-4 pointer-events-none opacity-50 bg-black/20 rounded-xl border border-white/5"></div>
+          </div>
         </motion.div>
 
         <motion.div 
@@ -82,7 +88,7 @@ checkout.mount('#pay-btn');`}
                   <iconify-icon icon="solar:global-linear" width="32" class="text-white/60"></iconify-icon>
                 </div>
                 <h3 className="text-xl font-medium text-white">Pronto para receber</h3>
-                <p className="text-white/50 text-sm">Simule um pagamento de EUR 45,00 vindo da Europa para a sua carteira em USDC.</p>
+                <p className="text-white/50 text-sm">Simule um pagamento de {parsed.currency} {parsed.amount.toFixed(2)} para a sua carteira em USDC.</p>
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -107,9 +113,9 @@ checkout.mount('#pay-btn');`}
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring" }}
-                    className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-500/30 font-mono text-blue-400 font-bold z-10"
+                    className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-500/30 font-mono text-blue-400 text-xs font-bold z-10"
                   >
-                    €
+                    {parsed.currency}
                   </motion.div>
                   
                   <div className="absolute top-1/2 left-0 w-full h-[2px] bg-white/10 -z-0 -translate-y-1/2 overflow-hidden">
@@ -141,9 +147,9 @@ checkout.mount('#pay-btn');`}
                 </div>
 
                 <div className="space-y-2 mt-8">
-                  <motion.p animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity }} className="text-emerald-400 font-mono text-sm">Capturando EUR 45.00...</motion.p>
+                  <motion.p animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity }} className="text-emerald-400 font-mono text-sm">Capturando {parsed.currency} {parsed.amount.toFixed(2)}...</motion.p>
                   <p className="text-white/40 font-mono text-xs">PathPaymentStrictReceive via AMM...</p>
-                  <p className="text-white/40 font-mono text-xs">Convertendo EURC → USDC...</p>
+                  <p className="text-white/40 font-mono text-xs">Convertendo {parsed.currency} → USDC...</p>
                 </div>
               </motion.div>
             )}
@@ -161,7 +167,7 @@ checkout.mount('#pay-btn');`}
                   <iconify-icon icon="solar:check-read-bold-duotone" width="48" class="text-emerald-400"></iconify-icon>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bricolage text-white">49.05 USDC</h3>
+                  <h3 className="text-2xl font-bricolage text-white">{(parsed.amount * 1.09).toFixed(2)} USDC</h3>
                   <p className="text-emerald-400 text-sm mt-2">Liquidado on-chain com sucesso</p>
                 </div>
                 <div className="bg-black/30 border border-white/5 rounded-xl p-4 mt-6 text-left">

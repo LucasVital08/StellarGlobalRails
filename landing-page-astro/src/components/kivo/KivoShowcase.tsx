@@ -1,16 +1,40 @@
-import { motion } from 'motion/react';
+import React, { Suspense } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useInView } from 'react-intersection-observer';
+import BlurImage from './BlurImage';
+
+const KivoGlobalMap = React.lazy(() => import('./KivoGlobalMap'));
 
 export default function KivoShowcase() {
+  const { ref, inView } = useInView({ rootMargin: '100px', triggerOnce: true });
+
   return (
-    <section className="px-6 max-w-5xl mx-auto mb-32 gs-fade-up">
+    <section className="px-6 max-w-5xl mx-auto mb-32 gs-fade-up relative">
+      <div ref={ref} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] pointer-events-none z-[-1] flex items-center justify-center">
+        {inView && (
+          <Suspense fallback={
+            <motion.div 
+              layoutId="globe-skeleton"
+              animate={{ opacity: [0.5, 1, 0.5] }} 
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="w-[400px] h-[400px] rounded-full border border-white/5 bg-gradient-to-br from-white/5 to-transparent shadow-[0_0_50px_rgba(255,255,255,0.05)]"
+            />
+          }>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }}>
+              <KivoGlobalMap />
+            </motion.div>
+          </Suspense>
+        )}
+      </div>
+
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="text-center mb-16"
+        className="text-center mb-16 relative z-10"
       >
         <h2 className="text-3xl md:text-5xl font-bricolage text-white mb-6">Hardware & Software. Zero Atrito.</h2>
-        <p className="text-white/50 text-lg">A infraestrutura se adapta ao negócio, não importa onde ele opera.</p>
+        <p className="text-white/50 text-lg max-w-xl mx-auto backdrop-blur-md bg-black/20 rounded-full py-2 px-4">A infraestrutura global se adapta ao seu negócio, não importa onde ele opera.</p>
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -20,6 +44,14 @@ export default function KivoShowcase() {
           viewport={{ once: true }}
           className="bg-neutral-900 border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden group"
         >
+          {/* Item 30: Blurhash Simulated */}
+          <BlurImage 
+            src="/fake-mobile.png" 
+            alt="Kivo Mobile App" 
+            blurColor="#065f46"
+            className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
+          />
+
           <div className="relative z-10">
             <h3 className="text-2xl font-bricolage text-white mb-3">Kivo Mobile</h3>
             <p className="text-white/50 mb-8 max-w-[280px]">
@@ -86,6 +118,14 @@ export default function KivoShowcase() {
           transition={{ delay: 0.2 }}
           className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden group"
         >
+          {/* Item 30: Blurhash Simulated */}
+          <BlurImage 
+            src="/fake-terminal.png" 
+            alt="Kivo Terminal Device" 
+            blurColor="#1e3a8a"
+            className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
+          />
+
           <div className="relative z-10">
             <h3 className="text-2xl font-bricolage text-white mb-3">Kivo Terminal</h3>
             <p className="text-white/50 mb-8 max-w-[280px]">
