@@ -1,0 +1,54 @@
+---
+layout: '../../layouts/DocLayout.astro'
+title: "Ecosystem Overview"
+description: "Visão Geral do Ecossistema Stellar Global Rails"
+status: "Produção"
+---
+
+# O Ecossistema Stellar Global Rails
+
+Bem-vindo ao hub de documentação executiva do **SGR**. Esta área é dedicada a explicar o *porquê* e o *como* o nosso ecossistema gera valor no mundo real.
+
+## 🌟 Nossa Visão
+
+A economia global ainda é fragmentada. O **Stellar Global Rails (SGR)** atua como uma ponte que une a infraestrutura tradicional de pagamentos à inovação sem fronteiras da rede **Stellar**.
+
+Diferente de carteiras crypto voltadas para especulação, o SGR abstrai completamente a complexidade da Web3. Nossos usuários e empresas não precisam saber o que é uma "Seed Phrase" ou "Gas Fee" para realizar operações globais.
+
+## 🏗️ Fluxo do Ecossistema
+
+<pre class="mermaid bg-white/5 p-8 rounded-2xl border border-white/5 my-10 flex justify-center">
+graph TD
+    User((Usuário/Empresa)) --> Anchor[Âncora Fiat]
+    Anchor --> Stellar[Rede Stellar]
+    Stellar --> Kivo[Kivo Pay Gateway]
+    Kivo --> ContractEase[ContractEase]
+    Kivo --> SocialPay[SocialPay]
+    Kivo --> Onyx[Onyx Risk]
+    Kivo --> Global((Mundo Real))
+</pre>
+
+## 🚀 Os Módulos Principais
+
+Nossa arquitetura foi desenhada para ser modular e extensível. Abaixo, as joias da coroa:
+
+### 1. Kivo Pay (Core Engine)
+O motor principal de roteamento e conversão fiat/crypto usando as APIs da rede Stellar e Soroban Smart Contracts.
+
+### 2. ContractEase B2B
+Gestão do ciclo de vida de contratos corporativos. Resolve o problema de fraude através da **imutabilidade on-chain** (Stellar), validando identidades com OTP/Magic Links.
+
+### 3. SocialPay
+Uma sub-rede privada para envio de pagamentos via `@handle` de forma simples, mas que preserva a privacidade da empresa em relação aos balanços globais, expondo apenas um feed auditável das transações.
+
+## 📈 Roadmap & Pós-Hackathon
+
+Nosso compromisso vai além deste Hackathon. Aqui está o que vem por aí:
+
+- **Q3/2026:** Beta fechado de *SocialPay* em favelas e negócios locais.
+- **Q4/2026:** Lançamento público do *ContractEase* focado em PMEs (Pequenas e Médias Empresas).
+- **Q1/2027:** Licenciamento B2B da engine de risco *Onyx*.
+
+---
+
+*Utilize a navegação lateral para explorar cada produto em detalhes.*

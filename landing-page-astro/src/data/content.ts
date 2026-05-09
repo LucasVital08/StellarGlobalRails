@@ -160,78 +160,78 @@ export const modulesData = [
     path: "/contractease",
     icon: "solar:document-text-linear",
     name: "ContractEase Global",
-    tagline: "Certificados que ninguém consegue falsificar.",
+    tagline: "Gestão inteligente de contratos com segurança blockchain.",
     hero: {
-      title: "Contratos e certificados que ninguém consegue falsificar.",
-      subtitle: "Hash registrado na Stellar. QR Code verificável por qualquer pessoa, a qualquer hora, sem depender da instituição emissora.",
-      ctas: ["Emitir certificado", "Verificar documento"]
+      title: "A evolução da assinatura digital para empresas.",
+      subtitle: "Plataforma multi-tenant de gestão de contratos B2B com segurança 2FA, autenticação sem senha (Magic Link) e validação imutável via rede Stellar.",
+      ctas: ["Acessar plataforma", "Verificar documento"]
     },
     problem: {
-      title: "Certificados digitais dependem da instituição para ser verificados.",
+      title: "Assinar e gerenciar contratos B2B envolve múltiplas ferramentas e falhas de segurança.",
       items: [
-        "Sem a instituição, não há como confirmar autenticidade",
-        "Contratos podem ser alterados sem rastreabilidade",
-        "Pagamentos vinculados a contratos não têm garantia automática",
-        "Fraudes documentais são comuns e difíceis de provar"
+        "Falta de isolamento de dados entre diferentes empresas ou equipes",
+        "Assinaturas digitais comuns são fáceis de fraudar ou adulterar",
+        "Falta de integração com fluxos de pagamento (Escrow)",
+        "Baixa segurança no acesso aos documentos sensíveis"
       ]
     },
     solution: {
-      title: "Documento inalterável integrado a pagamentos Kivo.",
-      description: "O sistema registra o hash do documento na Stellar. O diferencial? A integração total com o Kivo Gateway. Assinou o contrato? A API do Kivo já dispara a cobrança ou libera o pagamento em Escrow automaticamente."
+      title: "O ciclo de vida completo do seu contrato, protegido.",
+      description: "Do rascunho à assinatura, passando por autenticação forte com 2FA e isolamento em Workspaces. Quando assinado, o hash criptográfico é registrado para sempre na Stellar, garantindo prova irrefutável."
     },
     steps: [
-      "Usuário envia contrato ou certificado",
-      "Sistema gera hash único do documento",
-      "Hash é registrado na Stellar testnet",
-      "Documento recebe QR Code verificável",
-      "Verificador acessa o QR Code e confirma autenticidade",
-      "Em contrato: valor depositado em USDC e liberado após aceite"
+      "Acesse seu Workspace corporativo isolado",
+      "Autentique-se com OTP e validação 2FA obrigatória",
+      "Crie ou importe contratos e organize em pastas",
+      "Partes assinam o documento digitalmente",
+      "Hash único do documento é registrado na blockchain Stellar",
+      "Documento fica verificável via QR Code inalterável"
     ],
     forWhom: [
-      "Instituições de ensino que emitem certificados",
-      "Escritórios e advogados que trabalham com contratos",
-      "Empresas que precisam de comprovação de entrega",
-      "Programas que emitem certificados para beneficiários"
+      "Grandes corporações gerenciando dezenas de filiais",
+      "Escritórios de advocacia focados em contratos B2B",
+      "Empresas de software e licenciamento de produtos",
+      "Profissionais que exigem alto nível de segurança e compliance"
     ],
     
     benefits: [
     {
+        "icon": "lucide:shield-check",
+        "title": "Segurança e MFA",
+        "description": "Acesso protegido por Magic Link, OTP e Autenticação de Dois Fatores (2FA) nativa."
+    },
+    {
+        "icon": "lucide:building-2",
+        "title": "Multi-Tenancy Total",
+        "description": "Isole contratos e dados por 'Empresas' ou 'Grupos', mantendo a governança completa da sua organização."
+    },
+    {
         "icon": "lucide:unlock",
-        "title": "Verificação Independente",
-        "description": "Mesmo que sua empresa feche as portas, o documento segue passível de verificação futura."
-    },
-    {
-        "icon": "lucide:server",
-        "title": "Proteção contra Fraudes",
-        "description": "O hash criptográfico garante que nem mesmo 1 vírgula foi alterada do documento original."
-    },
-    {
-        "icon": "lucide:zap",
-        "title": "Gatilhos Financeiros Integrados",
-        "description": "Acione depósitos assim que a parte contrária assinar digitalmente o documento."
+        "title": "Registro Imutável",
+        "description": "O hash criptográfico garante que o documento não foi alterado após a assinatura."
     }
 ],
     techDetails: {
-    "description": "Contratos e hashes são gravados na Stellar utilizando o recurso Manage Data das contas, ou através de Memos persistentes atrelados a micro-transações.",
+    "description": "A infraestrutura do ContractEase foi modernizada para suportar múltiplos tenants no Supabase com isolamento rigoroso via Row Level Security (RLS).",
     "points": [
-        "Uso de SHA-256 para gerar o hash do documento",
-        "Escrita permanente usando transações com Memo.Hash",
-        "Interoperabilidade com IPFS para armazenar anexos volumosos",
-        "Consulta de status através de endpoints Soroban/Horizon"
+        "Isolamento de dados por Organization ID e RLS no banco de dados",
+        "Fluxo MFA com TOTP Authenticator",
+        "Geração de QR codes Stellar URI Scheme nativo para auditoria",
+        "Hashes registrados utilizando a rede de testes Stellar (Testnet)"
     ]
 },
     faq: [
     {
-        "question": "Onde o documento PDF fica salvo?",
-        "answer": "A blockchain armazena apenas a 'impressão digital' (Hash) e metadados. O documento pode ser armzenado via nuvem comum ou IPFS para total resiliência."
+        "question": "Como funciona o isolamento por empresa?",
+        "answer": "Você pode participar de vários 'Workspaces' (Grupos ou Empresas). O sistema garante via banco de dados (RLS) que você só verá os contratos do espaço atual."
     },
     {
-        "question": "Qual a validade legal disso?",
-        "answer": "Carimbos de tempo e hashes criptográficos constituem evidências técnicas irrefutáveis de pré-existência de arquivos em legislações de diversos países."
+        "question": "O documento fica salvo na blockchain?",
+        "answer": "Apenas o Hash (impressão digital) do documento é salvo na Stellar, garantindo privacidade absoluta do conteúdo do contrato."
     }
 ],
-    score: 90,
-    finalCta: "Emitir meu primeiro certificado"
+    score: 95,
+    finalCta: "Gerenciar meus contratos agora"
   },
   {
     id: "kivopay",
@@ -820,5 +820,82 @@ export const modulesData = [
 ],
     score: 74,
     finalCta: "Criar meu primeiro pedido com escrow"
+  },
+  {
+    id: "socialpay",
+    path: "/socialpay",
+    icon: "solar:users-group-two-rounded-linear",
+    name: "SocialPay",
+    tagline: "Rede social financeira auditável baseada em pagamentos por @",
+    hero: {
+      title: "Onde o pagamento encontra a rede social.",
+      subtitle: "Envie dinheiro por @. Acompanhe o caminho do dinheiro em uma timeline auditável e gerencie projetos e fornecedores de forma pública ou privada.",
+      ctas: ["Criar minha conta", "Conhecer a plataforma"]
+    },
+    problem: {
+      title: "Repassar verbas e auditar prestação de contas é caótico e burocrático.",
+      items: [
+        "Uso de planilhas manuais e recibos dispersos",
+        "Baixa rastreabilidade de como o dinheiro é gasto em projetos ou obras",
+        "Dificuldade de conectar endereços longos de carteiras blockchain",
+        "Falta de transparência visual e rápida para gestores"
+      ]
+    },
+    solution: {
+      title: "Identidade financeira simples com trilha auditável.",
+      description: "No SocialPay, você paga fornecedores, equipes e projetos usando apenas o @. Toda transação é registrada na Stellar e exibida em um feed interativo, permitindo auditorias financeiras tão fáceis quanto ler uma rede social."
+    },
+    steps: [
+      "Crie seu @ único na plataforma",
+      "Defina projetos ou envie verba para equipes (ex: @obra-shopping)",
+      "Acompanhe as saídas no feed financeiro do projeto",
+      "Gere comprovantes instantâneos ancorados na blockchain",
+      "Alterne entre transações públicas, organizacionais e privadas"
+    ],
+    forWhom: [
+      "Empresas gerenciando verbas para múltiplos setores ou obras",
+      "Organizações Sociais (ONGs) precisando de prestação de contas transparente",
+      "Equipes de projeto e residentes acadêmicos",
+      "Pessoas físicas enviando e recebendo valores facilmente"
+    ],
+    
+    benefits: [
+      {
+        "icon": "lucide:at-sign",
+        "title": "Pagamentos por @",
+        "description": "Abstração total da blockchain. Envie dinheiro usando apenas um handle (@usuario)."
+      },
+      {
+        "icon": "lucide:layout-list",
+        "title": "Feed Financeiro Auditável",
+        "description": "Um painel visual onde toda entrada e saída do seu projeto fica registrada permanentemente."
+      },
+      {
+        "icon": "lucide:eye-off",
+        "title": "Privacidade Configurável",
+        "description": "Decida se sua transação será pública para o mundo, visível só para a equipe, ou totalmente privada."
+      }
+    ],
+    techDetails: {
+      "description": "O sistema une um backend relacional para gerenciamento do grafo social com a rede Stellar como camada de liquidação e imutabilidade.",
+      "points": [
+        "Integração nativa com Stellar SDK e Horizon API",
+        "Carteiras associadas aos handles para liquidação invisível",
+        "Hashes de transação ancorados na Testnet/Mainnet",
+        "Arquitetura escalável pronta para Smart Contracts (Soroban)"
+      ]
+    },
+    faq: [
+      {
+        "question": "O SocialPay é uma carteira comum?",
+        "answer": "É mais que uma carteira. É uma rede onde a identidade e o histórico de transações formam uma trilha auditável e colaborativa."
+      },
+      {
+        "question": "Todos poderão ver meus pagamentos?",
+        "answer": "Não. O SocialPay tem controle rígido de privacidade: Social, Pessoal, Empresarial e Auditável. Você escolhe quem vê."
+      }
+    ],
+    score: 93,
+    finalCta: "Experimentar o SocialPay"
   }
 ];

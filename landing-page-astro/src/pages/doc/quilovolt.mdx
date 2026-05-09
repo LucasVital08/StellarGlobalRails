@@ -1,0 +1,47 @@
+---
+layout: '../../layouts/DocLayout.astro'
+title: "QuiloVolt Global Pay"
+description: "Pagamentos para recarga de veículos elétricos utilizando infraestrutura Stellar."
+---
+
+# ⚡ QuiloVolt Global Pay
+
+O **QuiloVolt** é um gateway de pagamento agnóstico para recarga de veículos elétricos (EV). Ele permite que operadores de totens de carregamento recebam pagamentos instantâneos de motoristas de qualquer lugar do mundo, utilizando a rede Stellar para liquidação.
+
+---
+
+## O Problema
+
+- **Fragmentação:** Cada rede de carregamento exige um app próprio e cadastro de cartão específico.
+- **Fricção em Roaming:** Motoristas em viagens internacionais têm dificuldade de pagar em redes estrangeiras.
+- **Custos de Micropagamentos:** As taxas de cartão de crédito tornam micropagamentos (ex: recargas curtas de R$ 5,00) inviáveis para operadores.
+
+## A Solução
+
+O QuiloVolt utiliza o hardware do **Kivo Terminal** (NFC + 4G) e as APIs do ecossistema SGR para:
+1. **Pagar com Wallet:** O motorista escaneia um QR Code no totem e paga com qualquer carteira Stellar (USDC, BRZ, etc).
+2. **Micropagamentos Viáveis:** Graças às taxas ínfimas da rede Stellar, recargas de qualquer valor são economicamente viáveis.
+3. **Roaming Universal:** O motorista paga com sua moeda digital de preferência e o operador recebe o valor liquidado na moeda de sua escolha.
+
+## Fluxo de Operação
+
+```
+Motorista escaneia QR Code no Carregador
+       ↓
+  Seleciona Ativo (ex: USDC) e Autoriza Valor
+       ↓
+  Kivo Pay processa na Rede Stellar
+       ↓
+  Sinal de Liberação enviado ao Totem (via IoT/OCPP)
+       ↓
+  Sessão de Recarga Inicia
+       ↓
+  Operador recebe liquidação instantânea
+```
+
+## Benefícios para Operadores
+
+- **Independência de App:** Aceite pagamentos sem obrigar o cliente a baixar seu app.
+- **Liquidação Instantânea:** Melhore o fluxo de caixa com recebimento imediato.
+- **Agnóstico a Hardware:** Compatível com protocolo OCPP, podendo ser integrado a diversos fabricantes de totens.
+- **Sustentabilidade Auditável:** Registro de kWh consumidos e créditos de carbono diretamente na blockchain.

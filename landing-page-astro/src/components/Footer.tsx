@@ -2,8 +2,10 @@ import { RailsLogo } from './ui/Logo';
 import KivoA11yToggle from './kivo/KivoA11yToggle';
 import KivoLanguageSwitcher from './kivo/KivoLanguageSwitcher';
 import KivoTooltip from './kivo/KivoTooltip';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function Footer() {
+  const { t } = useTranslation();
   return (
     <>
       <footer className="text-white bg-neutral-950 border-white/10 border-t pt-16 pr-6 pb-16 pl-6 relative">
@@ -16,15 +18,15 @@ export default function Footer() {
               <h2 className="text-2xl font-bricolage font-semibold">STELLAR RAILS</h2>
             </div>
             <p className="text-white/50 max-w-xs leading-relaxed">
-              Um trilho financeiro global. Construído sobre a <KivoTooltip word="rede Stellar" explanation="Blockchain pública descentralizada projetada especificamente para pagamentos e emissão de ativos com baixíssima latência." />.
+              {t('footer.made_with')}
             </p>
           </div>
 
           <div className="flex items-center gap-8 text-sm font-medium text-white/60">
-            <a href="/#modules" className="hover:text-white transition-colors">Módulos</a>
-            <a href="/#platform" className="hover:text-white transition-colors">Como funciona</a>
-            <a href="/investidores" className="hover:text-white transition-colors">Para investidores</a>
-            <a href="#" className="hover:text-white transition-colors">Contato</a>
+            <a href="/#modules" className="hover:text-white transition-colors">{t('nav.modules')}</a>
+            <a href="/#platform" className="hover:text-white transition-colors">{t('nav.how_it_works')}</a>
+            <a href="/investidores" className="hover:text-white transition-colors">{t('nav.investors')}</a>
+            <a href="#" className="hover:text-white transition-colors">{t('nav.contact')}</a>
           </div>
         </div>
 

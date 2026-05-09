@@ -61,6 +61,25 @@ const { title } = Astro.props;
 
     {/* Item 35: Registrar Service Worker (PWA) */}
     <script is:inline>
+      // Language Detection & Persistence
+      (function() {
+        const LANG_KEYS = ['pt-br', 'en', 'es', 'zh', 'ko', 'ar'];
+        const saved = localStorage.getItem('sgr-lang');
+        let lang = 'en';
+
+        if (saved && LANG_KEYS.includes(saved)) {
+          lang = saved;
+        } else {
+          const browserLang = navigator.language.toLowerCase();
+          const matched = LANG_KEYS.find(k => browserLang.startsWith(k));
+          if (matched) lang = matched;
+          localStorage.setItem('sgr-lang', lang);
+        }
+        
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      })();
+
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});

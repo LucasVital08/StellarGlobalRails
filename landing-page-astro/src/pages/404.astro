@@ -1,0 +1,327 @@
+---
+import '../styles/global.css';
+
+const title = "404 - Rail Desgovernado";
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR" class="bg-neutral-950 text-white overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      @reference "../styles/global.css";
+      
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      .font-bricolage { font-family: 'Bricolage Grotesque', sans-serif; }
+      .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+      /* Comic 404 Animation */
+      .four-zero-four {
+        font-size: clamp(80px, 20vw, 200px);
+        font-weight: 900;
+        line-height: 1;
+        display: flex;
+        gap: 10px;
+        perspective: 1000px;
+      }
+      .four-zero-four span {
+        display: inline-block;
+        animation: bounce 2s infinite ease-in-out;
+        color: white;
+        text-shadow: 0 0 20px rgba(255,255,255,0.2);
+      }
+      .four-zero-four span:nth-child(2) { animation-delay: 0.2s; color: #10b981; }
+      .four-zero-four span:nth-child(3) { animation-delay: 0.4s; }
+
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0) rotateY(0); }
+        50% { transform: translateY(-30px) rotateY(20deg); }
+      }
+
+      /* Starfield */
+      #starfield {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        opacity: 0.4;
+      }
+
+      /* Game Styles */
+      #snakeGame {
+        image-rendering: pixelated;
+        border: 4px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        background: #050505;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      }
+
+      .btn-comic {
+        @apply px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-2;
+        box-shadow: 4px 4px 0px rgba(255,255,255,0.1);
+      }
+      .btn-comic:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0px rgba(16, 185, 129, 0.4);
+      }
+      .btn-comic:active {
+        transform: translate(2px, 2px);
+        box-shadow: 0px 0px 0px transparent;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col items-center justify-center p-6 antialiased overflow-y-auto lg:overflow-hidden">
+    <canvas id="starfield"></canvas>
+
+    <div class="max-w-6xl w-full flex flex-col items-center gap-12 text-center">
+      
+      <!-- 404 Animation -->
+      <div class="four-zero-four font-bricolage">
+        <span>4</span><span>0</span><span>4</span>
+      </div>
+
+      <div class="space-y-4 max-w-2xl">
+        <h2 id="display-title" class="text-3xl md:text-5xl font-bricolage font-bold text-white leading-tight">
+          Oops! Os trilhos derreteram! 🔥
+        </h2>
+        <p id="display-desc" class="text-lg text-white/40 leading-relaxed font-medium">
+          Parece que você pegou o trem errado ou alguém trocou a sinalização. 
+          Enquanto chamamos o guincho intergalático, divirta-se com nossa cobra espacial (ela não morde, eu acho).
+        </p>
+      </div>
+
+      <!-- Game Container -->
+      <div class="relative group mt-4">
+        <div id="game-overlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md rounded-3xl transition-all duration-500 border border-white/5">
+          <h3 id="overlay-title" class="text-3xl font-black text-white mb-2 uppercase tracking-tighter italic">Stellar Snake</h3>
+          <p class="text-white/40 text-xs mb-8">BATA O RECORDE: <span class="text-emerald-400 font-bold">420</span></p>
+          <button id="start-btn" class="px-10 py-5 rounded-full bg-white text-black font-black hover:bg-emerald-400 transition-all shadow-2xl scale-110 active:scale-95">
+            INICIAR RAIL
+          </button>
+          <p class="mt-8 text-white/20 text-[10px] uppercase tracking-[0.4em] font-bold">SETAS OU WASD</p>
+        </div>
+
+        <div class="p-4 bg-white/5 rounded-[40px] border border-white/10 shadow-2xl backdrop-blur-sm">
+          <canvas id="snakeGame" width="400" height="400"></canvas>
+        </div>
+        
+        <!-- Score HUD -->
+        <div class="absolute -top-4 -right-4 bg-white text-black px-6 py-2 rounded-xl font-black text-2xl shadow-2xl border-2 border-emerald-500 transform rotate-12">
+          <span id="score">00</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex flex-col sm:flex-row items-center gap-6 mt-8">
+        <button id="display-back" onclick="history.back()" class="btn-comic bg-white text-black w-full sm:w-auto">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-width="2"/></svg>
+          Voltar para a Segurança
+        </button>
+        <a href="/" id="display-home" class="btn-comic bg-white/5 text-white border border-white/10 w-full sm:w-auto">
+          Base Principal
+        </a>
+      </div>
+
+    </div>
+
+    <script is:inline>
+      const ui = {
+        'pt-br': {
+          'title': 'Oops! Os trilhos derreteram! 🔥',
+          'desc': 'Parece que você pegou o trem errado ou alguém trocou a sinalização. Enquanto chamamos o guincho intergalático, divirta-se com nossa cobra espacial.',
+          'back': 'Voltar para a Segurança',
+          'home': 'Base Principal',
+          'start': 'INICIAR RAIL',
+          'game_title': 'Stellar Snake',
+          'game_over': 'FIM DA LINHA!'
+        },
+        'en': {
+          'title': 'Oops! The rails melted! 🔥',
+          'desc': "Looks like you took the wrong train or someone changed the signs. While we call the intergalactic tow truck, have fun with our space snake.",
+          'back': 'Back to Safety',
+          'home': 'Main Base',
+          'start': 'START RAIL',
+          'game_title': 'Stellar Snake',
+          'game_over': 'END OF THE LINE!'
+        }
+        // ... (Adding others if needed, but keeping it simple for now)
+      };
+
+      function updateLanguage() {
+        const lang = localStorage.getItem('sgr-lang') || 'en';
+        const t = ui[lang] || ui['en'];
+
+        document.getElementById('display-title').innerText = t.title;
+        document.getElementById('display-desc').innerText = t.desc;
+        document.getElementById('display-back').innerText = t.back;
+        document.getElementById('display-home').innerText = t.home;
+        document.getElementById('start-btn').innerText = t.start;
+        document.getElementById('overlay-title').innerText = t.game_title;
+        
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      }
+
+      document.addEventListener('DOMContentLoaded', updateLanguage);
+
+      // STARFIELD EFFECT
+      const starCanvas = document.getElementById('starfield');
+      const sCtx = starCanvas.getContext('2d');
+      let stars = [];
+
+      function resize() {
+        starCanvas.width = window.innerWidth;
+        starCanvas.height = window.innerHeight;
+      }
+      window.onresize = resize;
+      resize();
+
+      for(let i=0; i<150; i++) {
+        stars.push({
+          x: Math.random() * starCanvas.width,
+          y: Math.random() * starCanvas.height,
+          size: Math.random() * 1.5,
+          speed: Math.random() * 0.3
+        });
+      }
+
+      function animateStars() {
+        sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+        sCtx.fillStyle = '#ffffff';
+        stars.forEach(s => {
+          sCtx.globalAlpha = Math.random() * 0.4 + 0.2;
+          sCtx.beginPath();
+          sCtx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+          sCtx.fill();
+          s.y += s.speed;
+          if(s.y > starCanvas.height) s.y = 0;
+        });
+        requestAnimationFrame(animateStars);
+      }
+      animateStars();
+
+      // SNAKE GAME
+      const canvas = document.getElementById('snakeGame');
+      const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('score');
+      const startBtn = document.getElementById('start-btn');
+      const overlay = document.getElementById('game-overlay');
+      const overlayTitle = document.getElementById('overlay-title');
+
+      const gridSize = 20;
+      const tileCount = canvas.width / gridSize;
+      
+      let score = 0;
+      let dx = 0;
+      let dy = 0;
+      let snake = [{ x: 10, y: 10 }];
+      let food = { x: 15, y: 15 };
+      let gameRunning = false;
+      let lastTime = 0;
+
+      function drawGame(timestamp) {
+        if (!gameRunning) return;
+        
+        if (timestamp - lastTime < 100) {
+          requestAnimationFrame(drawGame);
+          return;
+        }
+        lastTime = timestamp;
+
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+        for(let i=0; i<canvas.width; i+=gridSize) {
+          ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke();
+        }
+
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        
+        // Wall Collision
+        if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+          gameOver(); return;
+        }
+
+        // Self Collision
+        if (snake.some(p => p.x === head.x && p.y === head.y)) {
+          gameOver(); return;
+        }
+
+        snake.unshift(head);
+
+        if (head.x === food.x && head.y === food.y) {
+          score += 10;
+          scoreEl.innerText = score.toString().padStart(2, '0');
+          createFood();
+        } else {
+          snake.pop();
+        }
+
+        // Draw Food
+        ctx.fillStyle = '#fff';
+        ctx.shadowBlur = 15; ctx.shadowColor = '#fff';
+        ctx.beginPath();
+        ctx.arc(food.x * gridSize + 10, food.y * gridSize + 10, 6, 0, Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Draw Snake
+        snake.forEach((part, index) => {
+          ctx.fillStyle = index === 0 ? '#10b981' : `rgba(16, 185, 129, ${0.8 - index/snake.length})`;
+          if (index === 0) { ctx.shadowBlur = 10; ctx.shadowColor = '#10b981'; }
+          ctx.beginPath();
+          ctx.roundRect(part.x * gridSize + 1, part.y * gridSize + 1, gridSize - 2, gridSize - 2, 6);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        });
+
+        requestAnimationFrame(drawGame);
+      }
+
+      function createFood() {
+        food = {
+          x: Math.floor(Math.random() * tileCount),
+          y: Math.floor(Math.random() * tileCount)
+        };
+        if (snake.some(p => p.x === food.x && p.y === food.y)) createFood();
+      }
+
+      function gameOver() {
+        gameRunning = false;
+        overlay.style.display = 'flex';
+        const lang = localStorage.getItem('sgr-lang') || 'en';
+        overlayTitle.innerText = ui[lang].game_over;
+        startBtn.innerText = 'TENTAR NOVAMENTE';
+      }
+
+      startBtn.onclick = () => {
+        score = 0; scoreEl.innerText = '00';
+        snake = [{ x: 10, y: 10 }];
+        dx = 1; dy = 0;
+        createFood();
+        overlay.style.display = 'none';
+        gameRunning = true;
+        requestAnimationFrame(drawGame);
+      };
+
+      window.onkeydown = e => {
+        if (!gameRunning) return;
+        switch(e.key.toLowerCase()) {
+          case 'arrowup': case 'w': if (dy !== 1) { dx = 0; dy = -1; } break;
+          case 'arrowdown': case 's': if (dy !== -1) { dx = 0; dy = 1; } break;
+          case 'arrowleft': case 'a': if (dx !== 1) { dx = -1; dy = 0; } break;
+          case 'arrowright': case 'd': if (dx !== -1) { dx = 1; dy = 0; } break;
+        }
+        if(['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(e.key.toLowerCase())) e.preventDefault();
+      };
+    </script>
+  </body>
+</html>

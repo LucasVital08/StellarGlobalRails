@@ -1,0 +1,60 @@
+---
+layout: '../../layouts/DocLayout.astro'
+title: "Documento de Produto (ADR/RT)"
+description: "Mapa completo do produto, registrando todas as decisões importantes de negócio, arquitetura e tecnologia."
+---
+
+# 🗺️ Mapa do Produto (ADR/RT)
+
+*Este documento é o registro vivo de todas as decisões importantes do **Stellar Global Rails (SGR)**. Ele funciona como o nosso "mapa completo" e será continuamente atualizado com novos aprendizados, dados e validações.*
+
+---
+
+## 1. A Oferta Central (O que estamos construindo?)
+O **Stellar Global Rails** é um ecossistema B2B ("business-to-business") projetado para unificar infraestrutura de pagamentos tradicionais com a rede Stellar. Nós abstraímos completamente a complexidade da Web3 (blockchain, carteiras, conversão de tokens) e entregamos APIs e portais white-label focados na resolução de problemas reais de negócios.
+
+Dentro desse ecossistema, ofertamos módulos independentes mas interoperáveis:
+- **Kivo Pay:** O meio de pagamento nativo e motor de liquidação, responsável pela custódia e on/off-ramps globais.
+- **ContractEase B2B:** Gestão antifraude de contratos usando a imutabilidade da blockchain.
+- **SocialPay:** Ferramenta corporativa para sub-redes privadas de pagamento.
+- **Onyx Risk:** Motor de inteligência de risco.
+
+## 2. Público-Alvo (Para quem?)
+Nosso foco é o mercado **B2B** que sofre com atritos em pagamentos e fluxos transfronteiriços:
+- **Pequenas e Médias Empresas (PMEs):** Que precisam gerenciar a folha de pagamento e realizar "payouts" para funcionários e fornecedores no exterior sem pagar taxas abusivas de Swift/Remessas.
+- **Organizações e ONGs:** Que necessitam de um sistema de doações (como o módulo *Vakinha Global*) onde o repasse dos valores seja transparente (auditável via Stellar) mas os dados internos da organização sejam preservados.
+- **Corporações B2B:** Que precisam de validade legal e compliance ao fechar contratos internacionais (*ContractEase*).
+
+## 3. Decisões de Arquitetura (Architecture Decision Records - ADRs)
+Aqui registramos as decisões estruturais mais pesadas adotadas no ecossistema:
+
+### ADR 001: Arquitetura Modular Múltiplos-Apps em um Monorepo
+- **Decisão:** Separar a `landing-page-astro` dos apps em React (ex: `contractease`, `socialpay`), mas mantendo o mesmo guarda-chuva de design e banco de dados.
+- **Motivo:** Evitar inchaço do bundle. Os clientes B2B que entrarem na Landing Page querem velocidade SEO, mas ao entrar no app querem a robustez de um painel SPA (Single Page Application).
+
+### ADR 002: Multi-tenancy RLS no Banco de Dados
+- **Decisão:** Todas as tabelas de negócio (`contracts`, `payments`, `users`) devem referenciar o campo `organization_id`, blindadas por *Row Level Security (RLS)* no Supabase.
+- **Motivo:** Segurança de dados. Impede vazamento de informações B2B entre diferentes empresas utilizando o portal.
+
+### ADR 003: Abstração da Complexidade Blockchain
+- **Decisão:** Os usuários não gerenciam chaves privadas nem pagam taxas na rede. Toda assinatura e ancoragem na Stellar é feita via servidor (Soroban Edge Functions) de forma custodiada, ou através de SDK/Magic Links de forma híbrida.
+- **Motivo:** Empresas não querem comprar "Lumens (XLM)" para usar um software SaaS. Elas querem pagar em Reais/Dólares e ter os benefícios da Web3 (transações em segundos, custos mínimos de rede) invisíveis aos olhos.
+
+## 4. Tecnologias Adotadas
+* **Frontend:**
+  - **Astro:** Landing pages super rápidas com ótimo SEO.
+  - **React (Vite) + TypeScript:** Para as áreas logadas e dashboards B2B complexos.
+  - **Tailwind CSS v4 & Framer Motion:** Para o Design System responsivo, moderno e premium.
+* **Backend & Auth:**
+  - **Supabase:** Postgres Database, Edge Functions e Authentication (Magic Link/OTP) com isolamento nativo via RLS.
+* **Infraestrutura Financeira (Blockchain):**
+  - **Stellar Network:** Usada como trilho de liquidação (Rails).
+  - **Soroban Smart Contracts:** Usados para lógicas descentralizadas (como escrow ou travas de pagamento do Onyx Risk).
+
+## 5. Histórico de Aprendizados e Pivôs
+- *(Data)* **Decisão de refatorar a Landing Page:** Aprendemos que a narrativa precisava destacar o *Stellar Global Rails* como o ecossistema, e o Kivo Pay como um de seus módulos, ao invés de centralizar a comunicação apenas na API Kivo. Mudamos o design de Módulos (Simuladores Funcionais) para refletir isso.
+- *(Pendente)* **Pesquisa de Mercado:** Validação contínua do módulo SocialPay em negócios informais no decorrer do Q3/2026.
+
+---
+
+*Última Atualização: Maio de 2026*

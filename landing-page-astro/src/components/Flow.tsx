@@ -1,36 +1,6 @@
 import { useRef, useState } from 'react';
 import { motion, useInView } from 'motion/react';
-
-const steps = [
-  {
-    num: "01",
-    title: "Onboarding",
-    desc: "Criação rápida com CPF para o lado do varejo, sem atritos.",
-    icon: "solar:user-rounded-linear",
-    color: "from-emerald-500 to-emerald-700"
-  },
-  {
-    num: "02",
-    title: "Criação",
-    desc: "Geração de invoice, QR code ou link de pagamento.",
-    icon: "solar:qr-code-linear",
-    color: "from-blue-500 to-blue-700"
-  },
-  {
-    num: "03",
-    title: "Liquidação",
-    desc: "Processamento em USDC via rede Stellar em 3-5 segundos.",
-    icon: "solar:bolt-linear",
-    color: "from-purple-500 to-purple-700"
-  },
-  {
-    num: "04",
-    title: "Saque Rápido",
-    desc: "Resgate do balanço via gateways PIX de baixo atrito.",
-    icon: "solar:card-send-linear",
-    color: "from-amber-500 to-amber-700"
-  }
-];
+import { useTranslation } from '../hooks/useTranslation';
 
 function FlowStepCard({ step, index, setActiveIndex }: { key?: any, step: any, index: number, setActiveIndex: (i: number) => void }) {
   const ref = useRef(null);
@@ -69,7 +39,39 @@ function FlowStepCard({ step, index, setActiveIndex }: { key?: any, step: any, i
 }
 
 export default function Flow() {
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const steps = [
+    {
+      num: "01",
+      title: t('flow.step1.title'),
+      desc: t('flow.step1.desc'),
+      icon: "solar:user-rounded-linear",
+      color: "from-emerald-500 to-emerald-700"
+    },
+    {
+      num: "02",
+      title: t('flow.step2.title'),
+      desc: t('flow.step2.desc'),
+      icon: "solar:qr-code-linear",
+      color: "from-blue-500 to-blue-700"
+    },
+    {
+      num: "03",
+      title: t('flow.step3.title'),
+      desc: t('flow.step3.desc'),
+      icon: "solar:bolt-linear",
+      color: "from-purple-500 to-purple-700"
+    },
+    {
+      num: "04",
+      title: t('flow.step4.title'),
+      desc: t('flow.step4.desc'),
+      icon: "solar:card-send-linear",
+      color: "from-amber-500 to-amber-700"
+    }
+  ];
 
   return (
     <section className="text-white bg-neutral-950 border-white/5 border-t relative">
@@ -79,13 +81,13 @@ export default function Flow() {
           <div className="lg:w-1/2 relative">
             <div className="sticky top-0 h-screen flex flex-col justify-center py-20 pr-12">
               <span className="text-xs uppercase tracking-[0.3em] text-emerald-500 font-medium mb-4 block">
-                Dinâmica On-Chain
+                {t('flow.badge')}
               </span>
               <h2 className="text-4xl md:text-6xl lg:text-7xl font-bricolage font-medium text-white mb-6 leading-tight tracking-tight">
-                O Fluxo do <span className="text-white/40 italic font-serif">Dinheiro</span>
+                {t('flow.title.part1')} <span className="text-white/40 italic font-serif">{t('flow.title.part2')}</span>
               </h2>
               <p className="text-white/50 text-lg max-w-md font-light mb-16">
-                Da intenção de pagamento até o recebimento líquido e saque.
+                {t('flow.desc')}
               </p>
 
               <div className="relative w-full aspect-square max-w-md bg-neutral-900/50 rounded-3xl border border-white/10 flex items-center justify-center overflow-hidden">
@@ -113,7 +115,7 @@ export default function Flow() {
                       </motion.div>
                     </div>
                     <div className="mt-8 text-center text-white/40 font-mono text-sm tracking-widest uppercase">
-                      Processo {step.num}
+                      {t('flow.process_label')} {step.num}
                     </div>
                   </motion.div>
                 ))}

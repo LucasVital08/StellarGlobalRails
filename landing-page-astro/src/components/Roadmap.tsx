@@ -1,7 +1,9 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function Roadmap() {
+  const { t } = useTranslation();
   const container = useRef<HTMLDivElement>(null);
   
   const { scrollYProgress } = useScroll({
@@ -17,10 +19,10 @@ export default function Roadmap() {
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="text-center mb-32 gs-fade-up">
           <span className="text-emerald-500 font-mono text-xs uppercase tracking-widest bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/20">
-            Acelerador Stellar 37º
+            {t('roadmap.badge')}
           </span>
           <h2 className="text-5xl md:text-7xl font-bricolage text-white mt-6 font-semibold tracking-tight">
-            Roadmap Sprints
+            {t('roadmap.title')}
           </h2>
         </div>
         
@@ -34,9 +36,9 @@ export default function Roadmap() {
 
           <div className="flex flex-col md:flex-row items-center justify-between mb-32 md:mb-48 group relative">
             <div className="w-full md:w-5/12 pr-0 md:pr-12 order-2 md:order-1 gs-slide-right text-center md:text-right relative z-10 transition-transform duration-500 group-hover:-translate-x-4">
-              <h3 className="text-3xl text-white font-bricolage mb-3">Sprint 1 e 2: Fundação Core</h3>
+              <h3 className="text-3xl text-white font-bricolage mb-3">{t('roadmap.s1.title')}</h3>
               <p className="text-white/50 text-lg font-light leading-relaxed">
-                Infraestrutura centralizada. Wireframes dos fluxos e ativação de remessas e gateway USDC testnet.
+                {t('roadmap.s1.desc')}
               </p>
             </div>
             
@@ -75,18 +77,18 @@ export default function Roadmap() {
             </motion.div>
 
             <div className="w-full md:w-5/12 pl-0 md:pl-12 order-3 text-center md:text-left gs-slide-left relative z-10 transition-transform duration-500 group-hover:translate-x-4">
-              <h3 className="text-3xl text-white font-bricolage mb-3">Sprint 3: Institucional</h3>
+              <h3 className="text-3xl text-white font-bricolage mb-3">{t('roadmap.s3.title')}</h3>
               <p className="text-white/50 text-lg font-light leading-relaxed">
-                Payouts institucionais em lote e emissão de certificados com o ContractEase. Dashboard v1.
+                {t('roadmap.s3.desc')}
               </p>
             </div>
           </div>
 
           <div className="flex flex-col md:flex-row items-center justify-between group relative">
             <div className="w-full md:w-5/12 pr-0 md:pr-12 order-2 md:order-1 gs-slide-right text-center md:text-right relative z-10 transition-transform duration-500 group-hover:-translate-x-4">
-              <h3 className="text-3xl text-white font-bricolage mb-3">Sprint 4 e 5: Demo Final</h3>
+              <h3 className="text-3xl text-white font-bricolage mb-3">{t('roadmap.s5.title')}</h3>
               <p className="text-white/50 text-lg font-light leading-relaxed">
-                Onboarding do Kivo Mobile (QR Code / link), Dashboard completo e Demo Night testnet.
+                {t('roadmap.s5.desc')}
               </p>
             </div>
             

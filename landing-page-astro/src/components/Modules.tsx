@@ -1,13 +1,15 @@
 import { useRef } from 'react';
 import { motion } from 'motion/react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function Modules() {
   const container = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   return (
     <section id="modules" ref={container} className="bg-neutral-950 border-white/5 border-t pt-24 pr-6 pb-48 pl-6 relative">
       <div className="absolute top-12 right-6 md:right-12 z-0 opacity-10 font-bricolage font-bold text-[8rem] md:text-[10rem] leading-none text-white pointer-events-none select-none tracking-tighter">
-        VOL. III
+        {t('modules.deepdive.vol')}
       </div>
 
       <div className="z-10 w-full max-w-5xl mr-auto ml-auto relative">
@@ -19,10 +21,10 @@ export default function Modules() {
           className="text-center mb-24"
         >
           <h3 className="text-3xl md:text-5xl font-bricolage font-light text-white mb-4 tracking-tight">
-            Aprofundamento
+            {t('modules.deepdive.title')}
           </h3>
           <p className="text-white/50 text-lg">
-            Páginas dedicadas e visão profunda por operação.
+            {t('modules.deepdive.subtitle')}
           </p>
         </motion.div>
 
@@ -41,22 +43,22 @@ export default function Modules() {
             </div>
 
             <div className="w-full md:w-2/3 flex flex-col justify-center">
-              <span className="text-emerald-400 text-xs font-mono uppercase tracking-widest mb-3 block">Gateway Físico e Online</span>
+              <span className="text-emerald-400 text-xs font-mono uppercase tracking-widest mb-3 block">{t('modules.kivo.type')}</span>
               <h4 className="text-3xl md:text-4xl text-white font-bricolage font-medium mb-6">Kivo Mobile</h4>
               
               <div className="grid grid-cols-2 gap-y-6 gap-x-4 mb-8">
                 <div className="flex flex-col gap-1">
-                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">Função</span>
-                  <span className="text-white text-base">QR Code / Link</span>
+                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">{t('modules.kivo.func_label')}</span>
+                  <span className="text-white text-base">{t('modules.kivo.func_value')}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">Onboarding</span>
-                  <span className="text-white text-base">Sem Banco</span>
+                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">{t('modules.kivo.onboarding_label')}</span>
+                  <span className="text-white text-base">{t('modules.kivo.onboarding_value')}</span>
                 </div>
               </div>
               
               <p className="text-white/60 leading-relaxed font-light mb-8">
-                Canal prioritário. Vendedor digita valor, comprador escaneia e dinheiro liquida via USDC direto na carteira do recebedor. Uma experiência de POS completa no celular.
+                {t('modules.kivo.deep_desc')}
               </p>
 
               <div>
@@ -65,7 +67,7 @@ export default function Modules() {
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-3 rounded-full bg-white text-black font-semibold uppercase tracking-widest text-xs hover:bg-emerald-400 hover:text-black transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(52,211,153,0.4)]"
                 >
-                  Explorar Módulo
+                  {t('modules.explore_cta')}
                 </motion.button>
               </div>
             </div>
@@ -84,22 +86,22 @@ export default function Modules() {
             </div>
 
             <div className="w-full md:w-2/3 flex flex-col justify-center">
-              <span className="text-blue-400 text-xs font-mono uppercase tracking-widest mb-3 block">Freelancers & PMEs</span>
+              <span className="text-blue-400 text-xs font-mono uppercase tracking-widest mb-3 block">{t('modules.invoice.type')}</span>
               <h4 className="text-3xl md:text-4xl text-white font-bricolage font-medium mb-6">Stellar Invoice</h4>
               
               <div className="grid grid-cols-2 gap-y-6 gap-x-4 mb-8">
                 <div className="flex flex-col gap-1">
-                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">Função</span>
-                  <span className="text-white text-base">Fatura int.</span>
+                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">{t('modules.invoice.func_label')}</span>
+                  <span className="text-white text-base">{t('modules.invoice.func_value')}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">Taxas</span>
-                  <span className="text-white text-base">Custo Básico</span>
+                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">{t('modules.invoice.fees_label')}</span>
+                  <span className="text-white text-base">{t('modules.invoice.fees_value')}</span>
                 </div>
               </div>
               
               <p className="text-white/60 leading-relaxed font-light mb-8">
-                Ideal para freelancers gerarem links unificados usando infraestrutura direta de stablecoin, bypassando redes lentas como SWIFT. Cobranças cross-border nativas.
+                {t('modules.invoice.deep_desc')}
               </p>
 
               <div>
@@ -108,7 +110,7 @@ export default function Modules() {
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-3 rounded-full bg-white text-black font-semibold uppercase tracking-widest text-xs hover:bg-blue-400 hover:text-white transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]"
                 >
-                  Explorar Módulo
+                  {t('modules.explore_cta')}
                 </motion.button>
               </div>
             </div>
@@ -127,22 +129,22 @@ export default function Modules() {
             </div>
 
             <div className="w-full md:w-2/3 flex flex-col justify-center">
-              <span className="text-purple-400 text-xs font-mono uppercase tracking-widest mb-3 block">Social Impact</span>
+              <span className="text-purple-400 text-xs font-mono uppercase tracking-widest mb-3 block">{t('modules.vakinha.type')}</span>
               <h4 className="text-3xl md:text-4xl text-white font-bricolage font-medium mb-6">Vakinha Global</h4>
               
               <div className="grid grid-cols-2 gap-y-6 gap-x-4 mb-8">
                 <div className="flex flex-col gap-1">
-                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">Moedas</span>
-                  <span className="text-white text-base">USDC/BRZ/BRL</span>
+                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">{t('modules.vakinha.currency_label')}</span>
+                  <span className="text-white text-base">{t('modules.vakinha.currency_value')}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">Confiança</span>
-                  <span className="text-white text-base">On-chain Verif.</span>
+                  <span className="text-white/40 text-xs uppercase tracking-wider font-mono">{t('modules.vakinha.trust_label')}</span>
+                  <span className="text-white text-base">{t('modules.vakinha.trust_value')}</span>
                 </div>
               </div>
               
               <p className="text-white/60 leading-relaxed font-light mb-8">
-                Sistema transparente de vaquinha internacional sem atrito de conversão manual e relatórios em tempo real. Cada doação registrada permanentemente na rede.
+                {t('modules.vakinha.deep_desc')}
               </p>
 
               <div>
@@ -151,7 +153,7 @@ export default function Modules() {
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-3 rounded-full bg-white text-black font-semibold uppercase tracking-widest text-xs hover:bg-purple-400 hover:text-white transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]"
                 >
-                  Explorar Módulo
+                  {t('modules.explore_cta')}
                 </motion.button>
               </div>
             </div>

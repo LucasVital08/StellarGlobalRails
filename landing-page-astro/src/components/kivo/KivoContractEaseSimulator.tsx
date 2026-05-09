@@ -12,8 +12,8 @@ export default function KivoContractEaseSimulator() {
   const confirmWallet = () => {
     setShowWallet(false);
     setStep(1); // Assinando
-    setTimeout(() => setStep(2), 2000); // Kivo Invoice API
-    setTimeout(() => setStep(3), 4000); // Pago
+    setTimeout(() => setStep(2), 2000); // Registrando on-chain
+    setTimeout(() => setStep(3), 4000); // Hash Confirmado
     setTimeout(() => setStep(0), 8000); // Reset
   };
 
@@ -22,7 +22,7 @@ export default function KivoContractEaseSimulator() {
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-5xl font-bricolage text-white mb-6">Simulador ContractEase</h2>
         <p className="text-white/50 text-lg max-w-2xl mx-auto">
-          Contratos verificáveis on-chain que se comunicam nativamente com o Kivo Invoicing para disparar cobranças após a assinatura digital.
+          Contratos com assinaturas digitais imutáveis, protegidos por 2FA (TOTP) e ancorados de forma permanente e descentralizada na rede Stellar.
         </p>
       </div>
 
@@ -134,40 +134,40 @@ export default function KivoContractEaseSimulator() {
             </AnimatePresence>
           </motion.div>
 
-          {/* Bastidores: API do Kivo Gateway */}
+          {/* Bastidores: API do Supabase e Stellar */}
           <div className="flex flex-col items-center justify-center relative">
             <div className="bg-black/80 backdrop-blur-md border border-cyan-500/30 p-6 rounded-2xl w-full max-w-sm relative z-10 shadow-[0_0_50px_rgba(6,182,212,0.05)]">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
                 <div className="w-10 h-10 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
                   {/* @ts-ignore */}
-                  <iconify-icon icon="solar:server-square-linear" width="24"></iconify-icon>
+                  <iconify-icon icon="solar:shield-check-linear" width="24"></iconify-icon>
                 </div>
                 <div>
-                  <h4 className="text-white font-medium">Kivo Invoicing API</h4>
-                  <p className="text-[10px] text-cyan-400 font-mono">Webhook Listener</p>
+                  <h4 className="text-white font-medium">ContractEase Indexer</h4>
+                  <p className="text-[10px] text-cyan-400 font-mono">Stellar Network Worker</p>
                 </div>
               </div>
 
               <div className="space-y-3 font-mono text-[10px] text-white/50 h-40 flex flex-col justify-end overflow-hidden relative">
                  <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-black/80 to-transparent z-10"></div>
                  
-                 <p>{`> Listening for contract events...`}</p>
+                 <p>{`> Monitorando eventos de assinatura...`}</p>
                  <AnimatePresence>
                    {step >= 1 && (
                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-                       <p className="text-cyan-400">{`> EVENT: Signature_Confirmed (Hash: 0x8a...)`}</p>
+                       <p className="text-cyan-400">{`> EVENTO: Assinatura 2FA Confirmada`}</p>
+                       <p className="text-white">{`> Gerando Hash SHA-256 do documento...`}</p>
                      </motion.div>
                    )}
                    {step >= 2 && (
                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
-                       <p className="text-white">{`> Action triggered: Create_Invoice`}</p>
-                       <p className="text-white">{`> Amount: 1200 USDC`}</p>
-                       <p className="text-yellow-400 animate-pulse">{`> Emailing payment link to client...`}</p>
+                       <p className="text-yellow-400 animate-pulse">{`> Submetendo transação com Memo Hash para Stellar Testnet...`}</p>
                      </motion.div>
                    )}
                    {step >= 3 && (
                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
-                       <p className="text-emerald-400 font-bold">{`> Invoice Paid! Funds routed to Freelancer Wallet.`}</p>
+                       <p className="text-emerald-400 font-bold">{`> Hash Ancorado com Sucesso! (0x8f2...9a1)`}</p>
+                       <p className="text-emerald-400 font-bold">{`> QR Code de auditoria ativado.`}</p>
                      </motion.div>
                    )}
                  </AnimatePresence>

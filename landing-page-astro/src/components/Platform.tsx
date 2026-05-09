@@ -1,6 +1,10 @@
 import { motion } from 'motion/react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function Platform() {
+  const { t, lang } = useTranslation();
+
+
   return (
     <section className="py-24 bg-neutral-900 text-white relative overflow-hidden" id="platform">
       <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
@@ -19,12 +23,12 @@ export default function Platform() {
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-7xl font-bricolage font-medium mb-6 leading-[0.9] tracking-tight gs-fade-up">
-              Não é um produto.
+              {t('platform.title')}
               <br />
-              <span className="text-white/30 italic font-serif">É uma infraestrutura.</span>
+              <span className="text-white/30 italic font-serif">{t('platform.subtitle')}</span>
             </h2>
             <p className="text-white/60 text-lg mb-8 leading-relaxed font-light gs-fade-up" data-delay="0.1">
-               O sistema financeiro tradicional foi construído para quem já tem banco, CNPJ e endereço fixo. O Stellar Global Rails é uma camada nova — um trilho sobre o qual qualquer fluxo financeiro pode correr: de pessoa para pessoa, de instituição para beneficiário, de vendedor para comprador, local ou global, com USDC, BRZ ou moeda local.
+               {t('platform.desc')}
             </p>
 
             <div className="space-y-6">
@@ -34,9 +38,9 @@ export default function Platform() {
                   <iconify-icon icon="solar:bolt-circle-linear" width="24"></iconify-icon>
                 </div>
                 <div>
-                  <h4 className="text-xl font-medium mb-1 font-bricolage">Liquidação instantânea</h4>
+                  <h4 className="text-xl font-medium mb-1 font-bricolage">{t('platform.feature1.title')}</h4>
                   <p className="text-sm text-white/50 group-hover:text-white/70 transition-colors">
-                    3 a 5 segundos. Sem D+2, sem fila, sem falha silenciosa.
+                    {t('platform.feature1.desc')}
                   </p>
                 </div>
               </div>
@@ -46,9 +50,9 @@ export default function Platform() {
                   <iconify-icon icon="solar:global-linear" width="24"></iconify-icon>
                 </div>
                 <div>
-                  <h4 className="text-xl font-medium mb-1 font-bricolage">Global por padrão</h4>
+                  <h4 className="text-xl font-medium mb-1 font-bricolage">{t('platform.feature2.title')}</h4>
                   <p className="text-sm text-white/50 group-hover:text-white/70 transition-colors">
-                    USDC, BRZ e stablecoins locais. De qualquer país para qualquer país.
+                    {t('platform.feature2.desc')}
                   </p>
                 </div>
               </div>
@@ -58,14 +62,13 @@ export default function Platform() {
                   <iconify-icon icon="solar:shield-check-linear" width="24"></iconify-icon>
                 </div>
                 <div>
-                  <h4 className="text-xl font-medium mb-1 font-bricolage">Verificável e auditável</h4>
+                  <h4 className="text-xl font-medium mb-1 font-bricolage">{t('platform.feature3.title')}</h4>
                   <p className="text-sm text-white/50 group-hover:text-white/70 transition-colors">
-                    Cada transação registrada on-chain. Comprovante que ninguém altera.
+                    {t('platform.feature3.desc')}
                   </p>
                 </div>
               </div>
             </div>
-
           </div>
 
           <motion.div 
@@ -89,10 +92,7 @@ export default function Platform() {
               <div className="w-4 h-4 bg-emerald-500 rounded-full relative z-10 cursor-pointer border-2 border-white shadow-[0_0_20px_rgba(16,185,129,0.5)]"></div>
               <div className="absolute left-6 top-0 bg-black/80 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 w-56 opacity-0 group-hover/spot:opacity-100 transition-all duration-300 translate-y-2 group-hover/spot:translate-y-0 pointer-events-none">
                 <span className="text-xs font-mono text-emerald-400 block mb-1 uppercase tracking-wider">
-                  Liquidação Feita
-                </span>
-                <span className="text-[11px] text-white/70 block">
-                  TxID: 0x4B...A2
+                  {t('platform.settlement_done')}
                 </span>
               </div>
             </motion.div>
@@ -108,10 +108,7 @@ export default function Platform() {
               <div className="w-4 h-4 bg-blue-500 rounded-full relative z-10 cursor-pointer border-2 border-white shadow-[0_0_20px_rgba(59,130,246,0.5)]"></div>
               <div className="absolute right-6 top-0 bg-black/80 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 w-56 opacity-0 group-hover/spot:opacity-100 transition-all duration-300 translate-y-2 group-hover/spot:translate-y-0 pointer-events-none text-right">
                 <span className="text-xs font-mono text-blue-400 block mb-1 uppercase tracking-wider">
-                  Auditoria Ativa
-                </span>
-                <span className="text-[11px] text-white/70 block">
-                  Escrow Contract Liberto
+                  {t('platform.audit_active')}
                 </span>
               </div>
             </motion.div>

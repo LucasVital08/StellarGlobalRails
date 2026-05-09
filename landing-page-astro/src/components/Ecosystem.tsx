@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function Ecosystem() {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<'all' | 'consumer' | 'institucional'>('all');
 
   return (
@@ -31,12 +33,12 @@ export default function Ecosystem() {
                 <path d="m9 12 2 2 4-4"></path>
               </motion.svg>
               <span className="text-xs font-mono uppercase tracking-[0.2em] text-emerald-400/80">
-                A Plataforma Unificada
+                {t('ecosystem.tagline')}
               </span>
             </div>
             <h2 className="text-5xl md:text-7xl lg:text-8xl font-bricolage font-medium tracking-tighter text-white leading-[0.9]">
-              Os Módulos
-              <span className="text-white/20 font-light italic font-serif"> Ativos.</span>
+              {t('ecosystem.title')}
+              <span className="text-white/20 font-light italic font-serif">{t('ecosystem.highlight')}</span>
             </h2>
           </div>
 
@@ -59,7 +61,7 @@ export default function Ecosystem() {
                     />
                   )}
                   <span className="relative z-10 whitespace-nowrap">
-                    {f === 'all' ? 'Todos' : f === 'consumer' ? 'Consumer & Pay' : 'Institucional'}
+                    {t(`ecosystem.filter.${f}`)}
                   </span>
                 </motion.button>
               ))}
@@ -79,6 +81,7 @@ export default function Ecosystem() {
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 className="group relative md:col-span-8 md:row-span-2 rounded-[2rem] overflow-hidden bg-neutral-900 border border-white/10 shadow-2xl origin-left cursor-pointer"
+                onClick={() => window.location.href = '/modules/kivopay'}
               >
                 <div className="absolute inset-0 z-0">
                   <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-1000 ease-out grayscale group-hover:grayscale-0" alt="Kivo Terminal" />
@@ -87,19 +90,19 @@ export default function Ecosystem() {
 
                 <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20">
                   <div className="flex gap-2">
-                    <span className="px-3 py-1 bg-white/10 backdrop-blur border border-white/10 rounded-full text-[10px] uppercase tracking-widest font-mono text-white/80">Consumer</span>
+                    <span className="px-3 py-1 bg-white/10 backdrop-blur border border-white/10 rounded-full text-[10px] uppercase tracking-widest font-mono text-white/80">{t('ecosystem.filter.consumer')}</span>
                     <span className="px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-[10px] uppercase tracking-widest font-mono text-emerald-400 flex items-center gap-2">
                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                      Mobile & Terminal
+                      {t('ecosystem.mobile_terminal')}
                     </span>
                   </div>
                 </div>
 
                 <div className="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 overflow-hidden">
                   <div className="max-w-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 relative">
-                    <h3 className="text-4xl md:text-6xl font-bricolage font-medium text-white mb-4 relative z-10 tracking-tight">Kivo Pay</h3>
+                    <h3 className="text-4xl md:text-6xl font-bricolage font-medium text-white mb-4 relative z-10 tracking-tight">{t('module.kivopay.name')}</h3>
                     <p className="text-white/70 text-lg font-light leading-relaxed mb-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 max-w-md">
-                      QR Code, NFC, Link e Terminal próprio. Qualquer CPF, sem conta bancária. Liquidação global instantânea.
+                      {t('ecosystem.kivo.desc')}
                     </p>
                   </div>
                 </div>
@@ -117,6 +120,7 @@ export default function Ecosystem() {
                   exit={{ opacity: 0, scale: 0.9, x: 20 }}
                   whileHover={{ y: -8 }}
                   className="group relative flex-1 rounded-[2rem] overflow-hidden bg-neutral-900 border border-white/10 shadow-xl cursor-pointer"
+                  onClick={() => window.location.href = '/modules/payouts'}
                 >
                   <div className="absolute inset-0 z-0">
                     <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80" className="w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-all grayscale group-hover:grayscale-0" alt="Payouts" />
@@ -125,10 +129,10 @@ export default function Ecosystem() {
                   <div className="absolute bottom-0 left-0 w-full p-8 z-20">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                      <span className="text-[10px] uppercase text-amber-400 tracking-widest font-mono">B2B & B2G</span>
+                      <span className="text-[10px] uppercase text-amber-400 tracking-widest font-mono">{t('ecosystem.b2b_b2g')}</span>
                     </div>
-                    <h3 className="text-3xl font-bricolage font-medium text-white mb-2">Stellar Payouts</h3>
-                    <p className="text-white/60 text-sm">ONGs, governo e empresas pagam em lote.</p>
+                    <h3 className="text-3xl font-bricolage font-medium text-white mb-2">{t('module.payouts.name')}</h3>
+                    <p className="text-white/60 text-sm">{t('ecosystem.payouts.desc')}</p>
                   </div>
                 </motion.div>
               )}
@@ -143,6 +147,7 @@ export default function Ecosystem() {
                   exit={{ opacity: 0, scale: 0.9, x: 20 }}
                   whileHover={{ y: -8 }}
                   className="group relative flex-1 rounded-[2rem] overflow-hidden bg-neutral-900 border border-white/10 shadow-xl cursor-pointer"
+                  onClick={() => window.location.href = '/modules/familybridge'}
                 >
                   <div className="absolute inset-0 z-0">
                     <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80" className="w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-all grayscale group-hover:grayscale-0" alt="FamilyBridge" />
@@ -151,10 +156,10 @@ export default function Ecosystem() {
                   <div className="absolute bottom-0 left-0 w-full p-8 z-20">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                      <span className="text-[10px] uppercase text-blue-400 tracking-widest font-mono">P2P Global</span>
+                      <span className="text-[10px] uppercase text-blue-400 tracking-widest font-mono">{t('ecosystem.p2p_global')}</span>
                     </div>
-                    <h3 className="text-3xl font-bricolage font-medium text-white mb-2">FamilyBridge</h3>
-                    <p className="text-white/60 text-sm">Remessas internacionais instantâneas.</p>
+                    <h3 className="text-3xl font-bricolage font-medium text-white mb-2">{t('module.familybridge.name')}</h3>
+                    <p className="text-white/60 text-sm">{t('ecosystem.familybridge.desc')}</p>
                   </div>
                 </motion.div>
               )}

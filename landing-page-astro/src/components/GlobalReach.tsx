@@ -1,24 +1,27 @@
 import { motion } from 'motion/react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function GlobalReach() {
+  const { t } = useTranslation();
+
   return (
     <section className="py-24 bg-neutral-900 text-white relative overflow-hidden border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="text-center mb-16 gs-fade-up">
           <h2 className="text-4xl md:text-5xl lg:text-7xl font-bricolage font-medium mb-6 leading-[0.9] tracking-tight">
-            Feito para o mundo.
-            <span className="block text-emerald-400"> nascido no Brasil.</span>
+            {t('reach.title.part1')}
+            <span className="block text-emerald-400">{t('reach.title.part2')}</span>
           </h2>
           <p className="text-white/50 text-xl font-light max-w-3xl mx-auto">
-            Uma infraestrutura que não escolhe país. Conectamos o Brasil ao mundo e o mundo ao Brasil.
+            {t('reach.desc')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { title: "180+", desc: "Países alcançáveis via Stellar" },
-            { title: "R$0.01", desc: "Custo por transação internacional" },
-            { title: "3-5s", desc: "Tempo médio de liquidação" }
+            { title: t('reach.stat1.title'), desc: t('reach.stat1.desc') },
+            { title: t('reach.stat2.title'), desc: t('reach.stat2.desc') },
+            { title: t('reach.stat3.title'), desc: t('reach.stat3.desc') }
           ].map((item, i) => (
             <motion.div 
               key={i}

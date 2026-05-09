@@ -1,52 +1,54 @@
 import { motion } from 'motion/react';
 import { useRef, useState } from 'react';
-
-const steps = [
-  {
-    id: 1,
-    title: "Entrada (Fiat)",
-    desc: "O usuário paga em BRL, USD ou EUR via métodos locais (Pix, SEP24) com total conformidade regulatória.",
-    icon: "solar:wallet-money-linear",
-    color: "blue",
-    bgClass: "bg-blue-500/20",
-    borderClass: "border-blue-500/50",
-    iconColor: "text-blue-400"
-  },
-  {
-    id: 2,
-    title: "Stellar + Soroban",
-    desc: "A mágica acontece: conversão on-chain via AMMs para USDC ou BRZ acompanhada de execução ágil de contratos inteligentes.",
-    icon: "solar:cpu-linear",
-    color: "emerald",
-    bgClass: "bg-emerald-500/20",
-    borderClass: "border-emerald-500/50",
-    iconColor: "text-emerald-400"
-  },
-  {
-    id: 3,
-    title: "Módulos (O Rails)",
-    desc: "A infraestrutura assume o controle com módulos independentes: Escrow seguro, Split de Pagamentos complexos e Emissão CVM orquestrada.",
-    icon: "solar:server-square-linear",
-    color: "purple",
-    bgClass: "bg-purple-500/20",
-    borderClass: "border-purple-500/50",
-    iconColor: "text-purple-400"
-  },
-  {
-    id: 4,
-    title: "Saída (Payout)",
-    desc: "Liquidação final e definitiva na conta bancária ou carteira digital do destinatário em qualquer lugar do mundo.",
-    icon: "solar:hand-money-linear",
-    color: "orange",
-    bgClass: "bg-orange-500/20",
-    borderClass: "border-orange-500/50",
-    iconColor: "text-orange-400"
-  }
-];
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function HowItWorks() {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeStep, setActiveStep] = useState(0);
+
+  const steps = [
+    {
+      id: 1,
+      title: t('howitworks.step1.title'),
+      desc: t('howitworks.step1.desc'),
+      icon: "solar:wallet-money-linear",
+      color: "blue",
+      bgClass: "bg-blue-500/20",
+      borderClass: "border-blue-500/50",
+      iconColor: "text-blue-400"
+    },
+    {
+      id: 2,
+      title: t('howitworks.step2.title'),
+      desc: t('howitworks.step2.desc'),
+      icon: "solar:cpu-linear",
+      color: "emerald",
+      bgClass: "bg-emerald-500/20",
+      borderClass: "border-emerald-500/50",
+      iconColor: "text-emerald-400"
+    },
+    {
+      id: 3,
+      title: t('howitworks.step3.title'),
+      desc: t('howitworks.step3.desc'),
+      icon: "solar:server-square-linear",
+      color: "purple",
+      bgClass: "bg-purple-500/20",
+      borderClass: "border-purple-500/50",
+      iconColor: "text-purple-400"
+    },
+    {
+      id: 4,
+      title: t('howitworks.step4.title'),
+      desc: t('howitworks.step4.desc'),
+      icon: "solar:hand-money-linear",
+      color: "orange",
+      bgClass: "bg-orange-500/20",
+      borderClass: "border-orange-500/50",
+      iconColor: "text-orange-400"
+    }
+  ];
 
   return (
     <section ref={containerRef} className="bg-neutral-950 text-white relative border-t border-white/5">
@@ -56,10 +58,10 @@ export default function HowItWorks() {
         
         <div className="text-center md:text-left mb-16 md:mb-32 gs-fade-up">
           <h2 className="text-4xl md:text-5xl lg:text-7xl font-bricolage font-medium mb-6 leading-[0.9] tracking-tight">
-            Como funciona a infraestrutura
+            {t('howitworks.title')}
           </h2>
           <p className="text-white/50 text-lg md:text-2xl max-w-2xl font-light leading-relaxed">
-            Uma ponte fluida entre moedas estatais e a utilidade da blockchain Stellar.
+            {t('howitworks.subtitle')}
           </p>
         </div>
 
@@ -89,7 +91,7 @@ export default function HowItWorks() {
                 <div className="flex items-center gap-4 mb-6">
                   <div className={`w-3 h-3 rounded-full ${step.iconColor} shadow-[0_0_15px_currentColor]`}></div>
                   <span className={`font-mono text-sm uppercase tracking-widest ${step.iconColor}`}>
-                    Passo 0{step.id}
+                    {t('product.step')} 0{step.id}
                   </span>
                 </div>
                 

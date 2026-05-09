@@ -1,0 +1,60 @@
+---
+layout: '../../layouts/DocLayout.astro'
+title: "ContractEase B2B"
+description: "Gestão antifraude de contratos corporativos com imutabilidade on-chain e segurança multi-tenant."
+---
+
+# 📄 ContractEase B2B
+
+O **ContractEase** é um módulo de gestão do ciclo de vida de contratos corporativos. Ele resolve a dor de organizações que precisam de **validade legal**, **rastreabilidade** e **proteção contra fraudes** em seus acordos comerciais.
+
+---
+
+## O Problema
+
+O ciclo de vida de contratos no mundo B2B é caótico:
+- Documentos enviados por e-mail sem garantia de integridade.
+- Assinaturas digitais sem ancoragem imutável (podem ser adulteradas).
+- Falta de auditoria: "quem assinou o quê e quando?" vira uma briga jurídica.
+- Organizações multi-sede não têm isolamento de dados entre filiais.
+
+## A Solução
+
+O ContractEase oferece:
+1. **Upload e Hashing:** O documento é subido ao sistema e um hash SHA-256 é gerado automaticamente.
+2. **Assinatura Segura:** Signatários recebem um link (Magic Link) para assinar. OTP 2FA é exigido para validar a identidade.
+3. **Ancoragem na Blockchain:** O hash do contrato assinado é registrado como uma transação na rede Stellar Testnet, criando um selo temporal imutável.
+4. **Multi-tenancy:** Cada organização (empresa) opera em um workspace isolado com RLS nativo no Supabase.
+
+## Fluxo Completo
+
+```
+1. Admin cria contrato e define signatários
+      ↓
+2. Signatários recebem Magic Link por e-mail
+      ↓
+3. Validação de identidade via OTP (código de 6 dígitos)
+      ↓
+4. Assinatura digital registrada no banco de dados
+      ↓
+5. Hash SHA-256 do documento gerado
+      ↓
+6. Hash ancorado na Stellar Testnet (Transaction Memo)
+      ↓
+7. Comprovante com Tx Hash disponível para auditoria
+```
+
+## Para Quem?
+
+- **Escritórios de advocacia** que gerenciam contratos para múltiplos clientes.
+- **PMEs** que precisam de compliance em acordos com fornecedores internacionais.
+- **Corporações** com operações multi-sede que exigem isolamento de dados entre unidades.
+
+## Decisões de Produto
+
+| Decisão | Justificativa |
+|---|---|
+| Supabase com RLS | Garantir isolamento completo entre organizações (multi-tenancy nativo) |
+| Magic Link + OTP 2FA | Balancear UX (sem senha) com segurança (segundo fator) |
+| Stellar Testnet para ancoragem | Imutabilidade sem custo operacional durante fase de validação |
+| Armazenamento de contratos via Supabase Storage | Eliminar dependência de S3 externo |

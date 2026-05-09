@@ -1,23 +1,25 @@
 import { motion } from 'motion/react';
 import { RailsLogo } from './ui/Logo';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function StatusQuo() {
+  const { t } = useTranslation();
   const comparisons = [
     {
-      bad: { title: "Dias para liquidar (D+2, D+30)", desc: "Fluxos travados, empresas financiando capital de giro caro." },
-      good: { title: "Liquidação em Segundos", desc: "Pagamento finalizado, irreversível e o capital chega na ponta imediatamente." }
+      bad: { title: t('status.bad1.title'), desc: t('status.bad1.desc') },
+      good: { title: t('status.good1.title'), desc: t('status.good1.desc') }
     },
     {
-      bad: { title: "Custos altíssimos em transações globais", desc: "SWIFT, câmbio spread, tarifas de correspondentes bancários." },
-      good: { title: "Frações de um centavo", desc: "Custos previsíveis e negligenciáveis, permitindo micropagamentos reais." }
+      bad: { title: t('status.bad2.title'), desc: t('status.bad2.desc') },
+      good: { title: t('status.good2.title'), desc: t('status.good2.desc') }
     },
     {
-      bad: { title: "Barreiras de entrada rígidas", desc: "Exige contas bancárias formais, CNPJ, histórico de crédito perfeito." },
-      good: { title: "Inclusivo (Não exige conta bancária)", desc: "Acesso democratizado via wallets non-custodial e anchors locais." }
+      bad: { title: t('status.bad3.title'), desc: t('status.bad3.desc') },
+      good: { title: t('status.good3.title'), desc: t('status.good3.desc') }
     },
     {
-      bad: { title: "Falta de interoperabilidade", desc: "Bancos isolados. Sistemas incompatíveis que exigem middlewares." },
-      good: { title: "Padrão Aberto (On-chain)", desc: "Auditoria garantida, infraestrutura imutável e conectividade entre dApps." }
+      bad: { title: t('status.bad4.title'), desc: t('status.bad4.desc') },
+      good: { title: t('status.good4.title'), desc: t('status.good4.desc') }
     }
   ];
 
@@ -31,10 +33,10 @@ export default function StatusQuo() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-5xl font-bricolage font-medium mb-6">
-            O problema dos trilhos antigos
+            {t('status.title')}
           </h2>
           <p className="text-white/50 text-lg max-w-2xl mx-auto font-light leading-relaxed">
-            Sistemas financeiros desenhados no século passado não atendem à velocidade, escala e acessibilidade exigidas pelo mundo atual.
+            {t('status.desc')}
           </p>
         </motion.div>
 
@@ -56,7 +58,7 @@ export default function StatusQuo() {
                 {/* @ts-ignore */}
                 <iconify-icon icon="solar:close-circle-bold" width="30"></iconify-icon>
               </div>
-              <h3 className="text-2xl font-bricolage text-white relative z-10">Sistema Tradicional</h3>
+              <h3 className="text-2xl font-bricolage text-white relative z-10">{t('status.traditional')}</h3>
             </div>
             <div className="p-8 bg-emerald-500/5 flex items-center gap-4 relative overflow-hidden group">
               <motion.div 
@@ -67,7 +69,7 @@ export default function StatusQuo() {
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-900/50 to-emerald-950/20 border border-emerald-500/20 flex items-center justify-center text-emerald-400 relative z-10 shrink-0 group-hover:scale-110 transition-transform">
                 <RailsLogo className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-bricolage text-emerald-400 relative z-10">Stellar Global Rails</h3>
+              <h3 className="text-2xl font-bricolage text-emerald-400 relative z-10">{t('status.rails')}</h3>
             </div>
           </div>
 
@@ -120,7 +122,7 @@ export default function StatusQuo() {
                 {/* @ts-ignore */}
                 <iconify-icon icon="solar:close-circle-bold" width="30"></iconify-icon>
               </div>
-              <h3 className="text-2xl font-bricolage text-white">Sistema Tradicional</h3>
+              <h3 className="text-2xl font-bricolage text-white">{t('status.traditional')}</h3>
             </div>
             <ul className="space-y-6 relative z-10">
               {comparisons.map((row, i) => (
@@ -146,7 +148,7 @@ export default function StatusQuo() {
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-900/50 to-emerald-950/20 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                 <RailsLogo className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-bricolage text-emerald-400">Stellar Global Rails</h3>
+              <h3 className="text-2xl font-bricolage text-emerald-400">{t('status.rails')}</h3>
             </div>
             <ul className="space-y-6 relative z-10">
               {comparisons.map((row, i) => (

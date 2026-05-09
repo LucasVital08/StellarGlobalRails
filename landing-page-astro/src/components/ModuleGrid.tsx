@@ -1,8 +1,10 @@
 import { modulesData } from '../data/content';
 import { motion, useScroll, useTransform, MotionValue } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 
 function ModuleCard({ mod, idx, total, scrollYProgress }: { key?: any, mod: any, idx: number, total: number, scrollYProgress: MotionValue<number> }) {
+  const { t } = useTranslation();
   const target = idx / Math.max(1, (total - 1));
   const distance = 0.35;
   const yStagger = idx % 2 !== 0 ? 80 : 0;
@@ -86,12 +88,18 @@ function ModuleCard({ mod, idx, total, scrollYProgress }: { key?: any, mod: any,
         </motion.div>
         
         <div className="relative z-10 mt-2 flex-grow">
-          <h4 className="text-2xl md:text-3xl text-white font-bricolage font-medium mb-4">{mod.name}</h4>
-          <p className="text-base md:text-lg text-white/50 leading-relaxed font-light">{mod.tagline}</p>
+          <h4 className="text-2xl md:text-3xl text-white font-bricolage font-medium mb-4">
+             {/* @ts-ignore */}
+             {t(`module.${mod.id}.name`) || mod.name}
+          </h4>
+          <p className="text-base md:text-lg text-white/50 leading-relaxed font-light">
+             {/* @ts-ignore */}
+             {t(`module.${mod.id}.tagline`) || mod.tagline}
+          </p>
         </div>
 
         <div className="mt-auto pt-6 border-t border-white/5 flex items-center text-emerald-500 text-sm md:text-base font-medium tracking-widest uppercase relative z-10 group-hover:text-emerald-400">
-          Explorar
+          {t('hero.cta').split(' ')[0]}
           <motion.svg 
             className="w-5 h-5 ml-3" 
             fill="none" 
@@ -109,6 +117,7 @@ function ModuleCard({ mod, idx, total, scrollYProgress }: { key?: any, mod: any,
 }
 
 export default function ModuleGrid() {
+  const { t } = useTranslation();
   const targetRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: targetRef });
   
@@ -135,10 +144,10 @@ export default function ModuleGrid() {
       <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden border-t border-white/5 py-24">
         <div className="w-full max-w-[90rem] mx-auto px-6 md:px-12 relative z-10 mb-8 md:mb-16 shrink-0 gs-fade-up">
           <h3 className="text-4xl md:text-5xl lg:text-7xl font-bricolage font-medium text-white mb-6 leading-[0.9] tracking-tight">
-            {isDev ? "Escolha o endpoint que resolve o seu problema." : "Escolha o fluxo que resolve o seu problema."}
+            {isDev ? t('modules.dev.title') : t('modules.title')}
           </h3>
           <p className="text-white/50 text-xl font-light max-w-3xl">
-            {isDev ? "Cada módulo é exposto via API REST, WebSockets e SDK. Faça requests isolados, todos liquidados atomicamente." : "Cada módulo é independente, mas todos compartilham o mesmo trilho. Deslize para explorar e conectar suas operações."}
+            {isDev ? t('modules.dev.subtitle') : t('modules.subtitle')}
           </p>
         </div>
 

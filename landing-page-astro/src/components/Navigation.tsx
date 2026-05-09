@@ -1,10 +1,12 @@
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { RailsLogo } from './ui/Logo';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function Navigation() {
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
+  const { t } = useTranslation();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -18,7 +20,6 @@ export default function Navigation() {
   const [profile, setProfile] = useState<'ceo' | 'dev'>('ceo');
 
   useEffect(() => {
-    // Sincroniza estado global do profile
     const currentProfile = localStorage.getItem('kivo_profile') || 'ceo';
     setProfile(currentProfile as 'ceo' | 'dev');
 
@@ -58,27 +59,26 @@ export default function Navigation() {
 
         <div className="hidden md:flex bg-neutral-900/80 border-white/10 border rounded-full pt-2 pb-2 px-6 shadow-xl backdrop-blur-xl items-center gap-8 text-sm font-medium text-white/60">
           <a href="/" className="hover:text-white transition-colors">
-            A Plataforma
+            {t('nav.platform')}
           </a>
           <a href="/#modules" className="hover:text-white transition-colors">
-            Módulos Ativos
+            {t('nav.modules')}
           </a>
           
           <div className="h-4 w-px bg-white/10 mx-2"></div>
           
-          {/* Profile Toggle Global */}
           <div className="flex bg-black/50 p-1 rounded-full border border-white/5">
             <button 
               onClick={() => toggleProfile('ceo')}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${profile === 'ceo' ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-white/50 hover:text-white'}`}
             >
-              Negócios
+              {t('profile.business')}
             </button>
             <button 
               onClick={() => toggleProfile('dev')}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${profile === 'dev' ? 'bg-white text-black shadow-lg shadow-white/20' : 'text-white/50 hover:text-white'}`}
             >
-              Dev
+              {t('profile.developer')}
             </button>
           </div>
         </div>
@@ -90,7 +90,7 @@ export default function Navigation() {
             onClick={() => window.open('https://kivo.com.br', '_blank')}
             className="hidden md:flex bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-emerald-400 hover:text-black transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] group items-center"
           >
-            Acesso
+            {t('nav.access')}
             {/* @ts-ignore */}
             <iconify-icon icon="solar:arrow-right-linear" width="16" class="ml-2 group-hover:translate-x-1 transition-transform"></iconify-icon>
           </motion.button>

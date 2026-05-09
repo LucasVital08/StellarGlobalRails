@@ -1,25 +1,30 @@
 import { motion } from 'motion/react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function BuiltForBuilders() {
+  const { t } = useTranslation();
+
   return (
     <section className="py-24 bg-neutral-950 text-white relative overflow-hidden border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="text-center mb-16 gs-fade-up">
-          <span className="text-emerald-500 font-mono text-sm uppercase tracking-widest mb-4 block">Para quem constrói</span>
+          <span className="text-emerald-500 font-mono text-sm uppercase tracking-widest mb-4 block">
+            {t('builders.badge')}
+          </span>
           <h2 className="text-4xl md:text-5xl lg:text-7xl font-bricolage font-medium mb-6 leading-[0.9] tracking-tight">
-            Feito por quem entende
-            <span className="block text-white/30">de verdade.</span>
+            {t('builders.title.part1')}
+            <span className="block text-white/30">{t('builders.title.part2')}</span>
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { title: "APIs para desenvolvedores", desc: "Integre em horas, não em semanas" },
-            { title: "Documentação completa", desc: "Tudo que você precisa para começar" },
-            { title: "Suporte técnico dedicado", desc: "Equipe que entende de Stellar" },
-            { title: "Sandbox para testes", desc: "Teste sem mexer com dinheiro real" },
-            { title: "Webhooks em tempo real", desc: "Receba notificações de cada transação" },
-            { title: "SLA garantido", desc: "99.9% de uptime na rede" }
+            { title: t('builders.card1.title'), desc: t('builders.card1.desc') },
+            { title: t('builders.card2.title'), desc: t('builders.card2.desc') },
+            { title: t('builders.card3.title'), desc: t('builders.card3.desc') },
+            { title: t('builders.card4.title'), desc: t('builders.card4.desc') },
+            { title: t('builders.card5.title'), desc: t('builders.card5.desc') },
+            { title: t('builders.card6.title'), desc: t('builders.card6.desc') }
           ].map((item, i) => (
             <motion.div 
               key={i}
