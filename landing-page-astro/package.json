@@ -16,6 +16,7 @@
     "@react-three/fiber": "^9.6.1",
     "@tailwindcss/typography": "^0.5.19",
     "@types/canvas-confetti": "^1.9.0",
+    "@types/three": "^0.184.1",
     "astro": "^5.2.5",
     "canvas-confetti": "^1.9.4",
     "cobe": "^2.0.1",

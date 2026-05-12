@@ -34,8 +34,16 @@
   .prose th {
     @apply px-4 py-3 text-[10px] uppercase tracking-widest text-emerald-400 font-bold;
   }
-  .prose td {
+  td {
     @apply px-4 py-3 border-b border-white/5 text-sm;
+  }
+
+  /* Premium Glass Components */
+  .glass-card {
+    @apply bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.5)];
+  }
+  .glass-card-hover {
+    @apply hover:bg-white/[0.04] hover:border-white/[0.15] transition-all duration-500;
   }
 }
 

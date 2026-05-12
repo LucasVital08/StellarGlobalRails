@@ -20,8 +20,9 @@ const { title } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     
     {/* Item 40: Dynamic Meta Images */}
+    <meta name="description" content="Infraestrutura global de pagamentos baseada na rede Stellar." />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content="Infraestrutura global de pagamentos" />
+    <meta property="og:description" content="Infraestrutura global de pagamentos baseada na rede Stellar." />
     <meta property="og:image" content="https://kivo.com/api/og?metrics=true" />
     <meta property="og:type" content="website" />
     
@@ -36,13 +37,14 @@ const { title } = Astro.props;
     <ViewTransitions />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    {/* Item 33: Font Subsetting (Removendo Cyrillic/Arabic e mantendo apenas Latin) */}
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap&subset=latin,latin-ext" rel="stylesheet" />
+    {/* 43. Fonte Bricolage Otimizada (Preload para evitar FOIT) */}
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600&display=swap&subset=latin,latin-ext" />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600&display=swap&subset=latin,latin-ext" rel="stylesheet" />
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
   </head>
   <body>
-    <div class="bg-neutral-950 min-h-screen font-sans">
+    <div class="bg-[#050505] min-h-screen font-sans selection:bg-emerald-500 selection:text-black">
       <div class="bg-grain"></div>
       
       {/* Item 34: Zero-JS Fallback UX */}
@@ -76,8 +78,35 @@ const { title } = Astro.props;
           localStorage.setItem('sgr-lang', lang);
         }
         
-        document.documentElement.lang = lang;
-        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        // Update title and description from UI dictionary
+        // We pass the essential metadata to the client
+        const meta = {
+          'pt-br': { title: 'Stellar Global Rails | Infraestrutura Financeira Global', desc: 'Construindo o futuro das finanças globais sobre a rede Stellar.' },
+          'en': { title: 'Stellar Global Rails | Global Financial Infrastructure', desc: 'Building the future of global finance on the Stellar network.' },
+          'es': { title: 'Stellar Global Rails | Infraestructura Financiera Global', desc: 'Construyendo el futuro de las finanzas globales sobre la red Stellar.' },
+          'zh': { title: 'Stellar Global Rails | 全球金融基础设施', desc: '在 Stellar 网络上构建全球金融的未来。' },
+          'ko': { title: 'Stellar Global Rails | 글로벌 금융 인프라', desc: 'Stellar 네트워크를 기반으로 글로벌 금융의 미래를 구축합니다.' },
+          'ar': { title: 'Stellar Global Rails | البنية التحتية المالية العالمية', desc: 'بناء مستقبل التمويل العالمي على شبكة Stellar.' }
+        };
+
+        const updateMetadata = (l) => {
+          const m = meta[l] || meta['en'];
+          document.title = m.title;
+          const metaDesc = document.querySelector('meta[name="description"]');
+          if (metaDesc) metaDesc.setAttribute('content', m.desc);
+          const ogDesc = document.querySelector('meta[property="og:description"]');
+          if (ogDesc) ogDesc.setAttribute('content', m.desc);
+          
+          // Update HTML lang and dir
+          document.documentElement.lang = l;
+          document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+        };
+
+        updateMetadata(lang);
+
+        window.addEventListener('sgr-lang-changed', (e) => {
+          updateMetadata(e.detail);
+        });
       })();
 
       if ('serviceWorker' in navigator) {

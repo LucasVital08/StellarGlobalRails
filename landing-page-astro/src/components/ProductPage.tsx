@@ -1,122 +1,29 @@
-import { modulesData } from '../data/content';
-import { useEffect, useState, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence, MotionValue } from 'motion/react';
+import { productsData } from '../data/content';
+import { motion, useScroll, useSpring, useTransform, AnimatePresence, useReducedMotion } from 'motion/react';
+import { useState, useEffect } from 'react';
+import MagneticButton from './ui/MagneticButton';
 import { useTranslation } from '../hooks/useTranslation';
-import KivoShowcase from './kivo/KivoShowcase';
-import KivoSimulator from './kivo/KivoSimulator';
-import KivoSplit from './kivo/KivoSplit';
-import KivoOffRamp from './kivo/KivoOffRamp';
-import KivoSandbox from './kivo/KivoSandbox';
-import KivoEcosystem from './kivo/KivoEcosystem';
-import KivoInvoiceSimulator from './kivo/KivoInvoiceSimulator';
-import KivoPayoutsSimulator from './kivo/KivoPayoutsSimulator';
-import KivoSafeCheckoutSimulator from './kivo/KivoSafeCheckoutSimulator';
-import KivoVakinhaSimulator from './kivo/KivoVakinhaSimulator';
-import KivoFamilyBridgeSimulator from './kivo/KivoFamilyBridgeSimulator';
-import KivoQuiloVoltSimulator from './kivo/KivoQuiloVoltSimulator';
-import KivoContractEaseSimulator from './kivo/KivoContractEaseSimulator';
-import KivoOnyxSimulator from './kivo/KivoOnyxSimulator';
-import KivoKonamiCode from './kivo/KivoKonamiCode';
-import KivoTerminalCLI from './kivo/KivoTerminalCLI';
-import KivoVoiceCommand from './kivo/KivoVoiceCommand';
-import KivoExitIntent from './kivo/KivoExitIntent';
-import KivoCommandPalette from './kivo/KivoCommandPalette';
-import KivoSaude360Simulator from './kivo/KivoSaude360Simulator';
-import KivoSocialPaySimulator from './kivo/KivoSocialPaySimulator';
+import SpotlightCard from './ui/SpotlightCard';
+import CoreSimulator from './simulators/CoreSimulator';
+import FeatureVisualizer from './simulators/FeatureVisualizer';
 
 interface Props {
   slug?: string;
 }
 
-function StepCard({ step, idx, total, scrollYProgress }: { step: string, idx: number, total: number, scrollYProgress: MotionValue<number> }) {
-  const { t } = useTranslation();
-  const target = idx / Math.max(1, (total - 1));
-  const distance = 0.35;
-  const yStagger = idx % 2 !== 0 ? 80 : 0;
+export default function ProductPage({ slug }: Props) {
+  const { t, lang } = useTranslation();
+  const productData = productsData.find((p) => p.id === slug || p.path.split('/').pop() === slug);
+  const { scrollYProgress } = useScroll();
+  const scaleY = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const scale = useTransform(scrollYProgress, (v) => {
-    const dist = Math.abs(v - target);
-    if (dist >= distance) return 0.85;
-    return 0.85 + (1.05 - 0.85) * (1 - dist / distance);
-  });
+  // 52. Popups/Modais Cinéticos Avançados
+  type ModalData = { id: string; title: string; description: string; icon: string; type: 'feature' | 'agent' };
+  const [activeModal, setActiveModal] = useState<ModalData | null>(null);
   
-  const opacity = useTransform(scrollYProgress, (v) => {
-    const dist = Math.abs(v - target);
-    if (dist >= distance) return 0.3;
-    return 0.3 + (1 - 0.3) * (1 - dist / distance);
-  });
-  
-  const y = useTransform(scrollYProgress, (v) => {
-    const dist = Math.abs(v - target);
-    if (dist >= distance) return yStagger + 40;
-    return yStagger + 40 + ((yStagger - 15) - (yStagger + 40)) * (1 - dist / distance);
-  });
-  
-  const glowOpacity = useTransform(scrollYProgress, (v) => {
-    const dist = Math.abs(v - target);
-    if (dist >= distance) return 0;
-    return 0 + (0.15 - 0) * (1 - dist / distance);
-  });
-  
-  const iconBg = useTransform(scrollYProgress, (v) => {
-    const dist = Math.abs(v - target);
-    if (dist >= distance) return "rgba(255,255,255,0.05)";
-    const mix = 1 - dist / distance;
-    return `rgba(${Math.round(255 - mix*239)}, ${Math.round(255 - mix*70)}, ${Math.round(255 - mix*126)}, ${0.05 + mix*0.10})`;
-  });
-
-  const borderOpacity = useTransform(scrollYProgress, (v) => {
-    const dist = Math.abs(v - target);
-    if (dist >= distance) return "rgba(255,255,255,0.05)";
-    const mix = 1 - dist / distance;
-    return `rgba(${255 - mix*(255-16)}, ${255 - mix*(255-185)}, ${255 - mix*(255-129)}, ${0.05 + mix*0.45})`;
-  });
-
-  const iconColor = useTransform(scrollYProgress, (v) => {
-    const dist = Math.abs(v - target);
-    if (dist >= distance) return "rgba(255,255,255,1)";
-    const mix = 1 - dist / distance;
-    return `rgba(${255 - mix*(255-16)}, ${255 - mix*(255-185)}, ${255 - mix*(255-129)}, 1)`;
-  });
-  
-  return (
-    <motion.div 
-      className="w-[340px] md:w-[480px] h-[400px] shrink-0"
-      style={{ scale, opacity, y }}
-    >
-      <div 
-        className="group relative rounded-3xl bg-neutral-900/50 p-8 md:p-10 flex flex-col gap-6 transition-colors duration-500 h-full overflow-hidden block shadow-2xl"
-      >
-        <motion.div 
-          className="absolute inset-0 rounded-3xl border pointer-events-none transition-colors duration-300"
-          style={{ borderColor: borderOpacity }}
-        ></motion.div>
-        
-        <motion.div 
-          className="absolute top-0 right-0 w-72 h-72 bg-emerald-500 blur-[90px] rounded-full pointer-events-none transition-opacity duration-300"
-          style={{ opacity: glowOpacity }}
-        ></motion.div>
-        
-        <motion.div 
-          className="w-16 h-16 rounded-2xl border border-white/10 flex items-center justify-center relative z-10 shadow-lg font-bricolage font-bold text-2xl"
-          style={{ backgroundColor: iconBg, color: iconColor }}
-        >
-          {idx + 1}
-        </motion.div>
-        
-        <div className="relative z-10 mt-2 flex-grow">
-          <h4 className="text-xl md:text-2xl text-white font-bricolage font-medium mb-4">
-            {t('product.step')} {idx + 1}
-          </h4>
-          <p className="text-base md:text-lg text-white/50 leading-relaxed font-light">{step}</p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-export default function ProductPage({ slug = '' }: Props) {
-  const { t } = useTranslation();
+  // 31. Profile State (Dual Experience)
   const [profile, setProfile] = useState<'ceo' | 'dev'>('ceo');
 
   useEffect(() => {
@@ -130,323 +37,624 @@ export default function ProductPage({ slug = '' }: Props) {
     window.addEventListener('kivo_profile_change', handleProfileChange as EventListener);
     return () => window.removeEventListener('kivo_profile_change', handleProfileChange as EventListener);
   }, []);
-
-  const targetRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: targetRef });
-  const xTransform = useTransform(scrollYProgress, [0, 1], ["0%", "-80%"]);
   
-  const { scrollYProgress: docScroll } = useScroll();
-  const backgroundY = useTransform(docScroll, [0, 1], ["0%", "30%"]);
+  // 33. Botão Copy-to-Clipboard Mágico
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`curl -X POST https://api.kivo.com.br/v1/${slug}/init \\
+  -H "Authorization: Bearer sk_test_123" \\
+  -d '{"amount": 5000, "currency": "BRL"}'`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // 25. Mouse Trail State
+  const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
   
-  const cleanPath = slug?.replace(/\/$/, '') || '';
-  const currentPath = '/' + cleanPath;
-  const moduleData = modulesData.find(mod => mod.path === currentPath);
-
-  const isDev = profile === 'dev';
-  const isKivoCore = moduleData?.id === 'kivopay' || moduleData?.id === 'escrow' || moduleData?.id === 'payouts' || moduleData?.id === 'invoice';
-  
-  const heroTitle = isDev && moduleData 
-    ? (isKivoCore 
-        ? `${t('product.dev.hero_title_kivo')} ${moduleData.name}`
-        : `${t('product.dev.hero_title_other')} ${moduleData.name}`)
-    : t(`module.${moduleData?.id}.hero_title`) || moduleData?.hero.title || '';
-
-  const heroSubtitle = isDev 
-    ? (isKivoCore ? t('product.dev.hero_subtitle_kivo') : (t(`module.${moduleData?.id}.tech_desc`) || moduleData?.techDetails?.description || moduleData?.hero.subtitle)) 
-    : t(`module.${moduleData?.id}.hero_subtitle`) || moduleData?.hero.subtitle;
-    
-  const problemTitle = isDev ? t('product.dev.problem_title') : t(`module.${moduleData?.id}.problem_title`) || moduleData?.problem.title;
-  const solutionTitle = isDev ? t('product.dev.solution_title') : t(`module.${moduleData?.id}.solution_title`) || moduleData?.solution.title;
-  const solutionDesc = isDev 
-    ? (isKivoCore ? t('product.dev.solution_desc_kivo') : (moduleData?.techDetails?.points.join(' • ') || moduleData?.solution.description)) 
-    : t(`module.${moduleData?.id}.solution_desc`) || moduleData?.solution.description;
-
-  const steps = moduleData?.steps.map((s, i) => t(`module.${moduleData.id}.step_${i}`) || s) || [];
-  const problemItems = moduleData?.problem.items.map((item, i) => t(`module.${moduleData.id}.problem_item_${i}`) || item) || [];
-  const forWhomItems = moduleData?.forWhom?.map((item, i) => t(`module.${moduleData.id}.for_whom_${i}`) || item) || [];
-  const benefitsItems = moduleData?.benefits?.map((ben, i) => ({
-    ...ben,
-    title: t(`module.${moduleData.id}.benefit_${i}_title`) || ben.title,
-    description: t(`module.${moduleData.id}.benefit_${i}_desc`) || ben.description
-  })) || [];
-  const techPoints = moduleData?.techDetails?.points.map((p, i) => t(`module.${moduleData.id}.tech_point_${i}`) || p) || [];
-  const faqItems = moduleData?.faq?.map((f, i) => ({
-    question: t(`module.${moduleData.id}.faq_${i}_q`) || f.question,
-    answer: t(`module.${moduleData.id}.faq_${i}_a`) || f.answer
-  })) || [];
-
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [currentPath]);
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+  
+  // 47. Esqueletos de Carregamento (Skeletons)
+  const [isSimulatingLoad, setIsSimulatingLoad] = useState(true);
+  useEffect(() => {
+    setIsSimulatingLoad(true);
+    const timer = setTimeout(() => setIsSimulatingLoad(false), 600);
+    return () => clearTimeout(timer);
+  }, [slug]);
 
-  if (!moduleData) {
+  // 49. Atalhos de Teclado (KBD Bindings)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (profile === 'dev' && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'c') {
+        const selection = window.getSelection();
+        if (!selection || selection.toString().length === 0) {
+          e.preventDefault();
+          handleCopy();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [profile, slug]);
+
+  // 45. Redução de Movimento (Prefers-Reduced-Motion)
+  const shouldReduceMotion = useReducedMotion();
+  
+  // 27. Hero Parallax (disabled if reduced motion)
+  const yHeroText = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : 300]);
+  const yHeroBox = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : 100]);
+
+  if (!productData) {
     return (
-      <div className="pt-32 pb-32 text-center">
-        <h1 className="text-4xl text-white mb-4">{t('product.not_found')}</h1>
-        <a href="/" className="text-emerald-400 hover:underline">{t('product.back_to_home')}</a>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-white text-3xl mb-4">{t('product.not_found')}</h1>
+          <a href="/" className="text-emerald-500 hover:underline">{t('product.back_to_home')}</a>
+        </div>
       </div>
     );
   }
 
+  const { color, icon, name, tagline, solution, features, aiAgents, forWhom, techDetails, faq } = productData;
+
+  // Variável para shadow multi-camada no botão
+  const premiumButtonShadow = `0 4px 14px 0 rgba(0,0,0,0.39), inset 0 1px 0 0 rgba(255,255,255,0.2), 0 0 20px 0 ${color}40`;
+
   return (
-    <div className="pt-24 pb-24 relative z-0">
-      <KivoCommandPalette />
-      <KivoKonamiCode />
-      <KivoVoiceCommand />
-      <KivoExitIntent />
-      
-      <div className="fixed inset-0 z-[-2] bg-neutral-950 overflow-hidden pointer-events-none">
-        <motion.div 
-          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-emerald-600/20 blur-[140px] rounded-full mix-blend-screen"
-        ></motion.div>
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute -bottom-[20%] -right-[10%] w-[70%] h-[70%] bg-emerald-900/30 blur-[150px] rounded-full mix-blend-screen"
-        ></motion.div>
-      </div>
-      
+    <div className="min-h-screen bg-black overflow-hidden pb-32 relative">
+      {/* 25. Mouse Trail (Rastro de Luz) */}
+      <div 
+        className={`fixed w-32 h-32 rounded-full pointer-events-none z-50 mix-blend-screen transition-transform duration-75 ease-linear ${shouldReduceMotion ? 'hidden' : ''}`}
+        style={{ 
+          transform: `translate(${mousePos.x - 64}px, ${mousePos.y - 64}px)`,
+          background: `radial-gradient(circle, ${color}30 0%, transparent 70%)`,
+          filter: 'blur(10px)'
+        }}
+      />
+
+      {/* 15. Holographic Noise Pattern Global */}
+      <div className="fixed inset-0 bg-noise opacity-[0.03] mix-blend-overlay pointer-events-none z-40"></div>
+
+      {/* 3. Scroll Spy Progress Bar */}
       <motion.div 
-        style={{ y: backgroundY }}
-        className="fixed inset-0 z-[-1] pointer-events-none"
-      >
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
-      </motion.div>
-      
-      <section className="px-6 max-w-5xl mx-auto mb-20 gs-fade-up">
-        <a href="/#modules" className="inline-flex items-center text-sm text-white/40 hover:text-white mb-8 transition-colors">
-          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          {t('product.back_to_modules')}
-        </a>
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-            {/* @ts-ignore */}
-            <iconify-icon icon={moduleData.icon} width="24"></iconify-icon>
-          </div>
-          <span className="text-emerald-500 font-mono text-sm uppercase tracking-widest">{t(`module.${moduleData.id}.name`) || moduleData.name}</span>
-        </div>
-        <h1 className="text-fluid-h1 font-bricolage font-medium text-white mb-6 leading-tight">
-          {heroTitle}
-        </h1>
-        <p className="text-xl text-white/50 mb-10 max-w-3xl leading-relaxed font-light">
-          {heroSubtitle}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button className="px-8 py-4 bg-white text-black rounded-full font-medium hover:bg-neutral-200 transition-colors">
-            {t(`module.${moduleData.id}.cta_0`) || moduleData.hero.ctas[0]}
-          </button>
-          <button className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full font-medium hover:bg-white/10 transition-colors">
-            {t(`module.${moduleData.id}.cta_1`) || moduleData.hero.ctas[1]}
-          </button>
-        </div>
-      </section>
+        className="fixed left-0 top-0 bottom-0 w-1 origin-top z-50 hidden xl:block" 
+        style={{ scaleY, backgroundColor: color }} 
+      />
 
-      <section className="px-6 max-w-5xl mx-auto mb-20 gs-fade-up">
-        <div className="bg-red-500/5 border border-red-500/10 rounded-3xl p-8 md:p-12 transition-all duration-500">
-          <h3 className="text-2xl md:text-3xl font-bricolage font-medium text-white mb-8">
-            {problemTitle || ''}
-          </h3>
-          <ul className="space-y-4">
-            {problemItems.map((item, idx) => (
-              <li key={idx} className="flex items-start text-white/70">
-                <span className="text-red-500 mr-4 font-bold text-lg mt-0.5">×</span>
-                <span className="text-lg leading-relaxed">{isDev ? `Error 504 (Timeout): ${item}` : item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {/* Background Glows */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[60vh] blur-[150px] opacity-20 pointer-events-none" style={{ backgroundColor: color }}></div>
 
-      <section className="px-6 max-w-5xl mx-auto mb-20 gs-fade-up">
-        <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-3xl p-8 md:p-12 relative overflow-hidden transition-all duration-500">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] rounded-full"></div>
-          <div className="relative z-10">
-            <div className="inline-flex items-center text-emerald-500 text-sm font-bold tracking-widest uppercase mb-4">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
-              {isDev ? t('product.dev.solution_tech') : t('product.how_it_works')}
-            </div>
-            <h3 className="text-3xl md:text-4xl font-bricolage font-medium text-white mb-6">
-              {solutionTitle || ''}
-            </h3>
-            <p className="text-lg text-white/70 leading-relaxed max-w-3xl mb-8">
-              {solutionDesc}
-            </p>
+      {/* 2. Breadcrumbs Translúcidos */}
+      <div className="fixed top-24 left-6 z-40 hidden md:flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-white/10 text-xs font-medium text-white/40 tracking-wider">
+        <a href="/" className="hover:text-white transition-colors">HOME</a>
+        <span className="opacity-50">/</span>
+        <a href="/#products" className="hover:text-white transition-colors">PRODUTOS</a>
+        <span className="opacity-50">/</span>
+        <span className="text-white" style={{ color }}>{name.toUpperCase()}</span>
+      </div>
 
-            <AnimatePresence>
-              {isDev && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-black/50 border border-emerald-500/20 rounded-xl p-6 font-mono text-sm text-emerald-400 overflow-hidden"
+      {/* Nav spacing & Hero */}
+      <div className="relative pt-32 pb-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Back button for mobile */}
+          <a href="/#products" className="md:hidden inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors mb-8">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            <span className="text-sm">{t('product.back_to_products')}</span>
+          </a>
+
+          {/* Hero */}
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-24 items-center">
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={{ y: yHeroText }}>
+              {/* 9. Social Metrics / Proof & 19. Badge LIVE */}
+              <div className="flex items-center gap-4 mb-8">
+                {/* 48. Layout Lógico RTL: mr-2 -> me-2 */}
+                <div className="flex items-center gap-2 px-2 py-1 rounded-full border border-white/10 bg-white/5 me-2">
+                  <div className={`w-2 h-2 rounded-full ${shouldReduceMotion ? '' : 'animate-pulse'}`} style={{ backgroundColor: color }}></div>
+                  <span className="text-[10px] font-bold tracking-widest text-white/80">LIVE</span>
+                </div>
+                
+                <div className="flex -space-x-3">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-neutral-800 flex items-center justify-center overflow-hidden">
+                      {/* 42. Dynamic Imports de Media (loading=lazy) */}
+                      <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" loading="lazy" className="w-full h-full object-cover opacity-80 grayscale hover:grayscale-0 transition-all duration-300" />
+                    </div>
+                  ))}
+                </div>
+                <div className="text-xs text-white/40 uppercase tracking-widest font-mono">
+                  Trusted by <span className="text-white font-bold">10k+</span> ops
+                </div>
+              </div>
+
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5 mb-6" style={{ boxShadow: `inset 0 1px 0 0 rgba(255,255,255,0.1), 0 0 20px ${color}10` }}>
+                {/* @ts-ignore */}
+                <iconify-icon icon={icon} width="20" style={{ color }}></iconify-icon>
+                <span className="text-sm font-medium text-white/90">{name}</span>
+                {/* 36. Indicadores de Status da API */}
+                <AnimatePresence>
+                  {profile === 'dev' && (
+                    <motion.div initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 0 }} exit={{ opacity: 0, width: 0 }} className="flex items-center gap-2 border-l border-white/20 ps-3 ms-1 overflow-hidden whitespace-nowrap">
+                      <div className={`w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] ${shouldReduceMotion ? '' : 'animate-pulse'}`}></div>
+                      <span className="text-xs font-mono text-emerald-400">API: 99.99%</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* 31. Transição de Layout Fluida */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={profile}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
                 >
-                  <pre><code>
-{`// Example integration ${moduleData.id}
-import { KivoClient } from '@kivopay/sdk';
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-bricolage font-semibold text-white leading-tight mb-6 tracking-tighter">
+                    {profile === 'dev' && slug === 'kivopay' ? "Infraestrutura financeira unificada via API." : tagline}
+                  </h1>
+                  {/* 46. Contraste WCAG AAA (text-white/50 -> text-white/70) */}
+                  <p className="text-xl text-white/70 leading-[1.8] max-w-xl font-light mb-8">
+                    {profile === 'dev' 
+                      ? "Integre pagamentos, liquidação e contas escrow em minutos com nossa API RESTful. Sandboxes dedicados e webhooks em tempo real." 
+                      : solution.description}
+                  </p>
 
-const kivo = new KivoClient(process.env.KIVO_API_KEY);
-
-const response = await kivo.${moduleData.id}.create({
-  amount: "500.00",
-  asset: "USDC",
-  destination: "G..."
-});
-
-console.log(response.status); // "SUCCESS" - 3s latency`}
-                  </code></pre>
+                  {/* 40. Botões Adaptativos */}
+                  <div className="flex items-center gap-4">
+                    {profile === 'dev' ? (
+                      <MagneticButton className="px-6 py-3 rounded-full border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)] font-medium transition-all flex items-center gap-2">
+                        {/* @ts-ignore */}
+                        <iconify-icon icon="solar:document-text-linear" width="20"></iconify-icon>
+                        Documentação da API
+                      </MagneticButton>
+                    ) : (
+                      <MagneticButton className="px-6 py-3 rounded-full bg-white text-black font-medium hover:bg-white/90 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                        Falar com Vendas
+                      </MagneticButton>
+                    )}
+                  </div>
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </section>
+              </AnimatePresence>
+            </motion.div>
 
-      <section ref={targetRef} className="relative h-[300vh]">
-        <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden py-16">
-          <h3 className="text-fluid-h3 font-bricolage font-medium text-white mb-16 text-center px-6">
-            {t('product.how_it_works')}
-          </h3>
-          <div className="w-full overflow-hidden border-t border-white/5 pt-16 mt-8">
-            <motion.div style={{ x: xTransform }} className="flex gap-16 md:gap-24 px-6 md:px-[20vw] w-max items-center h-[550px]">
-              {steps.map((step, idx) => (
-                <StepCard
-                  key={idx}
-                  step={step}
-                  idx={idx}
-                  total={steps.length}
-                  scrollYProgress={scrollYProgress}
-                />
-              ))}
+            {/* Visual Abstract Box vs Terminal Mockup - Parallax Slower */}
+            <motion.div 
+              style={{ y: yHeroBox }}
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              transition={{ duration: 0.8, delay: 0.2 }} 
+              className="relative aspect-square md:aspect-auto md:h-[500px] rounded-[2.5rem] bg-gradient-to-br from-white/5 to-white/[0.01] border border-white/10 overflow-hidden flex items-center justify-center group"
+            >
+              <div className="absolute inset-0 bg-noise opacity-20 mix-blend-overlay z-0"></div>
+              
+              <AnimatePresence mode="wait">
+                {profile === 'dev' ? (
+                  <motion.div
+                    key="terminal"
+                    initial={{ opacity: 0, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, filter: "blur(10px)" }}
+                    transition={{ duration: 0.5 }}
+                    className="absolute inset-4 rounded-2xl bg-[#0a0a0a] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden z-10 flex flex-col"
+                  >
+                    {/* MacOS Top Bar */}
+                    <div className="h-10 bg-[#111] border-b border-white/5 flex items-center px-4 justify-between">
+                      <div className="flex gap-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                      </div>
+                      <div className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
+                        {slug}-init.sh
+                      </div>
+                      <button 
+                        onClick={handleCopy}
+                        className="text-white/40 hover:text-white transition-colors relative"
+                        title="Copy to clipboard"
+                      >
+                        <AnimatePresence mode="wait">
+                          {copied ? (
+                            <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="text-emerald-400">
+                              {/* @ts-ignore */}
+                              <iconify-icon icon="solar:check-circle-linear" width="16"></iconify-icon>
+                            </motion.div>
+                          ) : (
+                            <motion.div key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                              {/* @ts-ignore */}
+                              <iconify-icon icon="solar:copy-linear" width="16"></iconify-icon>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        {/* 33. Magic Copy Glow */}
+                        {copied && <div className="absolute inset-0 bg-emerald-400 blur-md animate-ping opacity-50"></div>}
+                      </button>
+                    </div>
+                    {/* 34. Syntax Highlighting Profundo */}
+                    <div className="p-6 font-mono text-sm leading-loose overflow-x-auto text-left relative flex-1">
+                      <div className="text-white/30 absolute start-4 select-none flex flex-col items-end w-4">
+                        <span>1</span><span>2</span><span>3</span><span>4</span>
+                      </div>
+                      <div className="ps-6">
+                        <div><span className="text-pink-500">curl</span> <span className="text-white/60">-X POST</span> <span className="text-emerald-300">https://api.kivo.com.br/v1/{slug}/init</span> \</div>
+                        <div><span className="text-white/60">-H</span> <span className="text-yellow-200">"Authorization: Bearer sk_test_123"</span> \</div>
+                        <div><span className="text-white/60">-d</span> <span className="text-yellow-200">'{'{'}"amount": 5000, "currency": "BRL"{'}'}'</span></div>
+                      </div>
+                      <div className="mt-8 border-t border-white/5 pt-4">
+                        <div className="text-white/30 text-xs mb-2">// Response 200 OK</div>
+                        <div className="text-emerald-400/80">
+                          {'{'}<br/>
+                          &nbsp;&nbsp;"status": "success",<br/>
+                          &nbsp;&nbsp;"id": "txn_89xLp2"<br/>
+                          {'}'}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="visual"
+                    initial={{ opacity: 0, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, filter: "blur(10px)" }}
+                    transition={{ duration: 0.5 }}
+                    className="absolute inset-0 flex items-center justify-center z-10"
+                  >
+                    {/* 7. Life Cycle Visual Hint */}
+                    <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-1000 pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at center, ${color} 1px, transparent 1px)`, backgroundSize: '24px 24px' }}></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#000_70%)] pointer-events-none"></div>
+
+                    <div className={`w-64 h-64 rounded-full blur-[80px] opacity-30 pointer-events-none ${shouldReduceMotion ? '' : 'animate-pulse'}`} style={{ backgroundColor: color }}></div>
+                    <div className={`relative z-10 w-32 h-32 rounded-3xl border border-white/20 bg-black/60 backdrop-blur-2xl flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-transform duration-700 pointer-events-none ${shouldReduceMotion ? '' : 'group-hover:scale-110 group-hover:rotate-3'}`}>
+                      {/* @ts-ignore */}
+                      <iconify-icon icon={icon} width="64" style={{ color }}></iconify-icon>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </div>
         </div>
-      </section>
 
-      {forWhomItems.length > 0 && (
-        <section className="px-6 max-w-5xl mx-auto mb-20 gs-fade-up">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bricolage text-white">{t('product.for_whom')}</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {forWhomItems.map((item, idx) => (
-              <div key={idx} className="bg-white/5 border border-white/10 p-6 rounded-2xl flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white flex-shrink-0">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <p className="text-white/80">{item}</p>
+        {/* 4. Hero Bottom Fade */}
+        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black to-transparent pointer-events-none"></div>
+      </div>
+
+      {/* Main Interactive Core Simulator Component */}
+      <div className="w-full px-6 pb-24 relative z-10">
+         <CoreSimulator slug={slug} color={color} />
+      </div>
+
+      {/* 5. SVG Geometric Divider */}
+      <div className="w-full flex justify-center opacity-20 mb-8">
+        <svg width="100%" height="2" viewBox="0 0 100 2" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="transparent" />
+              <stop offset="50%" stopColor={color} />
+              <stop offset="100%" stopColor="transparent" />
+            </linearGradient>
+          </defs>
+          <rect width="100%" height="2" fill="url(#line-gradient)" />
+        </svg>
+      </div>
+
+      {/* Integrated Features */}
+      {features && features.length > 0 && (
+        <div className="py-24 relative">
+          <div className="max-w-6xl mx-auto px-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16 flex items-end justify-between">
+              <div>
+                {/* 18. Dynamic Text Gradients */}
+                <h2 className="text-3xl font-bricolage mb-4 tracking-tight" style={{ 
+                  backgroundImage: `linear-gradient(to right, #ffffff, ${color}, #ffffff)`,
+                  WebkitBackgroundClip: 'text',
+                  color: 'transparent',
+                  backgroundSize: '200% auto',
+                  animation: 'shimmer 8s linear infinite'
+                }}>
+                  {t('product.integrated_features')}
+                </h2>
+                <p className="text-white/40">{t('product.capabilities_title')}</p>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {benefitsItems.length > 0 && (
-        <section className="px-6 max-w-5xl mx-auto mb-20 gs-fade-up">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bricolage text-white">{t('product.benefits')}</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {benefitsItems.map((ben, idx) => (
-              <div key={idx} className="bg-neutral-900/50 border border-white/10 p-8 rounded-3xl hover:bg-white/5 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-6">
-                  {/* @ts-ignore */}
-                  <iconify-icon icon={ben.icon} width="24"></iconify-icon>
+              
+              {/* 8. Esvaziamento do Carga Cognitiva & 24. MagneticButton Expandido */}
+              {features.length > 3 && (
+                <div className="hidden md:block">
+                  <MagneticButton 
+                    onClick={() => setShowAllFeatures(!showAllFeatures)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:border-white/30 text-white/60 hover:text-white transition-all text-sm font-medium"
+                  >
+                    {showAllFeatures ? 'Mostrar Menos' : 'Ver Todas'}
+                    {/* @ts-ignore */}
+                    <iconify-icon icon={showAllFeatures ? "solar:alt-arrow-up-linear" : "solar:alt-arrow-down-linear"} width="16"></iconify-icon>
+                  </MagneticButton>
                 </div>
-                <h4 className="text-xl font-medium text-white mb-4">{ben.title}</h4>
-                <p className="text-white/60 leading-relaxed">{ben.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+              )}
+            </motion.div>
 
-      {moduleData.techDetails && (
-        <section className="px-6 max-w-5xl mx-auto mb-20 gs-fade-up">
-          <div className="bg-black/50 border border-emerald-500/20 p-8 md:p-12 rounded-3xl relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-1/2 h-full bg-emerald-500/5 blur-[100px] pointer-events-none"></div>
-             <div className="relative z-10 flex flex-col md:flex-row gap-12">
-                <div className="md:w-1/3">
-                  <h3 className="text-2xl font-bricolage text-emerald-400 mb-4">{t('product.under_the_hood')}</h3>
-                  <p className="text-white/70">{t(`module.${moduleData.id}.tech_desc`) || moduleData.techDetails.description}</p>
-                </div>
-                <div className="md:w-2/3">
-                  <ul className="space-y-4">
-                    {techPoints.map((point, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <div className="mt-1 w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(showAllFeatures ? features : features.slice(0, 6)).map((feat, i) => (
+                <motion.div key={feat.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="h-full">
+                  {/* 12. Inner Glow Borders */}
+                  {isSimulatingLoad ? (
+                    <SpotlightCard className="p-8 h-full bg-[#050505] border-white/5 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-white/5 animate-pulse" style={{ backgroundColor: color + '10' }}></div>
+                      <div className="w-12 h-12 rounded-xl bg-white/10 animate-pulse mb-6"></div>
+                      <div className="w-3/4 h-6 bg-white/10 rounded animate-pulse mb-3"></div>
+                      <div className="w-full h-4 bg-white/10 rounded animate-pulse mb-2"></div>
+                      <div className="w-2/3 h-4 bg-white/10 rounded animate-pulse mb-6"></div>
+                      <div className="w-24 h-6 bg-white/10 rounded-full animate-pulse"></div>
+                    </SpotlightCard>
+                  ) : (
+                    <SpotlightCard className="p-8 h-full group bg-[#050505] border-white/5 hover:border-white/10 transition-colors relative overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/50 cursor-pointer" onClick={() => setActiveModal({ id: feat.id, title: feat.name, description: feat.description, icon: feat.icon, type: 'feature' })}>
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at top right, ${color}15, transparent 70%)` }}></div>
+                      <div className="relative z-10">
+                        {/* 20. Isolamento de cor: icon começa grayscale e ganha cor */}
+                        <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-white/5 flex items-center justify-center mb-6 text-white/60 group-hover:text-white transition-colors shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                          {/* @ts-ignore */}
+                          <iconify-icon icon={feat.icon} width="24" className="grayscale group-hover:grayscale-0 transition-all duration-500" style={{ color: 'inherit' }}></iconify-icon>
                         </div>
-                        <span className="text-white/80 font-mono text-sm">{point}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-             </div>
-          </div>
-        </section>
-      )}
-
-      {faqItems.length > 0 && (
-        <section className="px-6 max-w-3xl mx-auto mb-32 gs-fade-up">
-           <div className="text-center mb-12">
-            <h3 className="text-3xl font-bricolage text-white">{t('product.faq')}</h3>
-          </div>
-          <div className="space-y-4">
-            {faqItems.map((q, idx) => (
-              <div key={idx} className="bg-white/5 border border-white/10 p-6 rounded-2xl">
-                <h4 className="text-lg font-medium text-white mb-2">{q.question}</h4>
-                <p className="text-white/60">{q.answer}</p>
+                        <h3 className="text-xl font-medium text-white mb-3 tracking-tight">{feat.name}</h3>
+                        {/* 46. WCAG AAA */}
+                        <p className="text-sm text-white/60 leading-[1.8] mb-6 font-light">
+                          {/* 37. Glossário Dinâmico: Text scramble trick if dev mode */}
+                          <AnimatePresence mode="wait">
+                            <motion.span
+                              key={profile}
+                              initial={{ opacity: 0, filter: "blur(4px)" }}
+                              animate={{ opacity: 1, filter: "blur(0px)" }}
+                              exit={{ opacity: 0, filter: "blur(4px)" }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              {feat.description}
+                            </motion.span>
+                          </AnimatePresence>
+                        </p>
+                        <div className="inline-block px-3 py-1 rounded-full bg-[#0a0a0a] border border-white/5 text-[10px] uppercase tracking-widest text-white/60 backdrop-blur-sm">
+                          ex-{feat.originModule}
+                        </div>
+                      </div>
+                    </SpotlightCard>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Mobile View All Button */}
+            {features.length > 3 && (
+              <div className="mt-8 flex justify-center md:hidden">
+                <button 
+                  onClick={() => setShowAllFeatures(!showAllFeatures)}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-white/10 bg-white/5 text-white/80 transition-all text-sm font-medium"
+                >
+                  {showAllFeatures ? 'Mostrar Menos' : 'Ver Todas Features'}
+                </button>
               </div>
-            ))}
+            )}
           </div>
-        </section>
-      )}
-
-      <section className="px-6 max-w-5xl mx-auto text-center gs-fade-up">
-        <div className="mb-12 inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-          <span className="text-white/50 text-sm uppercase tracking-widest font-mono">{t('product.strategic_note')}:</span>
-          <span className="text-emerald-400 font-mono font-bold">{moduleData.score}/100</span>
         </div>
-        <br />
-        <button className="px-10 py-5 bg-emerald-500 text-black rounded-full font-medium text-lg hover:bg-emerald-400 transition-colors shadow-[0_0_40px_rgba(16,185,129,0.3)]">
-          {t(`module.${moduleData.id}.final_cta`) || moduleData.finalCta}
-        </button>
-      </section>
-
-      {currentPath === '/kivo' && (
-        <>
-          <KivoShowcase />
-          <KivoEcosystem />
-          <KivoSimulator />
-          <KivoSplit />
-          <KivoOffRamp />
-          <KivoSandbox />
-          <div className="px-6 max-w-3xl mx-auto mb-32 gs-fade-up">
-             <div className="text-center mb-8">
-               <h2 className="text-2xl font-bricolage text-white">Kivo CLI Simulado</h2>
-               <p className="text-white/50 text-sm">Controle a infraestrutura direto do terminal</p>
-             </div>
-             <KivoTerminalCLI />
-          </div>
-        </>
       )}
 
-      {currentPath === '/invoice' && <KivoInvoiceSimulator />}
-      {currentPath === '/payouts' && <KivoPayoutsSimulator />}
-      {currentPath === '/escrow' && <KivoSafeCheckoutSimulator />}
-      {currentPath === '/vakinha' && <KivoVakinhaSimulator />}
-      {currentPath === '/familybridge' && <KivoFamilyBridgeSimulator />}
-      {currentPath === '/quilovolt' && <KivoQuiloVoltSimulator />}
-      {currentPath === '/contractease' && <KivoContractEaseSimulator />}
-      {currentPath === '/onyx' && <KivoOnyxSimulator />}
-      {currentPath === '/saude360' && <KivoSaude360Simulator />}
-      {currentPath === '/socialpay' && <KivoSocialPaySimulator />}
+      {/* AI Agents */}
+      {aiAgents && aiAgents.length > 0 && (
+        <div className="py-24 border-t border-white/5 relative">
+          <div className="max-w-6xl mx-auto px-6 relative z-10">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16">
+              <h2 className="text-3xl font-bricolage text-white mb-4 tracking-tight">Agentes de IA</h2>
+              <p className="text-white/40">Inteligência artificial nativa do produto.</p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {aiAgents.map((agent, i) => (
+                <motion.div key={agent.id} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+                  {/* 17. Refrações Vidro Curvo */}
+                  <SpotlightCard className="flex flex-col sm:flex-row gap-6 p-8 h-full rounded-[2rem] bg-white/[0.01] backdrop-blur-2xl border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] transition-shadow cursor-pointer" onClick={() => setActiveModal({ id: agent.id, title: agent.title, description: agent.description, icon: agent.icon, type: 'agent' })}>
+                    <div className="w-14 h-14 shrink-0 rounded-2xl bg-[#030303] border border-white/10 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,1)] relative overflow-hidden">
+                      <div className="absolute inset-0 opacity-20" style={{ backgroundColor: color, filter: 'blur(10px)' }}></div>
+                      {/* @ts-ignore */}
+                      <iconify-icon icon={agent.icon} width="28" style={{ color }} className="relative z-10 drop-shadow-lg"></iconify-icon>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-medium text-white mb-3 tracking-tight">{agent.title}</h3>
+                      <p className="text-white/40 leading-[1.8] text-sm font-light">{agent.description}</p>
+                    </div>
+                  </SpotlightCard>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tech Details - Scrollytelling */}
+      <div className="py-32 border-t border-white/5 bg-white/[0.01] relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row gap-16 relative items-start">
+            
+            {/* Sticky Left Column */}
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              whileInView={{ opacity: 1 }} 
+              viewport={{ once: true }} 
+              className="md:w-1/3 md:sticky md:top-40"
+            >
+              <h2 className="text-4xl md:text-5xl font-bricolage text-white mb-6 leading-tight">{t('product.under_the_hood')}</h2>
+              <p className="text-white/40 leading-relaxed text-lg">{techDetails.description}</p>
+            </motion.div>
+
+            {/* Scrolling Right Column */}
+            <div className="md:w-2/3 flex flex-col gap-32 pt-8 md:pt-0">
+              
+              {/* Tech Points as Large Cards */}
+              <div className="space-y-8">
+                {techDetails.points.map((pt, i) => (
+                  <motion.div 
+                    key={i} 
+                    initial={{ opacity: 0, y: 40 }} 
+                    whileInView={{ opacity: 1, y: 0 }} 
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    className="p-8 md:p-10 rounded-[2rem] bg-[#050505] border border-white/5 glass-card relative overflow-hidden"
+                  >
+                    {/* Inner highlight */}
+                    <div className="absolute inset-0 rounded-[2rem] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] pointer-events-none"></div>
+                    
+                    <div className="flex items-start gap-6 relative z-10">
+                      {/* 16. Wireframes Iluminados (Subtle neon frame around number) */}
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-black shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)] border" style={{ borderColor: `${color}40`, boxShadow: `0 0 20px ${color}20, inset 0 1px 2px rgba(255,255,255,0.1)` }}>
+                        <span className="text-base font-mono font-bold" style={{ color }}>0{i + 1}</span>
+                      </div>
+                      <p className="text-white/80 leading-[1.8] text-lg font-light">{pt}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* For Whom target audience */}
+              <div>
+                <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+                  <h3 className="text-2xl font-bricolage text-white mb-8 border-b border-white/10 pb-4">{t('product.for_whom')}</h3>
+                </motion.div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {forWhom.map((who, i) => (
+                    <motion.div 
+                      key={i} 
+                      initial={{ opacity: 0, scale: 0.95 }} 
+                      whileInView={{ opacity: 1, scale: 1 }} 
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 }}
+                      className="p-6 rounded-xl bg-[#0a0a0a] border border-white/5 text-white/60 text-sm hover:border-white/20 transition-colors flex items-center gap-3"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }}></div>
+                      {who}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ */}
+      <div className="py-24 border-t border-white/5 mb-24 md:mb-0">
+        <div className="max-w-3xl mx-auto px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <h2 className="text-3xl font-bricolage text-white mb-4">{t('product.faq')}</h2>
+          </motion.div>
+
+          <div className="space-y-4">
+            {faq.map((item, i) => {
+              const isOpen = openFaq === i;
+              return (
+                <motion.div 
+                  key={i} 
+                  initial={{ opacity: 0, y: 10 }} 
+                  whileInView={{ opacity: 1, y: 0 }} 
+                  viewport={{ once: true }} 
+                  transition={{ delay: i * 0.1 }} 
+                  onClick={() => setOpenFaq(isOpen ? null : i)}
+                  className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors cursor-pointer group"
+                >
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-white font-medium group-hover:text-emerald-400 transition-colors">{item.question}</h4>
+                    <motion.div animate={{ rotate: isOpen ? 45 : 0 }} className="text-white/20 group-hover:text-white/50 origin-center text-xl leading-none">
+                      +
+                    </motion.div>
+                  </div>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                        animate={{ height: 'auto', opacity: 1, marginTop: 12 }}
+                        exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                        className="overflow-hidden"
+                      >
+                        <p className="text-white/40 text-sm leading-[1.8] font-light">{item.answer}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 10. Sticky Mobile CTA com Multi-layer Shadow (14) */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full p-4 z-50">
+        <div className="bg-[#050505]/90 backdrop-blur-3xl border border-white/10 rounded-2xl p-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+          <div className="flex flex-col">
+            <span className="text-white font-medium text-sm tracking-tight">{name}</span>
+            <span className="text-white/40 text-xs">Acessar sistema</span>
+          </div>
+          <button 
+            className="px-6 py-2.5 rounded-xl text-black font-medium text-sm hover:scale-105 transition-all" 
+            style={{ 
+              backgroundColor: color,
+              boxShadow: premiumButtonShadow
+            }}
+          >
+            Entrar
+          </button>
+        </div>
+      </div>
+
+      {/* 51. & 52. Popups Cinéticos e Simuladores Animados */}
+      <AnimatePresence>
+        {activeModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            onClick={() => setActiveModal(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row relative"
+            >
+              {/* Close Button */}
+              <button onClick={() => setActiveModal(null)} className="absolute top-6 right-6 text-white/50 hover:text-white z-50 bg-black/50 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md">
+                {/* @ts-ignore */}
+                <iconify-icon icon="solar:close-circle-linear" width="24"></iconify-icon>
+              </button>
+              
+              {/* Left: Content */}
+              <div className="flex-1 p-8 md:p-12 border-b md:border-b-0 md:border-r border-white/5 flex flex-col justify-center relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(circle at top left, ${color}, transparent 60%)` }}></div>
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                    {/* @ts-ignore */}
+                    <iconify-icon icon={activeModal.icon} width="24" style={{ color }}></iconify-icon>
+                  </div>
+                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-white/[0.02] border border-white/5 text-[10px] uppercase tracking-widest text-white/40">
+                    {activeModal.type === 'agent' ? 'Agente de Inteligência' : 'Feature Principal'}
+                  </div>
+                  <h2 className="text-3xl font-bricolage font-semibold text-white mb-4 leading-tight">{activeModal.title}</h2>
+                  <p className="text-white/60 leading-[1.8] font-light">{activeModal.description}</p>
+                </div>
+              </div>
+              
+              {/* Right: Simulator */}
+              <div className="flex-1 p-8 md:p-12 bg-black/50 relative flex flex-col items-center justify-center min-h-[300px]">
+                 <FeatureVisualizer id={activeModal.id} type={activeModal.type} icon={activeModal.icon} color={color} />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

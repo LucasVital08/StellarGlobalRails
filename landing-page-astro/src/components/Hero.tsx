@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
+import StellarNetwork from './ui/StellarNetwork';
 
 export default function Hero() {
   const [profile, setProfile] = useState<'ceo' | 'dev'>('ceo');
@@ -19,22 +20,24 @@ export default function Hero() {
   }, []);
 
   const isDev = profile === 'dev';
-  const railKey = isDev ? 'hero.rail.dev' : 'hero.rail.ceo';
   const subtitleKey = isDev ? 'hero.subtitle.dev' : 'hero.subtitle.ceo';
+
+  const pillars = [
+    { icon: 'solar:users-group-rounded-linear', label: 'SocialPay', color: '#EC4899' },
+    { icon: 'solar:document-text-linear', label: 'ContractEase', color: '#8B5CF6' },
+    { icon: 'solar:wallet-linear', label: 'Kivo Pay', color: '#10B981' },
+  ];
 
   return (
     <header className="relative w-full overflow-hidden flex flex-col justify-end pb-12 md:pb-24 min-h-screen md:h-screen perspective-1000">
-      <div className="absolute inset-0 z-0 bg-black">
-        <motion.img 
-          initial={{ scale: 1.5, filter: 'blur(30px) grayscale(100%)', opacity: 0 }}
-          animate={{ scale: 1, filter: 'blur(0px) grayscale(0%)', opacity: 1 }}
-          transition={{ duration: 4, ease: "easeOut" }}
-          src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=3840&auto=format&fit=crop" 
-          className="w-full h-full object-cover mix-blend-luminosity brightness-75" 
-          alt="Earth from space" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent opacity-80 z-10"></div>
-        <div className="bg-black/10 mix-blend-overlay absolute inset-0 z-10"></div>
+      <div className="absolute inset-0 z-0 bg-[#050505] overflow-hidden">
+        {/* ThreeJS WebGL Particle Network */}
+        <StellarNetwork />
+        
+        {/* Texture & Gradients */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#050505_90%)] z-10 pointer-events-none"></div>
+        <div className="bg-noise absolute inset-0 z-10 mix-blend-overlay opacity-30 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent z-10 pointer-events-none"></div>
       </div>
 
       <motion.div 
@@ -69,7 +72,7 @@ export default function Hero() {
             <span className="block text-[12vw] md:text-[6rem] lg:text-[7rem] mix-blend-normal text-white drop-shadow-2xl">
               <span className="inline-block overflow-hidden pb-2">
                 <motion.span initial={{ y: "120%", rotateZ: 2, opacity: 0 }} animate={{ y: 0, rotateZ: 0, opacity: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 1.0 }} className="inline-block">
-                  {t(railKey)}
+                  {t('hero.rail')}
                 </motion.span>
               </span>
             </span>
@@ -83,6 +86,29 @@ export default function Hero() {
               </span>
             </div>
           </h1>
+
+          {/* Product pillars - animated badges */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: "easeOut", delay: 2.0 }}
+            className="flex flex-wrap gap-3 mt-8"
+          >
+            {pillars.map((p, i) => (
+              <motion.div
+                key={p.label}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 2.2 + i * 0.15, duration: 0.6, ease: "easeOut" }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm"
+              >
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }}></div>
+                {/* @ts-ignore */}
+                <iconify-icon icon={p.icon} width="16" style={{ color: p.color }}></iconify-icon>
+                <span className="text-sm text-white/80 font-medium">{p.label}</span>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
 
         <div className="md:col-span-4 md:col-start-9 flex flex-col justify-end pb-4 md:pb-8">
@@ -109,14 +135,14 @@ export default function Hero() {
                   </div>
                   <div>
                     <span className="block text-[10px] uppercase tracking-widest text-white/50 mb-1">
-                      {t('hero.modules_count')}
+                      {t('hero.products_count')}
                     </span>
-                    <span className="text-2xl font-bricolage text-white">13</span>
+                    <span className="text-2xl font-bricolage text-white">3</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-3 border-t border-white/20 pt-6">
-                  <a href="/doc" className="group block">
+                  <a href="#products" className="group block">
                     <motion.div 
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
