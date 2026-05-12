@@ -59,6 +59,11 @@ export interface Product {
     answer: string;
   }[];
   finalCta: string;
+  apiSnippet?: {
+    method: string;
+    endpoint: string;
+    body: string;
+  };
 }
 
 // ============================================================
@@ -184,7 +189,12 @@ const socialPay: Product = {
     { question: "Meus dados de saúde ficam na blockchain?", answer: "Nunca. Os dados ficam cifrados na nuvem. A blockchain guarda apenas as chaves de posse e consentimento." },
     { question: "Como funciona a monetização dos dados?", answer: "Quando um pesquisador solicita acesso, você aprova ou recusa. Se aprovar, o pagamento em USDC é automático via Kivo Pay." }
   ],
-  finalCta: "Criar minha identidade digital"
+  finalCta: "Criar minha identidade digital",
+  apiSnippet: {
+    method: "POST",
+    endpoint: "/v1/social/identity/create",
+    body: '{"handle": "lucas.vital", "did_method": "stellar"}'
+  }
 };
 
 // ============================================================
@@ -246,6 +256,13 @@ const contractEase: Product = {
     }
   ],
   features: [
+    {
+      id: "immutability-motor",
+      name: "Motor de Imutabilidade",
+      description: "Protocolo de registro definitivo na Stellar. Cada interação contratual gera um hash imutável e auditável, garantindo que o acordo seja a prova de violações para sempre.",
+      icon: "solar:shield-check-bold",
+      originModule: "Stellar Core"
+    },
     {
       id: "programmable-escrow",
       name: "Escrow Programável",
@@ -326,7 +343,12 @@ const contractEase: Product = {
     { question: "Como o Escrow Programável funciona?", answer: "O comprador deposita USDC em um smart contract neutro. Os fundos são liberados automaticamente quando as condições contratuais (marcos) são confirmadas por ambas as partes." },
     { question: "Posso justificar para o contador?", answer: "Sim. O sistema gera recibos unificados contendo o Tx Hash da Stellar, aceitos como comprovante verificável." }
   ],
-  finalCta: "Gerenciar meus contratos agora"
+  finalCta: "Gerenciar meus contratos agora",
+  apiSnippet: {
+    method: "POST",
+    endpoint: "/v1/contracts/escrow/init",
+    body: '{"amount": "5000.00", "asset": "USDC", "expiry": 86400}'
+  }
 };
 
 // ============================================================
@@ -370,7 +392,7 @@ const kivoPay: Product = {
     {
       id: "settlement",
       title: "Agente de Liquidação Inteligente (H2M)",
-      description: "IA que otimiza meios de pagamento (Pix, cartão, stablecoins) escolhendo a rota mais barata ou rápida para cada transação.",
+      description: "IA que atua como um Radar de Liquidação, escolhendo a rota mais barata e rápida entre Pix, cartões e stablecoins.",
       icon: "solar:route-linear"
     },
     {
@@ -477,7 +499,12 @@ const kivoPay: Product = {
     { question: "Existe limite de pagamentos em massa?", answer: "O sistema suporta milhares de registros, processando em blocos atômicos para otimizar o throughput da rede Stellar." },
     { question: "Funciona sem internet no POS?", answer: "Sim. O Kivo Terminal suporta assinaturas offline temporárias com reconciliação posterior." }
   ],
-  finalCta: "Conectar minha empresa ao Kivo Pay"
+  finalCta: "Conectar minha empresa ao Kivo Pay",
+  apiSnippet: {
+    method: "POST",
+    endpoint: "/v1/payments/payout",
+    body: '{"destination": "GB...XYZ", "amount": 100.50, "currency": "BRL"}'
+  }
 };
 
 // ============================================================

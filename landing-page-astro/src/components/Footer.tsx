@@ -8,8 +8,8 @@ export default function Footer() {
   const { t } = useTranslation();
   return (
     <>
-      <footer className="text-white bg-neutral-950 border-white/10 border-t pt-16 pr-6 pb-16 pl-6 relative">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12 gs-fade-up">
+    <footer className="text-white bg-[#050505] border-white/10 border-t pt-16 pr-6 pb-16 pl-6 relative z-50">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-neutral-900 border border-white/20 flex items-center justify-center text-white">
@@ -30,7 +30,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="w-full mt-24 overflow-hidden flex justify-center items-center pointer-events-none select-none gs-fade-up">
+        <div className="w-full mt-24 overflow-hidden flex justify-center items-center pointer-events-none select-none">
           <h1
             className="text-[12vw] leading-none text-white/5 whitespace-nowrap italic tracking-tighter"
             style={{ fontFamily: 'Georgia, serif' }}

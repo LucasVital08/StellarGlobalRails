@@ -1,6 +1,25 @@
-import { motion } from 'motion/react';
-import { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useRef, useState, useEffect } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
+
+function BlueprintGrid() {
+  return (
+    <div className="absolute inset-0 z-0 opacity-10 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0" style={{ 
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
+        backgroundSize: '40px 40px'
+      }} />
+      <motion.div 
+        animate={{ 
+          opacity: [0.05, 0.1, 0.05],
+          scale: [1, 1.02, 1]
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.1)_0%,transparent_70%)]" 
+      />
+    </div>
+  );
+}
 
 export default function HowItWorks() {
   const { t } = useTranslation();
@@ -12,140 +31,209 @@ export default function HowItWorks() {
       id: 1,
       title: t('howitworks.step1.title'),
       desc: t('howitworks.step1.desc'),
-      icon: "solar:wallet-money-linear",
-      color: "blue",
-      bgClass: "bg-blue-500/20",
-      borderClass: "border-blue-500/50",
-      iconColor: "text-blue-400"
+      icon: "solar:wallet-money-bold-duotone",
+      color: "#3b82f6",
+      tech: "INGESTION_V1"
     },
     {
       id: 2,
       title: t('howitworks.step2.title'),
       desc: t('howitworks.step2.desc'),
-      icon: "solar:cpu-linear",
-      color: "emerald",
-      bgClass: "bg-emerald-500/20",
-      borderClass: "border-emerald-500/50",
-      iconColor: "text-emerald-400"
+      icon: "solar:cpu-bold-duotone",
+      color: "#10b981",
+      tech: "STELLAR_ROUTING"
     },
     {
       id: 3,
       title: t('howitworks.step3.title'),
       desc: t('howitworks.step3.desc'),
-      icon: "solar:server-square-linear",
-      color: "purple",
-      bgClass: "bg-purple-500/20",
-      borderClass: "border-purple-500/50",
-      iconColor: "text-purple-400"
+      icon: "solar:server-square-bold-duotone",
+      color: "#a855f7",
+      tech: "ATOMIC_SETTLEMENT"
     },
     {
       id: 4,
       title: t('howitworks.step4.title'),
       desc: t('howitworks.step4.desc'),
-      icon: "solar:hand-money-linear",
-      color: "orange",
-      bgClass: "bg-orange-500/20",
-      borderClass: "border-orange-500/50",
-      iconColor: "text-orange-400"
+      icon: "solar:hand-money-bold-duotone",
+      color: "#f97316",
+      tech: "FINAL_LIQUIDITY"
     }
   ];
 
   return (
     <section ref={containerRef} className="bg-neutral-950 text-white relative border-t border-white/5">
-      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(ellipse at center, rgba(16,185,129,0.15) 0%, transparent 60%)' }}></div>
+      <BlueprintGrid />
       
-      <div className="max-w-[90rem] mx-auto px-6 md:px-12 py-24 md:py-32 relative z-10">
-        
-        <div className="text-center md:text-left mb-16 md:mb-32 gs-fade-up">
-          <h2 className="text-4xl md:text-5xl lg:text-7xl font-bricolage font-medium mb-6 leading-[0.9] tracking-tight">
-            {t('howitworks.title')}
-          </h2>
-          <p className="text-white/50 text-lg md:text-2xl max-w-2xl font-light leading-relaxed">
-            {t('howitworks.subtitle')}
-          </p>
-        </div>
+      {/* Moving Ambient Orb */}
+      <motion.div 
+        animate={{ 
+          x: [0, 100, 0],
+          y: [0, -50, 0],
+          opacity: [0.1, 0.15, 0.1]
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute top-1/4 -right-1/4 w-[60vw] h-[60vw] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"
+      />
 
-        <div className="flex flex-col lg:flex-row gap-16 relative">
+      <div className="max-w-[90rem] mx-auto px-6 md:px-12 py-32 md:py-48 relative z-10">
+        
+        <div className="flex flex-col lg:flex-row gap-24 relative">
           
-          {/* Left Column - Scrolling Text */}
-          <div className="lg:w-1/2 flex flex-col space-y-[20vh] md:space-y-[35vh] pb-[20vh] relative z-10 h-full">
+          {/* Left Column: Narrative Content */}
+          <div className="lg:w-1/2 space-y-[40vh] pb-[40vh]">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="max-w-xl"
+            >
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-mono text-white/60 uppercase tracking-[0.2em]">System Architecture</span>
+              </div>
+              <h2 className="text-4xl md:text-8xl font-bricolage font-medium mb-10 leading-[0.95] tracking-tighter">
+                {t('howitworks.title')}
+              </h2>
+              <p className="text-white/40 text-xl md:text-2xl font-light leading-relaxed">
+                {t('howitworks.subtitle')}
+              </p>
+            </motion.div>
+
             {steps.map((step, idx) => (
               <motion.div 
                 key={step.id} 
-                initial={{ opacity: 0.3, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ margin: "-10% 0px -10% 0px", once: false, amount: 0.6 }}
+                initial={{ opacity: 0.1, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ margin: "-20% 0px -20% 0px", amount: 0.5 }}
                 onViewportEnter={() => setActiveStep(idx)}
-                transition={{ duration: 0.5 }}
-                className="flex flex-col justify-center min-h-[40vh]"
+                className="group relative"
               >
-                {/* Mobile visual representing the step */}
-                <div className="lg:hidden mb-12">
-                  <div className={`w-28 h-28 rounded-[2rem] bg-neutral-900 border border-white/10 flex items-center justify-center ${step.iconColor} shadow-2xl relative`}>
-                    <div className={`absolute inset-0 ${step.bgClass} blur-[40px] rounded-full`}></div>
-                    {/* @ts-ignore */}
-                    <iconify-icon icon={step.icon} width="56"></iconify-icon>
-                  </div>
+                <div className="absolute -left-12 top-0 bottom-0 w-px bg-white/5 overflow-hidden">
+                   <AnimatePresence>
+                     {activeStep === idx && (
+                       <motion.div 
+                         initial={{ y: "-100%" }}
+                         animate={{ y: "100%" }}
+                         transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                         className="w-full h-20 bg-gradient-to-b from-transparent via-emerald-500 to-transparent"
+                       />
+                     )}
+                   </AnimatePresence>
                 </div>
 
-                <div className="flex items-center gap-4 mb-6">
-                  <div className={`w-3 h-3 rounded-full ${step.iconColor} shadow-[0_0_15px_currentColor]`}></div>
-                  <span className={`font-mono text-sm uppercase tracking-widest ${step.iconColor}`}>
-                    {t('product.step')} 0{step.id}
-                  </span>
+                <div className="flex items-center gap-4 mb-8">
+                  <span className="text-5xl font-bricolage font-bold text-white/5 tabular-nums">0{step.id}</span>
+                  <div className="h-px flex-1 bg-white/5" />
+                  <span className="font-mono text-[10px] text-white/20 tracking-[0.3em] uppercase">{step.tech}</span>
                 </div>
                 
-                <h4 className="font-bricolage text-3xl md:text-5xl lg:text-6xl mb-8 text-white tracking-tight">
+                <h4 className="font-bricolage text-4xl md:text-6xl mb-8 text-white/90 group-hover:text-white transition-colors tracking-tight">
                   {step.title}
                 </h4>
                 
-                <p className="text-lg md:text-2xl text-white/50 leading-relaxed font-light">
+                <p className="text-xl md:text-2xl text-white/40 group-hover:text-white/60 transition-colors leading-relaxed font-light">
                   {step.desc}
                 </p>
               </motion.div>
             ))}
           </div>
 
-          {/* Right Column - Sticky Visual */}
+          {/* Right Column: Holographic Terminal */}
           <div className="hidden lg:block lg:w-1/2">
-            <div className="sticky top-0 h-screen flex items-center justify-center">
+            <div className="sticky top-[10vh] h-[80vh] flex items-center justify-center">
               
-              <div className="relative w-full max-w-[500px] aspect-square rounded-[3rem] bg-neutral-900 border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl">
-                {/* Visual content crossfading */}
-                {steps.map((step, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
-                    animate={{ 
-                      opacity: activeStep === idx ? 1 : 0, 
-                      scale: activeStep === idx ? 1 : 1.1,
-                      filter: activeStep === idx ? 'blur(0px)' : 'blur(10px)',
-                      zIndex: activeStep === idx ? 10 : 0
-                    }}
-                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  >
-                    <div className={`absolute inset-0 ${step.bgClass} opacity-80 blur-[80px]`}></div>
-                    <div className="relative z-20 flex flex-col items-center gap-6">
-                      <div className={`w-40 h-40 rounded-[2.5rem] bg-black border border-white/10 flex items-center justify-center ${step.iconColor} shadow-[0_0_40px_rgba(0,0,0,0.5)]`}>
-                        {/* @ts-ignore */}
-                        <iconify-icon icon={step.icon} width="80"></iconify-icon>
-                      </div>
-                      <div className="px-6 py-2 rounded-full border border-white/10 bg-black/50 backdrop-blur-md">
-                        <span className={`font-mono text-sm uppercase tracking-widest ${step.iconColor}`}>
-                          0{step.id} — {step.title}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-                
-                {/* Overlay details to make it look premium */}
-                <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-neutral-900/80 to-transparent z-30 pointer-events-none"></div>
-                <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-30 opacity-30">
-                  <span className="w-2 h-2 rounded-full bg-white"></span>
-                  <span className="w-2 h-2 rounded-full bg-white"></span>
+              <div className="relative w-full max-w-[600px] aspect-square group">
+                {/* 3D Container Effect */}
+                <div className="absolute inset-0 rounded-[4rem] bg-neutral-900/40 border border-white/10 backdrop-blur-3xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+                  
+                  {/* Dynamic Technical Overlay */}
+                  <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
+                  
+                  {/* Animated Grid on the terminal */}
+                  <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+
+                  {/* Terminal Frame Items */}
+                  <div className="absolute top-10 left-10 z-20 flex gap-1.5">
+                     {[...Array(3)].map((_, i) => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/10" />)}
+                  </div>
+                  <div className="absolute top-10 right-10 z-20 font-mono text-[10px] text-white/20">
+                     SECURE_RAILS_V2.0
+                  </div>
+
+                  {/* Step Visualizers */}
+                  <AnimatePresence mode="wait">
+                    {steps.map((step, idx) => activeStep === idx && (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, scale: 0.9, rotateX: 20 }}
+                        animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                        exit={{ opacity: 0, scale: 1.1, rotateX: -20 }}
+                        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                        className="absolute inset-0 flex flex-col items-center justify-center p-20"
+                      >
+                        {/* Glow Behind Icon */}
+                        <div 
+                          className="absolute w-80 h-80 rounded-full blur-[100px] opacity-20 animate-pulse"
+                          style={{ backgroundColor: step.color }}
+                        />
+
+                        {/* Technical Circle */}
+                        <div className="relative w-80 h-80 flex items-center justify-center">
+                           <motion.div 
+                             animate={{ rotate: 360 }}
+                             transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                             className="absolute inset-0 border border-dashed border-white/10 rounded-full" 
+                           />
+                           <motion.div 
+                             animate={{ rotate: -360 }}
+                             transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                             className="absolute inset-8 border border-dotted border-white/5 rounded-full" 
+                           />
+                           
+                           {/* The Core Icon */}
+                           <div className="relative z-20 w-48 h-48 rounded-[3rem] bg-black border-2 flex items-center justify-center shadow-2xl overflow-hidden" style={{ borderColor: `${step.color}40` }}>
+                              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent" />
+                              <motion.div
+                                animate={{ y: [0, -10, 0] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                              >
+                                 {/* @ts-ignore */}
+                                 <iconify-icon icon={step.icon} width="96" style={{ color: step.color }}></iconify-icon>
+                              </motion.div>
+                           </div>
+                        </div>
+
+                        {/* Bottom Metadata */}
+                        <div className="mt-12 text-center space-y-4">
+                           <motion.div 
+                             initial={{ opacity: 0, y: 10 }}
+                             animate={{ opacity: 1, y: 0 }}
+                             className="px-6 py-2 rounded-xl bg-white/[0.03] border border-white/5 backdrop-blur-xl"
+                           >
+                              <span className="font-mono text-sm tracking-[0.2em] uppercase" style={{ color: step.color }}>
+                                {step.tech}
+                              </span>
+                           </motion.div>
+                           <p className="text-[10px] font-mono text-white/20 uppercase tracking-widest max-w-[200px]">
+                              Analyzing protocol and validating through on-chain ledger
+                           </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+
+                  {/* Progress Line on the terminal border */}
+                  <div className="absolute inset-x-12 bottom-10 h-[1px] bg-white/5">
+                     <motion.div 
+                       animate={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
+                       className="h-full bg-emerald-500 shadow-[0_0_10px_#10b981]"
+                     />
+                  </div>
                 </div>
+
+                {/* Ambient Shadow/Glow */}
+                <div className="absolute -inset-10 bg-emerald-500/5 blur-[80px] rounded-full -z-10 opacity-50" />
               </div>
 
             </div>

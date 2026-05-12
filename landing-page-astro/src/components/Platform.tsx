@@ -1,119 +1,232 @@
-import { motion } from 'motion/react';
+import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../hooks/useTranslation';
+import FeatureVisualizer from './simulators/FeatureVisualizer';
+import { useRef, useState, useEffect } from 'react';
+
+function FloatingParticle({ delay = 0, color = "rgba(16, 185, 129, 0.2)" }) {
+  return (
+    <motion.div
+      initial={{ y: 0, opacity: 0 }}
+      animate={{ 
+        y: [-20, 20, -20], 
+        opacity: [0, 0.3, 0],
+        x: [-10, 10, -10]
+      }}
+      transition={{ 
+        duration: 5 + Math.random() * 5, 
+        repeat: Infinity, 
+        delay,
+        ease: "easeInOut" 
+      }}
+      className="absolute w-1 h-1 rounded-full blur-[1px] pointer-events-none"
+      style={{ backgroundColor: color }}
+    />
+  );
+}
 
 export default function Platform() {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // 3D Tilt Effect
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  
+  const mouseXSpring = useSpring(x);
+  const mouseYSpring = useSpring(y);
+  
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30, filter: 'blur(10px)' },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      filter: 'blur(0px)',
+      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
 
   return (
-    <section className="py-24 bg-neutral-900 text-white relative overflow-hidden" id="platform">
-      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
-      <motion.div 
-        animate={{ rotate: 360 }}
-        transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-        className="absolute top-0 right-0 w-[80vw] h-[80vw] bg-emerald-900/10 rounded-full blur-[100px] pointer-events-none mix-blend-screen"
-      ></motion.div>
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <div className="flex items-center gap-3 mb-6 gs-fade-up">
-              <span className="w-8 h-[1px] bg-emerald-500"></span>
-              <span className="text-emerald-500 text-xs font-mono uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                Stellar Global Rails
-              </span>
+    <section className="py-32 bg-neutral-950 text-white relative overflow-hidden" id="platform" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
+      {/* Cinematic Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(16,185,129,0.1),transparent_70%)]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        
+        {/* Animated Orbs */}
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.15, 0.1],
+            x: [0, 50, 0],
+            y: [0, -30, 0]
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[20%] -right-[10%] w-[60vw] h-[60vw] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen"
+        />
+        
+        {/* Floating Particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(15)].map((_, i) => (
+            <div key={i} style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }} className="absolute">
+              <FloatingParticle delay={i * 0.5} />
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-7xl font-bricolage font-medium mb-6 leading-[0.9] tracking-tight gs-fade-up">
-              {t('platform.title')}
-              <br />
-              <span className="text-white/30 italic font-serif">{t('platform.subtitle')}</span>
-            </h2>
-            <p className="text-white/60 text-lg mb-8 leading-relaxed font-light gs-fade-up" data-delay="0.1">
-               {t('platform.desc')}
-            </p>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-20 lg:gap-32 items-center"
+        >
+          {/* Left Column: Text Content */}
+          <div className="space-y-10">
+            <motion.div variants={itemVariants}>
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-emerald-500/5 border border-emerald-500/10 backdrop-blur-sm group">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse group-hover:scale-125 transition-transform" />
+                <span className="text-emerald-500 text-[10px] font-mono uppercase tracking-[0.2em]">
+                  Stellar Global Infrastructure
+                </span>
+              </div>
+            </motion.div>
 
             <div className="space-y-6">
-              <div className="flex gap-4 group cursor-default gs-fade-up" data-delay="0.2">
-                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/50 transition-colors text-emerald-400">
-                  {/* @ts-ignore */}
-                  <iconify-icon icon="solar:bolt-circle-linear" width="24"></iconify-icon>
-                </div>
-                <div>
-                  <h4 className="text-xl font-medium mb-1 font-bricolage">{t('platform.feature1.title')}</h4>
-                  <p className="text-sm text-white/50 group-hover:text-white/70 transition-colors">
-                    {t('platform.feature1.desc')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4 group cursor-default gs-fade-up" data-delay="0.3">
-                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-blue-500/20 group-hover:border-blue-500/50 transition-colors text-blue-400">
-                  {/* @ts-ignore */}
-                  <iconify-icon icon="solar:global-linear" width="24"></iconify-icon>
-                </div>
-                <div>
-                  <h4 className="text-xl font-medium mb-1 font-bricolage">{t('platform.feature2.title')}</h4>
-                  <p className="text-sm text-white/50 group-hover:text-white/70 transition-colors">
-                    {t('platform.feature2.desc')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4 group cursor-default gs-fade-up" data-delay="0.4">
-                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-purple-500/20 group-hover:border-purple-500/50 transition-colors text-purple-400">
-                  {/* @ts-ignore */}
-                  <iconify-icon icon="solar:shield-check-linear" width="24"></iconify-icon>
-                </div>
-                <div>
-                  <h4 className="text-xl font-medium mb-1 font-bricolage">{t('platform.feature3.title')}</h4>
-                  <p className="text-sm text-white/50 group-hover:text-white/70 transition-colors">
-                    {t('platform.feature3.desc')}
-                  </p>
-                </div>
-              </div>
+              <motion.h2 
+                variants={itemVariants}
+                className="text-5xl md:text-6xl lg:text-8xl font-bricolage font-medium leading-[0.85] tracking-tighter"
+              >
+                {t('platform.title')}
+                <br />
+                <span className="text-white/20 italic font-serif mt-2 block">{t('platform.subtitle')}</span>
+              </motion.h2>
+
+              <motion.p 
+                variants={itemVariants}
+                className="text-white/40 text-xl md:text-2xl font-light leading-relaxed max-w-xl"
+              >
+                {t('platform.desc')}
+              </motion.p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              {[
+                { icon: "solar:bolt-circle-bold", title: t('platform.feature1.title'), desc: t('platform.feature1.desc'), color: "emerald" },
+                { icon: "solar:global-bold", title: t('platform.feature2.title'), desc: t('platform.feature2.desc'), color: "blue" },
+                { icon: "solar:shield-check-bold", title: t('platform.feature3.title'), desc: t('platform.feature3.desc'), color: "purple" }
+              ].map((feature, i) => (
+                <motion.div 
+                  key={i}
+                  variants={itemVariants}
+                  whileHover={{ x: 10 }}
+                  className="flex gap-6 group cursor-default p-4 rounded-3xl hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className={`w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 transition-all duration-500 group-hover:rotate-[10deg] group-hover:scale-110 shadow-2xl`}>
+                    {/* @ts-ignore */}
+                    <iconify-icon icon={feature.icon} width="28" className={`${feature.color === 'emerald' ? 'text-emerald-400' : feature.color === 'blue' ? 'text-blue-400' : 'text-purple-400'}`}></iconify-icon>
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-medium mb-2 font-bricolage text-white/90 group-hover:text-white transition-colors">{feature.title}</h4>
+                    <p className="text-white/40 leading-relaxed text-sm group-hover:text-white/60 transition-colors">
+                      {feature.desc}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
 
+          {/* Right Column: Interactive 3D Visualizer */}
           <motion.div 
-            whileHover={{ scale: 1.02 }}
-            className="relative lg:h-[600px] w-full rounded-3xl overflow-hidden border border-white/10 group gs-fade-up h-[300px] md:h-[500px] shadow-2xl" 
-            data-delay="0.2"
+            variants={itemVariants}
+            style={{ rotateX, rotateY, perspective: 1000 }}
+            className="relative lg:h-[650px] w-full"
+            ref={containerRef}
           >
-            <div className="absolute inset-0 z-10 mix-blend-overlay opacity-30 shadow-[inset_0_0_100px_rgba(0,0,0,1)] pointer-events-none"></div>
-            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/ee3841e8-ef6d-45b3-9f33-9df069f9708a_1600w.webp" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-70 mix-blend-luminosity brightness-75 group-hover:brightness-100" alt="Infrastructure Architecture" />
-            <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-neutral-900/40 z-0"></div>
-
-            {/* Smart Nodes */}
-            <motion.div 
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              transition={{ type: "spring", delay: 0.5 }}
-              viewport={{ once: true }}
-              className="absolute top-1/4 left-1/3 group/spot z-20"
-            >
-              <div className="w-4 h-4 bg-emerald-500 rounded-full animate-ping absolute inset-0"></div>
-              <div className="w-4 h-4 bg-emerald-500 rounded-full relative z-10 cursor-pointer border-2 border-white shadow-[0_0_20px_rgba(16,185,129,0.5)]"></div>
-              <div className="absolute left-6 top-0 bg-black/80 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 w-56 opacity-0 group-hover/spot:opacity-100 transition-all duration-300 translate-y-2 group-hover/spot:translate-y-0 pointer-events-none">
-                <span className="text-xs font-mono text-emerald-400 block mb-1 uppercase tracking-wider">
-                  {t('platform.settlement_done')}
-                </span>
+            {/* Visualizer Card */}
+            <div className="relative h-full w-full rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-neutral-900/40 backdrop-blur-3xl group/viz">
+              {/* Minimal Technical Header */}
+              <div className="absolute top-8 left-8 right-8 z-30 flex justify-between items-center opacity-60">
+                <div className="text-[10px] font-mono tracking-[0.2em] uppercase text-white/60 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
+                  Global Core
+                </div>
+                <div className="text-[10px] font-mono tracking-widest text-emerald-500">v2.4.0</div>
               </div>
-            </motion.div>
 
-            <motion.div 
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              transition={{ type: "spring", delay: 0.7 }}
-              viewport={{ once: true }}
-              className="absolute bottom-1/3 right-1/4 group/spot z-20"
-            >
-              <div className="w-4 h-4 bg-blue-500 rounded-full animate-ping absolute inset-0 [animation-delay:0.5s]"></div>
-              <div className="w-4 h-4 bg-blue-500 rounded-full relative z-10 cursor-pointer border-2 border-white shadow-[0_0_20px_rgba(59,130,246,0.5)]"></div>
-              <div className="absolute right-6 top-0 bg-black/80 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 w-56 opacity-0 group-hover/spot:opacity-100 transition-all duration-300 translate-y-2 group-hover/spot:translate-y-0 pointer-events-none text-right">
-                <span className="text-xs font-mono text-blue-400 block mb-1 uppercase tracking-wider">
-                  {t('platform.audit_active')}
-                </span>
+              <div className="absolute inset-0 z-10 opacity-20 pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+              
+              {/* The Core Content */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <FeatureVisualizer id="platform-network" type="feature" icon="solar:globus-linear" color="#10b981" />
               </div>
-            </motion.div>
+
+              {/* Bottom Info */}
+              <div className="absolute bottom-8 left-8 right-8 z-30 flex justify-between items-end">
+                <div className="space-y-2">
+                   <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div 
+                          key={i}
+                          animate={{ opacity: [0.3, 1, 0.3] }}
+                          transition={{ duration: 1, delay: i * 0.2, repeat: Infinity }}
+                          className="w-1 h-3 bg-emerald-500/50 rounded-full"
+                        />
+                      ))}
+                   </div>
+                   <div className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">Processing global liquidity</div>
+                </div>
+                <div className="flex -space-x-3">
+                   {[...Array(3)].map((_, i) => (
+                     <div key={i} className="w-8 h-8 rounded-full border-2 border-neutral-900 bg-neutral-800 flex items-center justify-center overflow-hidden">
+                        <div className="w-full h-full bg-gradient-to-br from-emerald-500/20 to-transparent" />
+                     </div>
+                   ))}
+                </div>
+              </div>
+
+
+            </div>
+            
+            {/* Ambient Glows around the visualizer */}
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/20 blur-[60px] rounded-full pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-500/10 blur-[60px] rounded-full pointer-events-none" />
           </motion.div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -41,9 +41,10 @@ export default function ProductPage({ slug }: Props) {
   // 33. Botão Copy-to-Clipboard Mágico
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
-    navigator.clipboard.writeText(`curl -X POST https://api.kivo.com.br/v1/${slug}/init \\
+    const snippet = productData.apiSnippet || { method: 'POST', endpoint: `/v1/${slug}/init`, body: '{"amount": 5000, "currency": "BRL"}' };
+    navigator.clipboard.writeText(`curl -X ${snippet.method} https://api.kivo.com.br${snippet.endpoint} \\
   -H "Authorization: Bearer sk_test_123" \\
-  -d '{"amount": 5000, "currency": "BRL"}'`);
+  -d '${snippet.body}'`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -129,18 +130,17 @@ export default function ProductPage({ slug }: Props) {
       {/* Background Glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[60vh] blur-[150px] opacity-20 pointer-events-none" style={{ backgroundColor: color }}></div>
 
-      {/* 2. Breadcrumbs Translúcidos */}
-      <div className="fixed top-24 left-6 z-40 hidden md:flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-white/10 text-xs font-medium text-white/40 tracking-wider">
-        <a href="/" className="hover:text-white transition-colors">HOME</a>
-        <span className="opacity-50">/</span>
-        <a href="/#products" className="hover:text-white transition-colors">PRODUTOS</a>
-        <span className="opacity-50">/</span>
-        <span className="text-white" style={{ color }}>{name.toUpperCase()}</span>
-      </div>
-
       {/* Nav spacing & Hero */}
-      <div className="relative pt-32 pb-16 px-6">
+      <div className="relative pt-48 pb-16 px-6">
         <div className="max-w-6xl mx-auto">
+          {/* 2. Breadcrumbs Translúcidos (Moved here and removed fixed) */}
+          <div className="hidden md:flex items-center gap-2 mb-12 text-xs font-medium text-white/40 tracking-wider">
+            <a href="/" className="hover:text-white transition-colors">HOME</a>
+            <span className="opacity-30">/</span>
+            <a href="/#products" className="hover:text-white transition-colors">PRODUTOS</a>
+            <span className="opacity-30">/</span>
+            <span className="text-white" style={{ color }}>{name.toUpperCase()}</span>
+          </div>
           {/* Back button for mobile */}
           <a href="/#products" className="md:hidden inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors mb-8">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -151,42 +151,46 @@ export default function ProductPage({ slug }: Props) {
           <div className="grid md:grid-cols-2 gap-12 lg:gap-24 items-center">
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={{ y: yHeroText }}>
               {/* 9. Social Metrics / Proof & 19. Badge LIVE */}
-              <div className="flex items-center gap-4 mb-8">
-                {/* 48. Layout Lógico RTL: mr-2 -> me-2 */}
-                <div className="flex items-center gap-2 px-2 py-1 rounded-full border border-white/10 bg-white/5 me-2">
-                  <div className={`w-2 h-2 rounded-full ${shouldReduceMotion ? '' : 'animate-pulse'}`} style={{ backgroundColor: color }}></div>
-                  <span className="text-[10px] font-bold tracking-widest text-white/80">LIVE</span>
-                </div>
-                
-                <div className="flex -space-x-3">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-neutral-800 flex items-center justify-center overflow-hidden">
-                      {/* 42. Dynamic Imports de Media (loading=lazy) */}
-                      <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" loading="lazy" className="w-full h-full object-cover opacity-80 grayscale hover:grayscale-0 transition-all duration-300" />
-                    </div>
-                  ))}
+              <div className="flex flex-col items-center md:items-start gap-4 mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 px-2 py-1 rounded-full border border-white/10 bg-white/5 me-2">
+                    <div className={`w-2 h-2 rounded-full ${shouldReduceMotion ? '' : 'animate-pulse'}`} style={{ backgroundColor: color }}></div>
+                    <span className="text-[10px] font-bold tracking-widest text-white/80">LIVE</span>
+                  </div>
+                  
+                  <div className="flex -space-x-3">
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-neutral-800 flex items-center justify-center overflow-hidden">
+                        {/* 42. Dynamic Imports de Media (loading=lazy) */}
+                        <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" loading="lazy" className="w-full h-full object-cover opacity-80 grayscale hover:grayscale-0 transition-all duration-300" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="text-xs text-white/40 uppercase tracking-widest font-mono">
                   Trusted by <span className="text-white font-bold">10k+</span> ops
                 </div>
               </div>
 
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5 mb-6" style={{ boxShadow: `inset 0 1px 0 0 rgba(255,255,255,0.1), 0 0 20px ${color}10` }}>
-                {/* @ts-ignore */}
-                <iconify-icon icon={icon} width="20" style={{ color }}></iconify-icon>
-                <span className="text-sm font-medium text-white/90">{name}</span>
-                {/* 36. Indicadores de Status da API */}
-                <AnimatePresence>
-                  {profile === 'dev' && (
-                    <motion.div initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 0 }} exit={{ opacity: 0, width: 0 }} className="flex items-center gap-2 border-l border-white/20 ps-3 ms-1 overflow-hidden whitespace-nowrap">
-                      <div className={`w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] ${shouldReduceMotion ? '' : 'animate-pulse'}`}></div>
-                      <span className="text-xs font-mono text-emerald-400">API: 99.99%</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              {/* Product Badge (The Logo) */}
+              <div className="flex justify-center md:justify-start mb-6">
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5" style={{ boxShadow: `inset 0 1px 0 0 rgba(255,255,255,0.1), 0 0 20px ${color}10` }}>
+                  {/* @ts-ignore */}
+                  <iconify-icon icon={icon} width="20" style={{ color }}></iconify-icon>
+                  <span className="text-sm font-medium text-white/90">{name}</span>
+                  {/* 36. Indicadores de Status da API */}
+                  <AnimatePresence>
+                    {profile === 'dev' && (
+                      <motion.div initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 0 }} exit={{ opacity: 0, width: 0 }} className="flex items-center gap-2 border-l border-white/20 ps-3 ms-1 overflow-hidden whitespace-nowrap">
+                        <div className={`w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] ${shouldReduceMotion ? '' : 'animate-pulse'}`}></div>
+                        <span className="text-xs font-mono text-emerald-400">API: 99.99%</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
-              {/* 31. Transição de Layout Fluida */}
+              {/* Hero Text & Buttons */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={profile}
@@ -194,27 +198,26 @@ export default function ProductPage({ slug }: Props) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="flex flex-col items-center md:items-start"
                 >
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-bricolage font-semibold text-white leading-tight mb-6 tracking-tighter">
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-bricolage font-semibold text-white leading-tight mb-6 tracking-tighter text-center md:text-left">
                     {profile === 'dev' && slug === 'kivopay' ? "Infraestrutura financeira unificada via API." : tagline}
                   </h1>
-                  {/* 46. Contraste WCAG AAA (text-white/50 -> text-white/70) */}
-                  <p className="text-xl text-white/70 leading-[1.8] max-w-xl font-light mb-8">
+                  <p className="text-xl text-white/70 leading-[1.8] max-w-xl font-light mb-8 text-center md:text-left">
                     {profile === 'dev' 
                       ? "Integre pagamentos, liquidação e contas escrow em minutos com nossa API RESTful. Sandboxes dedicados e webhooks em tempo real." 
                       : solution.description}
                   </p>
 
-                  {/* 40. Botões Adaptativos */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
                     {profile === 'dev' ? (
-                      <MagneticButton className="px-6 py-3 rounded-full border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)] font-medium transition-all flex items-center gap-2">
+                      <MagneticButton className="w-full sm:w-auto px-6 py-3 rounded-full border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)] font-medium transition-all flex items-center justify-center gap-2">
                         {/* @ts-ignore */}
                         <iconify-icon icon="solar:document-text-linear" width="20"></iconify-icon>
                         Documentação da API
                       </MagneticButton>
                     ) : (
-                      <MagneticButton className="px-6 py-3 rounded-full bg-white text-black font-medium hover:bg-white/90 transition-all flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                      <MagneticButton className="w-full sm:w-auto px-6 py-3 rounded-full bg-white text-black font-medium hover:bg-white/90 transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
                         Falar com Vendas
                       </MagneticButton>
                     )}
@@ -281,9 +284,19 @@ export default function ProductPage({ slug }: Props) {
                         <span>1</span><span>2</span><span>3</span><span>4</span>
                       </div>
                       <div className="ps-6">
-                        <div><span className="text-pink-500">curl</span> <span className="text-white/60">-X POST</span> <span className="text-emerald-300">https://api.kivo.com.br/v1/{slug}/init</span> \</div>
-                        <div><span className="text-white/60">-H</span> <span className="text-yellow-200">"Authorization: Bearer sk_test_123"</span> \</div>
-                        <div><span className="text-white/60">-d</span> <span className="text-yellow-200">'{'{'}"amount": 5000, "currency": "BRL"{'}'}'</span></div>
+                        {productData.apiSnippet ? (
+                          <>
+                            <div><span className="text-pink-500">curl</span> <span className="text-white/60">-X {productData.apiSnippet.method}</span> <span className="text-emerald-300">https://api.kivo.com.br{productData.apiSnippet.endpoint}</span> \</div>
+                            <div><span className="text-white/60">-H</span> <span className="text-yellow-200">"Authorization: Bearer sk_test_123"</span> \</div>
+                            <div><span className="text-white/60">-d</span> <span className="text-yellow-200">'{productData.apiSnippet.body}'</span></div>
+                          </>
+                        ) : (
+                          <>
+                            <div><span className="text-pink-500">curl</span> <span className="text-white/60">-X POST</span> <span className="text-emerald-300">https://api.kivo.com.br/v1/{slug}/init</span> \</div>
+                            <div><span className="text-white/60">-H</span> <span className="text-yellow-200">"Authorization: Bearer sk_test_123"</span> \</div>
+                            <div><span className="text-white/60">-d</span> <span className="text-yellow-200">'{'{'}"amount": 5000, "currency": "BRL"{'}'}'</span></div>
+                          </>
+                        )}
                       </div>
                       <div className="mt-8 border-t border-white/5 pt-4">
                         <div className="text-white/30 text-xs mb-2">// Response 200 OK</div>
@@ -303,14 +316,17 @@ export default function ProductPage({ slug }: Props) {
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     exit={{ opacity: 0, filter: "blur(10px)" }}
                     transition={{ duration: 0.5 }}
-                    className="absolute inset-0 flex items-center justify-center z-10"
+                    className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
                   >
-                    {/* 7. Life Cycle Visual Hint */}
+                    {/* Visualizer Decorations */}
                     <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-1000 pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at center, ${color} 1px, transparent 1px)`, backgroundSize: '24px 24px' }}></div>
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#000_70%)] pointer-events-none"></div>
 
-                    <div className={`w-64 h-64 rounded-full blur-[80px] opacity-30 pointer-events-none ${shouldReduceMotion ? '' : 'animate-pulse'}`} style={{ backgroundColor: color }}></div>
-                    <div className={`relative z-10 w-32 h-32 rounded-3xl border border-white/20 bg-black/60 backdrop-blur-2xl flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-transform duration-700 pointer-events-none ${shouldReduceMotion ? '' : 'group-hover:scale-110 group-hover:rotate-3'}`}>
+                    {/* Fixed Central Glow */}
+                    <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[80px] opacity-30 pointer-events-none ${shouldReduceMotion ? '' : 'animate-pulse'}`} style={{ backgroundColor: color }}></div>
+                    
+                    {/* Fixed Central Icon Box */}
+                    <div className={`relative w-32 h-32 rounded-3xl border border-white/20 bg-black/60 backdrop-blur-2xl flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-transform duration-700 ${shouldReduceMotion ? '' : 'group-hover:scale-110'}`}>
                       {/* @ts-ignore */}
                       <iconify-icon icon={icon} width="64" style={{ color }}></iconify-icon>
                     </div>

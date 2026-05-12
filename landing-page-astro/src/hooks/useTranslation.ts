@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ui, defaultLang } from '../i18n/ui';
 
 export function useTranslation() {
-  const [lang, setLang] = useState('en');
+  const [lang, setLang] = useState(defaultLang);
 
   useEffect(() => {
     let saved = localStorage.getItem('sgr-lang');

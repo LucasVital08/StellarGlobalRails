@@ -1,7 +1,7 @@
 const CACHE_NAME = 'kivo-cache-v1';
 const urlsToCache = [
   '/',
-  '/favicon.svg',
+  '/favicon.ico',
   '/manifest.json'
 ];
 

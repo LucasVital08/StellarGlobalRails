@@ -7,7 +7,7 @@ import MagneticButton from './ui/MagneticButton';
 export default function Navigation() {
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (latest > 50) {
@@ -64,6 +64,20 @@ export default function Navigation() {
     window.dispatchEvent(new CustomEvent('kivo_profile_change', { detail: newProfile }));
   };
 
+  const toggleLang = (newLang: string) => {
+    localStorage.setItem('sgr-lang', newLang);
+    window.dispatchEvent(new CustomEvent('sgr-lang-changed', { detail: newLang }));
+  };
+
+  const languageFlags: Record<string, string> = {
+    'pt-br': 'circle-flags:br',
+    'en': 'circle-flags:us',
+    'es': 'circle-flags:es',
+    'zh': 'circle-flags:cn',
+    'ko': 'circle-flags:kr',
+    'ar': 'circle-flags:sa'
+  };
+
   return (
     <motion.div 
       initial={{ y: -100 }}
@@ -111,14 +125,21 @@ export default function Navigation() {
         </div>
 
         <div className="flex items-center gap-4">
-          <MagneticButton 
-            onClick={() => window.open('https://kivo.com.br', '_blank')}
-            className="hidden md:flex bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-emerald-400 hover:text-black transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(52,211,153,0.4)] group items-center"
-          >
-            {t('nav.access')}
-            {/* @ts-ignore */}
-            <iconify-icon icon="solar:arrow-right-linear" width="16" class="ml-2 group-hover:translate-x-1 transition-transform"></iconify-icon>
-          </MagneticButton>
+          {/* Language Selector */}
+          <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1 backdrop-blur-md">
+            {Object.entries(languageFlags).map(([l, icon]) => (
+              <button 
+                key={l}
+                onClick={() => toggleLang(l)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${lang === l ? 'bg-white/20 shadow-lg' : 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'}`}
+                title={l.toUpperCase()}
+              >
+                {/* @ts-ignore */}
+                <iconify-icon icon={icon} width="20"></iconify-icon>
+              </button>
+            ))}
+          </div>
+
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

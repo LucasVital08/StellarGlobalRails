@@ -3,6 +3,7 @@ import { ViewTransitions } from 'astro:transitions';
 import '../styles/global.css';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
+import Atmosphere from '../components/Atmosphere';
 
 interface Props {
   title: string;
@@ -16,7 +17,7 @@ const { title } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
     
     {/* Item 40: Dynamic Meta Images */}
@@ -45,6 +46,7 @@ const { title } = Astro.props;
   </head>
   <body>
     <div class="bg-[#050505] min-h-screen font-sans selection:bg-emerald-500 selection:text-black">
+      <Atmosphere client:load />
       <div class="bg-grain"></div>
       
       {/* Item 34: Zero-JS Fallback UX */}
