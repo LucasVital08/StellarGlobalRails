@@ -10,3 +10,4 @@ export default defineConfig({
   },
   output: 'static',
 });
+// Force Astro server restart to clear SSR cache (19:48)

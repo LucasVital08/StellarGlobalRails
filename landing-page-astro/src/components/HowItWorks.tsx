@@ -4,7 +4,7 @@ import { useTranslation } from '../hooks/useTranslation';
 
 function BlueprintGrid() {
   return (
-    <div className="absolute inset-0 z-0 opacity-10 pointer-events-none overflow-hidden">
+    <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
       <div className="absolute inset-0" style={{ 
         backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
         backgroundSize: '40px 40px'
@@ -33,7 +33,8 @@ export default function HowItWorks() {
       desc: t('howitworks.step1.desc'),
       icon: "solar:wallet-money-bold-duotone",
       color: "#3b82f6",
-      tech: "INGESTION_V1"
+      tech: t('howitworks.step1.tech'),
+      techDesc: t('howitworks.step1.tech_desc')
     },
     {
       id: 2,
@@ -41,7 +42,8 @@ export default function HowItWorks() {
       desc: t('howitworks.step2.desc'),
       icon: "solar:cpu-bold-duotone",
       color: "#10b981",
-      tech: "STELLAR_ROUTING"
+      tech: t('howitworks.step2.tech'),
+      techDesc: t('howitworks.step2.tech_desc')
     },
     {
       id: 3,
@@ -49,7 +51,8 @@ export default function HowItWorks() {
       desc: t('howitworks.step3.desc'),
       icon: "solar:server-square-bold-duotone",
       color: "#a855f7",
-      tech: "ATOMIC_SETTLEMENT"
+      tech: t('howitworks.step3.tech'),
+      techDesc: t('howitworks.step3.tech_desc')
     },
     {
       id: 4,
@@ -57,12 +60,13 @@ export default function HowItWorks() {
       desc: t('howitworks.step4.desc'),
       icon: "solar:hand-money-bold-duotone",
       color: "#f97316",
-      tech: "FINAL_LIQUIDITY"
+      tech: t('howitworks.step4.tech'),
+      techDesc: t('howitworks.step4.tech_desc')
     }
   ];
 
   return (
-    <section ref={containerRef} className="bg-neutral-950 text-white relative border-t border-white/5">
+    <section ref={containerRef} className="bg-neutral-950 text-white relative border-t border-white/5 isolate">
       <BlueprintGrid />
       
       {/* Moving Ambient Orb */}
@@ -78,7 +82,7 @@ export default function HowItWorks() {
 
       <div className="max-w-[90rem] mx-auto px-6 md:px-12 py-32 md:py-48 relative z-10">
         
-        <div className="flex flex-col lg:flex-row gap-24 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 relative">
           
           {/* Left Column: Narrative Content */}
           <div className="lg:w-1/2 space-y-[40vh] pb-[40vh]">
@@ -90,7 +94,7 @@ export default function HowItWorks() {
             >
               <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-mono text-white/60 uppercase tracking-[0.2em]">System Architecture</span>
+                <span className="text-[10px] font-mono text-white/60 uppercase tracking-[0.2em]">{t('howitworks.sysarch')}</span>
               </div>
               <h2 className="text-4xl md:text-8xl font-bricolage font-medium mb-10 leading-[0.95] tracking-tighter">
                 {t('howitworks.title')}
@@ -140,7 +144,7 @@ export default function HowItWorks() {
           </div>
 
           {/* Right Column: Holographic Terminal */}
-          <div className="hidden lg:block lg:w-1/2">
+          <div className="hidden lg:block relative">
             <div className="sticky top-[10vh] h-[80vh] flex items-center justify-center">
               
               <div className="relative w-full max-w-[600px] aspect-square group">
@@ -216,7 +220,7 @@ export default function HowItWorks() {
                               </span>
                            </motion.div>
                            <p className="text-[10px] font-mono text-white/20 uppercase tracking-widest max-w-[200px]">
-                              Analyzing protocol and validating through on-chain ledger
+                              {step.techDesc}
                            </p>
                         </div>
                       </motion.div>
@@ -235,10 +239,8 @@ export default function HowItWorks() {
                 {/* Ambient Shadow/Glow */}
                 <div className="absolute -inset-10 bg-emerald-500/5 blur-[80px] rounded-full -z-10 opacity-50" />
               </div>
-
             </div>
           </div>
-
         </div>
       </div>
     </section>

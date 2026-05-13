@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import MagneticButton from '../ui/MagneticButton';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function CoreSimulator({ slug, color }: { slug?: string, color: string }) {
   if (slug === 'kivopay' || slug === 'kivo') return <KivoPaySimulator color={color} />;
@@ -40,18 +41,18 @@ function KivoPaySimulator({ color }: { color: string }) {
       <div className="flex flex-col md:flex-row items-center gap-12">
         <div className="flex-1 space-y-6 z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> ENGINE ACTIVE
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> {t('simulator.kivo.engine_active')}
           </div>
           <h3 className="text-3xl font-bricolage text-white">{t('simulator.kivo.title')}</h3>
           <p className="text-white/50 text-sm leading-relaxed">{t('simulator.kivo.desc')}</p>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-              <div className="text-[10px] text-white/30 uppercase mb-1">Status</div>
+              <div className="text-[10px] text-white/30 uppercase mb-1">{t('simulator.kivo.status_label')}</div>
               <div className="text-sm font-mono uppercase" style={{ color: active ? color : '#333' }}>{status}</div>
             </div>
             <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-              <div className="text-[10px] text-white/30 uppercase mb-1">Latency</div>
+              <div className="text-[10px] text-white/30 uppercase mb-1">{t('simulator.kivo.latency_label')}</div>
               <div className="text-sm font-mono text-white">{active ? (status === 'SETTLED' ? '2.1s' : '12ms') : '--'}</div>
             </div>
           </div>
@@ -149,7 +150,7 @@ function KivoPaySimulator({ color }: { color: string }) {
                 exit={{ opacity: 0 }} 
                 className="absolute top-12 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-lg text-[10px] text-red-400 font-mono z-50 backdrop-blur-xl"
               >
-                LATENCY_DETECTED: BIFURCATING_PATH...
+                {t('simulator.kivo.alert_latency')}
               </motion.div>
             )}
             {status === 'SETTLED' && (
@@ -158,7 +159,7 @@ function KivoPaySimulator({ color }: { color: string }) {
                 animate={{ opacity: 1, scale: 1 }} 
                 className="absolute bottom-12 left-1/2 -translate-x-1/2 px-4 py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-[10px] text-emerald-400 font-mono z-50 backdrop-blur-xl"
               >
-                OPTIMIZED_VIA_STELLAR
+                {t('simulator.kivo.alert_optimized')}
               </motion.div>
             )}
           </AnimatePresence>
@@ -237,7 +238,7 @@ function SocialPaySimulator({ color }: { color: string }) {
                 <div className="w-3/4 h-1 bg-white/10" />
                 <div className="w-1/2 h-1 bg-white/5" />
               </div>
-              <span className="text-[8px] font-mono text-white/30">IDENTITY_OK</span>
+              <span className="text-[8px] font-mono text-white/30">{t('simulator.social.identity_ok')}</span>
            </motion.div>
 
            {/* Node 2: Split */}
@@ -250,7 +251,7 @@ function SocialPaySimulator({ color }: { color: string }) {
                 <div className="w-full h-1 bg-white/10" />
                 <div className="w-2/3 h-1 bg-white/5" />
               </div>
-              <span className="text-[8px] font-mono text-white/30">SPLIT_ROUTED</span>
+              <span className="text-[8px] font-mono text-white/30">{t('simulator.social.split_routed')}</span>
            </motion.div>
 
            {/* Node 3: Success */}
@@ -259,7 +260,7 @@ function SocialPaySimulator({ color }: { color: string }) {
                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/50 rounded-2xl flex items-center gap-3 z-20">
                   {/* @ts-ignore */}
                   <iconify-icon icon="solar:check-circle-bold" width="24" className="text-emerald-400"></iconify-icon>
-                  <div className="text-xs font-mono text-emerald-400">LEDGER_SETTLED (185ms)</div>
+                  <div className="text-xs font-mono text-emerald-400">{t('simulator.social.ledger_settled')}</div>
                </motion.div>
              )}
            </AnimatePresence>
@@ -291,11 +292,11 @@ function ContractEaseSimulator({ color }: { color: string }) {
           <div className="space-y-3">
              <div className="flex items-center gap-3 text-xs text-white/40">
                 <div className={`w-2 h-2 rounded-full ${isSigned ? 'bg-emerald-400' : 'bg-white/10'}`} />
-                Integridade SHA-256
+                {t('simulator.contract.integrity')}
              </div>
              <div className="flex items-center gap-3 text-xs text-white/40">
                 <div className={`w-2 h-2 rounded-full ${isSigned ? 'bg-emerald-400' : 'bg-white/10'}`} />
-                Registro On-chain Stellar
+                {t('simulator.contract.onchain')}
              </div>
           </div>
 
@@ -356,8 +357,8 @@ function ContractEaseSimulator({ color }: { color: string }) {
                        <iconify-icon icon="solar:shield-keyhole-bold" width="40" style={{ color }}></iconify-icon>
                     </motion.div>
                     <div className="text-[10px] font-mono font-bold tracking-widest text-center" style={{ color }}>
-                       CONTRACT_SECURED<br/>
-                       <span className="text-white/40">HASH: 8F4B...2C9A</span>
+                       {t('simulator.contract.secured')}<br/>
+                       <span className="text-white/40">{t('simulator.contract.hash')}</span>
                     </div>
                  </div>
               </div>

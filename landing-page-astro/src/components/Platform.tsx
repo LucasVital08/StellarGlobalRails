@@ -78,7 +78,7 @@ export default function Platform() {
   };
 
   return (
-    <section className="py-32 bg-neutral-950 text-white relative overflow-hidden" id="platform" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
+    <section className="py-32 bg-neutral-950 text-white relative" id="platform">
       {/* Cinematic Background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(16,185,129,0.1),transparent_70%)]" />
@@ -173,55 +173,21 @@ export default function Platform() {
           {/* Right Column: Interactive 3D Visualizer */}
           <motion.div 
             variants={itemVariants}
-            style={{ rotateX, rotateY, perspective: 1000 }}
-            className="relative lg:h-[650px] w-full"
+            style={{ rotateX, rotateY, perspective: 1000, transformStyle: "preserve-3d" }}
+            className="relative lg:h-[650px] w-full cursor-default group"
             ref={containerRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
           >
-            {/* Visualizer Card */}
-            <div className="relative h-full w-full rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-neutral-900/40 backdrop-blur-3xl group/viz">
-              {/* Minimal Technical Header */}
-              <div className="absolute top-8 left-8 right-8 z-30 flex justify-between items-center opacity-60">
-                <div className="text-[10px] font-mono tracking-[0.2em] uppercase text-white/60 flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
-                  Global Core
-                </div>
-                <div className="text-[10px] font-mono tracking-widest text-emerald-500">v2.4.0</div>
-              </div>
-
+            {/* Visualizer Background Layer (with rounded corners and overflow hidden) */}
+            <div className="absolute inset-0 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-neutral-900/40 backdrop-blur-3xl">
               <div className="absolute inset-0 z-10 opacity-20 pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-              
-              {/* The Core Content */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <FeatureVisualizer id="platform-network" type="feature" icon="solar:globus-linear" color="#10b981" />
-              </div>
-
-              {/* Bottom Info */}
-              <div className="absolute bottom-8 left-8 right-8 z-30 flex justify-between items-end">
-                <div className="space-y-2">
-                   <div className="flex gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <motion.div 
-                          key={i}
-                          animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ duration: 1, delay: i * 0.2, repeat: Infinity }}
-                          className="w-1 h-3 bg-emerald-500/50 rounded-full"
-                        />
-                      ))}
-                   </div>
-                   <div className="text-[8px] font-mono text-white/20 uppercase tracking-[0.3em]">Processing global liquidity</div>
-                </div>
-                <div className="flex -space-x-3">
-                   {[...Array(3)].map((_, i) => (
-                     <div key={i} className="w-8 h-8 rounded-full border-2 border-neutral-900 bg-neutral-800 flex items-center justify-center overflow-hidden">
-                        <div className="w-full h-full bg-gradient-to-br from-emerald-500/20 to-transparent" />
-                     </div>
-                   ))}
-                </div>
-              </div>
-
-
             </div>
-            
+
+            {/* The Core Content 3D Layer (NO overflow-hidden, preserves 3D) */}
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ transformStyle: "preserve-3d" }}>
+              <FeatureVisualizer id="platform-network" type="feature" icon="solar:globus-linear" color="#10b981" />
+            </div>
             {/* Ambient Glows around the visualizer */}
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/20 blur-[60px] rounded-full pointer-events-none" />
             <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-500/10 blur-[60px] rounded-full pointer-events-none" />

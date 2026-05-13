@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 import { motion, AnimatePresence } from 'motion/react';
 
 declare global {
@@ -58,83 +59,48 @@ export default function FeatureVisualizer({ id, type, icon, color }: { id: strin
 // --- CORE VISUALIZERS ---
 
 function PlatformNetworkVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-transparent">
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-transparent group pointer-events-none">
       
-      {/* Subtle Depth Gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,transparent_100%)]" />
-
-      {/* The Cinematic Core System */}
-      <div className="relative w-[500px] h-[500px] flex items-center justify-center">
+      {/* Dynamic Aurora Gradient Background */}
+      <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-tr from-emerald-500/0 via-emerald-500/5 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      
+      {/* 3D Floating Content */}
+      <div style={{ transform: "translateZ(80px)" }} className="relative z-10 text-center flex flex-col items-center pointer-events-none">
         
-        {/* SVG Orbital Rings - Ultra Clean */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 500 500">
-          <defs>
-            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={color} stopOpacity="0.4" />
-              <stop offset="50%" stopColor={color} stopOpacity="0.05" />
-              <stop offset="100%" stopColor={color} stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id="ringGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="white" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="white" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
-          <motion.g animate={{ rotateZ: 360 }} transition={{ duration: 60, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: 'center' }}>
-            <ellipse cx="250" cy="250" rx="180" ry="80" fill="none" stroke="url(#ringGrad)" strokeWidth="1" transform="rotate(30 250 250)" />
-          </motion.g>
-
-          <motion.g animate={{ rotateZ: -360 }} transition={{ duration: 45, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: 'center' }}>
-            <ellipse cx="250" cy="250" rx="220" ry="60" fill="none" stroke="url(#ringGrad2)" strokeWidth="1" transform="rotate(-45 250 250)" />
-          </motion.g>
-
-          <motion.g animate={{ rotateZ: 360 }} transition={{ duration: 90, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: 'center' }}>
-            <circle cx="250" cy="250" r="140" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4 8" />
-          </motion.g>
-        </svg>
-
-        {/* Central Core Element */}
-        <div className="relative z-10 flex items-center justify-center">
-          {/* Core Glow */}
-          <div className="absolute w-64 h-64 rounded-full blur-[80px] mix-blend-screen opacity-30 animate-pulse" style={{ backgroundColor: color }} />
-          
-          {/* Glass Sphere */}
-          <div className="w-32 h-32 rounded-full border border-white/10 bg-black/40 backdrop-blur-2xl shadow-[inset_0_0_40px_rgba(255,255,255,0.05)] flex items-center justify-center relative overflow-hidden">
-            {/* Specular Highlight */}
-            <div className="absolute top-2 left-6 w-16 h-8 bg-white/10 rounded-full blur-[8px] rotate-[-30deg]" />
-            
-            {/* The Icon */}
-            {/* @ts-ignore */}
-            <iconify-icon icon="solar:globus-linear" width="48" style={{ color }}></iconify-icon>
-          </div>
+        {/* Glowing Icon Container */}
+        <div className="mb-10 w-28 h-28 rounded-[2rem] bg-white text-black flex items-center justify-center shadow-[0_20px_50px_rgba(255,255,255,0.2)] border-2 border-white/50 relative">
+          <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-white to-transparent opacity-50 mix-blend-overlay" />
+          {/* @ts-ignore */}
+          <iconify-icon icon="solar:globus-bold" width="56"></iconify-icon>
         </div>
 
-        {/* Single Premium Data Node */}
-        <motion.div 
-          animate={{ rotateZ: 360 }} 
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        >
-           <div className="absolute" style={{ transform: 'translateY(-140px)' }}>
-             <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_15px_white]" />
-           </div>
-        </motion.div>
+        {/* Cinematic Text */}
+        <h3 className="text-6xl lg:text-8xl font-bricolage font-medium text-white mb-6 drop-shadow-2xl tracking-tighter">
+          {t('fv.core.title')}
+        </h3>
+        
+        <p className="text-white/60 font-light text-xl lg:text-2xl drop-shadow-lg max-w-md leading-relaxed">
+          {t('fv.core.desc')}
+        </p>
 
-        {/* Status Overlay */}
-        <div className="absolute bottom-16 right-16 px-4 py-2 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md flex items-center gap-3">
+        {/* Subtle Ping */}
+        <div className="mt-12 flex items-center gap-3 bg-black/40 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/10 shadow-2xl">
           <div className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: color }}></span>
-            <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: color }}></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </div>
-          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">System Stable</span>
+          <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold">{t('fv.core.status')}</span>
         </div>
+
       </div>
     </div>
   );
 }
 
 function RadarVisualizer({ color, title, variant = 'normal' }: { color: string, title: string, variant?: 'normal' | 'neural' }) {
+  const { t } = useTranslation();
   if (variant === 'neural') {
     // ... (keep the neural variant as is since it was just upgraded)
     return (
@@ -155,7 +121,7 @@ function RadarVisualizer({ color, title, variant = 'normal' }: { color: string, 
               <div className="w-20 h-20 bg-black rounded-full border-2 flex items-center justify-center z-10 shadow-2xl relative" style={{ borderColor: color }}>
                  <div className="flex flex-col items-center">
                    <iconify-icon icon="solar:shield-warning-bold" width="32" style={{ color }}></iconify-icon>
-                   <span className="text-[6px] font-mono mt-1 text-white/40 uppercase">Risk Scan</span>
+                   <span className="text-[6px] font-mono mt-1 text-white/40 uppercase">{t('fv.radar.risk_scan')}</span>
                  </div>
               </div>
             </motion.div>
@@ -163,8 +129,8 @@ function RadarVisualizer({ color, title, variant = 'normal' }: { color: string, 
           <motion.div animate={{ scale: [0, 4], opacity: [0, 0.4, 0] }} transition={{ duration: 2, repeat: Infinity }} className="absolute inset-0 border-2 border-red-500 rounded-full" />
         </div>
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4">
-          <div className="px-2 py-1 rounded bg-red-500/10 border border-red-500/30 text-[8px] font-bold text-red-500">FRAUD_DENIED</div>
-          <div className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-[8px] font-bold text-emerald-500">SAFE_BATCH</div>
+          <div className="px-2 py-1 rounded bg-red-500/10 border border-red-500/30 text-[8px] font-bold text-red-500">{t('fv.radar.fraud_denied')}</div>
+          <div className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-[8px] font-bold text-emerald-500">{t('fv.radar.safe_batch')}</div>
         </div>
       </div>
     );
@@ -226,14 +192,14 @@ function RadarVisualizer({ color, title, variant = 'normal' }: { color: string, 
       {/* Technical Data Bar */}
       <div className="absolute bottom-6 left-8 right-8 flex justify-between items-end border-t border-white/5 pt-4">
          <div className="flex flex-col gap-1">
-            <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest">Global Scan Status</span>
+            <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest">{t('fv.radar.status')}</span>
             <div className="flex items-center gap-2">
                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-               <span className="text-[10px] font-mono text-emerald-500 font-bold">14 PATHS IDENTIFIED</span>
+               <span className="text-[10px] font-mono text-emerald-500 font-bold">{t('fv.radar.paths')}</span>
             </div>
          </div>
          <div className="text-right">
-            <span className="text-[14px] font-bricolage font-bold text-white tracking-tighter">OPTIMIZING...</span>
+            <span className="text-[14px] font-bricolage font-bold text-white tracking-tighter">{t('fv.radar.optimizing')}</span>
          </div>
       </div>
     </div>
@@ -241,15 +207,16 @@ function RadarVisualizer({ color, title, variant = 'normal' }: { color: string, 
 }
 
 function H2MVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex flex-col items-center bg-[#050505] p-4 overflow-hidden">
-      {/* Smart Routing Header - Pushed to the very top */}
+      {/* {t('fv.h2m.routing')} Header - Pushed to the very top */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-50 whitespace-nowrap">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[10px] font-mono text-white/80 tracking-[0.2em] uppercase">Smart Routing</span>
+          <span className="text-[10px] font-mono text-white/80 tracking-[0.2em] uppercase">{t('fv.h2m.routing')}</span>
         </div>
-        <span className="text-[8px] font-mono text-white/30 tracking-widest">ANALYZING LIQUIDITY PATHS...</span>
+        <span className="text-[8px] font-mono text-white/30 tracking-widest">{t('fv.h2m.analyzing')}</span>
       </div>
 
       <div className="relative w-full max-w-3xl flex items-center justify-between gap-2 px-8 mt-24">
@@ -268,7 +235,7 @@ function H2MVisualizer({ color }: { color: string }) {
               </div>
             </div>
           </motion.div>
-          <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">Input</span>
+          <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">{t('fv.h2m.input')}</span>
         </div>
 
         {/* MIDDLE: THE AGENT & PATHS */}
@@ -298,7 +265,7 @@ function H2MVisualizer({ color }: { color: string }) {
                 transition={{ duration: 1.5, repeat: Infinity }} 
                 className="w-2 h-2 rounded-full bg-emerald-400" 
                />
-               <span className="tracking-widest uppercase">Stellar Network</span>
+               <span className="tracking-widest uppercase">{t('fv.h2m.network')}</span>
             </div>
           </div>
         </div>
@@ -317,25 +284,25 @@ function H2MVisualizer({ color }: { color: string }) {
                </motion.div>
             </div>
           </motion.div>
-          <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">Settled</span>
+          <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">{t('fv.h2m.settled')}</span>
         </div>
       </div>
 
       {/* FOOTER: Cost Comparison */}
       <div className="mt-12 flex items-center gap-6 z-50">
          <div className="flex flex-col items-center gap-1">
-            <span className="text-[8px] text-white/20 uppercase">Traditional</span>
+            <span className="text-[8px] text-white/20 uppercase">{t('fv.h2m.traditional')}</span>
             <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-[10px] text-white/40 font-mono">
-               COST: $45.00
+               {t('fv.h2m.cost')}: $45.00
             </div>
          </div>
          
          <div className="w-8 h-px bg-white/10" />
 
          <div className="flex flex-col items-center gap-1">
-            <span className="text-[8px] text-emerald-500/40 uppercase font-bold tracking-widest">Kivo Routing</span>
+            <span className="text-[8px] text-emerald-500/40 uppercase font-bold tracking-widest">{t('fv.h2m.kivo_routing')}</span>
             <div className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-bold font-mono shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-               COST: $0.0001
+               {t('fv.h2m.cost')}: $0.0001
             </div>
          </div>
       </div>
@@ -344,6 +311,7 @@ function H2MVisualizer({ color }: { color: string }) {
 }
 
 function M2MVisualizer({ color, variant = 'feature' }: { color: string, variant?: 'agent' | 'feature' }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#050505] p-12 overflow-hidden">
       <div className="relative w-full max-w-lg flex items-center justify-between z-10">
@@ -377,6 +345,7 @@ function M2MVisualizer({ color, variant = 'feature' }: { color: string, variant?
 }
 
 function DataVaultVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
       <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 4, repeat: Infinity }} className="w-40 h-40 bg-black/60 backdrop-blur-2xl border-2 rounded-[2rem] flex items-center justify-center relative z-10" style={{ borderColor: color, boxShadow: `0 0 50px ${color}30` }}>
@@ -388,6 +357,7 @@ function DataVaultVisualizer({ color }: { color: string }) {
 }
 
 function ReputationVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center p-8">
       <div className="relative w-48 h-48">
@@ -397,7 +367,7 @@ function ReputationVisualizer({ color }: { color: string }) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-5xl font-bricolage font-bold text-white">98.4</span>
-          <span className="text-[10px] font-mono tracking-widest text-white/40 uppercase">Trust Score</span>
+          <span className="text-[10px] font-mono tracking-widest text-white/40 uppercase">{t('fv.reputation.score')}</span>
         </div>
       </div>
     </div>
@@ -405,6 +375,7 @@ function ReputationVisualizer({ color }: { color: string }) {
 }
 
 function IdentityVisualizer({ icon, color }: { icon: string, color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="w-56 h-80 bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 relative overflow-hidden">
@@ -422,6 +393,7 @@ function IdentityVisualizer({ icon, color }: { icon: string, color: string }) {
 }
 
 function TerminalVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -449,7 +421,7 @@ function TerminalVisualizer({ color }: { color: string }) {
                 <div className="mb-auto pt-8">
                    <iconify-icon icon="solar:card-2-bold" width="32" className="text-white/10"></iconify-icon>
                 </div>
-                <span className="text-[10px] font-mono text-white/40 mb-2 uppercase tracking-widest">Sale Amount</span>
+                <span className="text-[10px] font-mono text-white/40 mb-2 uppercase tracking-widest">{t('fv.terminal.amount')}</span>
                 <div className="text-4xl font-bricolage font-bold text-white">R$ 150,00</div>
                 <div className="mt-4 flex gap-1">
                    {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-emerald-500/50 animate-pulse" />)}
@@ -470,7 +442,7 @@ function TerminalVisualizer({ color }: { color: string }) {
                    <iconify-icon icon="solar:nfc-bold-duotone" width="64" className="text-emerald-500/20 animate-pulse"></iconify-icon>
                 </div>
                 
-                <span className="text-xs font-mono text-white/60 mt-20">TAP CARD OR PHONE</span>
+                <span className="text-xs font-mono text-white/60 mt-20">{t('fv.terminal.tap')}</span>
                 
                 {/* Floating Card Animation */}
                 <motion.div 
@@ -498,8 +470,8 @@ function TerminalVisualizer({ color }: { color: string }) {
                    />
                    <div className="absolute inset-4 border border-white/5 rounded-full animate-pulse" />
                 </div>
-                <span className="text-[10px] font-mono text-emerald-500 animate-pulse uppercase tracking-[0.3em]">Processing</span>
-                <span className="text-[8px] font-mono text-white/20 mt-2">VIA STELLAR GLOBAL RAILS</span>
+                <span className="text-[10px] font-mono text-emerald-500 animate-pulse uppercase tracking-[0.3em]">{t('fv.terminal.processing')}</span>
+                <span className="text-[8px] font-mono text-white/20 mt-2">{t('fv.terminal.via')}</span>
               </motion.div>
             )}
 
@@ -512,10 +484,10 @@ function TerminalVisualizer({ color }: { color: string }) {
                 <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center mb-6 shadow-[0_0_50px_#10b98140]">
                    <iconify-icon icon="solar:check-read-bold" width="40" className="text-black"></iconify-icon>
                 </div>
-                <span className="text-xl font-bold text-white uppercase tracking-tighter">Approved</span>
+                <span className="text-xl font-bold text-white uppercase tracking-tighter">{t('fv.terminal.approved')}</span>
                 <div className="mt-8 space-y-1">
-                   <div className="text-[8px] font-mono text-white/40 uppercase">Auth: 992-B8</div>
-                   <div className="text-[8px] font-mono text-white/40 uppercase">Total: R$ 150,00</div>
+                   <div className="text-[8px] font-mono text-white/40 uppercase">{t('fv.terminal.auth')}: 992-B8</div>
+                   <div className="text-[8px] font-mono text-white/40 uppercase">{t('fv.terminal.total')}: R$ 150,00</div>
                 </div>
               </motion.div>
             )}
@@ -539,6 +511,7 @@ function TerminalVisualizer({ color }: { color: string }) {
 }
 
 function ImmutabilityVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="relative flex flex-col gap-4">
@@ -554,6 +527,7 @@ function ImmutabilityVisualizer({ color }: { color: string }) {
 }
 
 function MarketplaceVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="grid grid-cols-3 gap-4">
@@ -568,6 +542,7 @@ function MarketplaceVisualizer({ color }: { color: string }) {
 }
 
 function SplitVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="relative w-64 h-64">
@@ -585,6 +560,7 @@ function SplitVisualizer({ color }: { color: string }) {
 }
 
 function InvoicingVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex items-center justify-center p-12">
       <div className="w-full max-w-sm bg-white/[0.03] border border-white/10 rounded-2xl p-6">
@@ -601,6 +577,7 @@ function InvoicingVisualizer({ color }: { color: string }) {
 }
 
 function EscrowVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center p-8">
        <div className="relative w-48 h-48 flex items-center justify-center">
@@ -613,17 +590,19 @@ function EscrowVisualizer({ color }: { color: string }) {
 }
 
 function ArbitrationVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center p-12">
       <div className="w-20 h-20 rounded-full bg-black border-2 flex items-center justify-center" style={{ borderColor: color }}>
          <iconify-icon icon="solar:scale-bold" width="40" style={{ color }}></iconify-icon>
       </div>
-      <div className="mt-8 text-[10px] font-mono text-emerald-500 animate-pulse">IA ANALYZING DISPUTE...</div>
+      <div className="mt-8 text-[10px] font-mono text-emerald-500 animate-pulse">{t('fv.arbitration.analyzing')}</div>
     </div>
   );
 }
 
 function CrossBorderVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-[#050505] p-8 overflow-hidden">
       {/* Mini Map Decoration */}
@@ -680,13 +659,14 @@ function CrossBorderVisualizer({ color }: { color: string }) {
 
       <div className="mt-12 text-center">
          <div className="text-2xl font-bold text-white">$12,450.00</div>
-         <div className="text-[10px] font-mono text-emerald-500 uppercase tracking-[0.3em] mt-1">Settled in 3.2s</div>
+         <div className="text-[10px] font-mono text-emerald-500 uppercase tracking-[0.3em] mt-1">{t('fv.crossborder.settled')}</div>
       </div>
     </div>
   );
 }
 
 function ComplianceVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center p-12 bg-black/20 rounded-3xl overflow-hidden">
       <div className="relative w-48 h-64 bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden p-4">
@@ -716,7 +696,7 @@ function ComplianceVisualizer({ color }: { color: string }) {
 
       <div className="mt-8 flex items-center gap-3">
         <div className="px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-[10px] font-mono text-emerald-400 font-bold animate-pulse">
-          AML_VALID_OK
+          {t('fv.compliance.aml')}
         </div>
       </div>
     </div>
@@ -724,6 +704,7 @@ function ComplianceVisualizer({ color }: { color: string }) {
 }
 
 function FundraisingVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center p-8 bg-black/20 rounded-3xl">
        <div className="w-full max-w-sm flex flex-col gap-6">
@@ -737,16 +718,18 @@ function FundraisingVisualizer({ color }: { color: string }) {
 }
 
 function MassDisbursementVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center p-8">
       <div className="w-full max-w-sm h-64 bg-white/[0.01] border border-white/5 rounded-3xl p-6">
-         <div className="text-emerald-400 text-[8px] font-bold">EXECUTING BATCH #882</div>
+         <div className="text-emerald-400 text-[8px] font-bold">{t('fv.mass.executing')}</div>
       </div>
     </div>
   );
 }
 
 function HealthVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex items-center justify-center bg-black/20 p-8 rounded-3xl">
        <div className="w-full max-w-sm aspect-video bg-white/[0.03] border border-white/10 rounded-2xl p-6">
@@ -757,6 +740,7 @@ function HealthVisualizer({ color }: { color: string }) {
 }
 
 function EngagementVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full h-full flex items-center justify-center">
        <div className="w-24 h-24 rounded-full bg-black border-2 flex items-center justify-center" style={{ borderColor: color }}>
@@ -767,22 +751,27 @@ function EngagementVisualizer({ color }: { color: string }) {
 }
 
 function JuridicaVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return <HealthVisualizer color={color} />;
 }
 
 function NegotiationVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return <M2MVisualizer color={color} />;
 }
 
 function TokenizationVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return <InvoicingVisualizer color={color} />;
 }
 
 function MultiSigVisualizer({ color }: { color: string }) {
+  const { t } = useTranslation();
   return <VaultVisualizer color={color} />;
 }
 
 function GenericVisualizer({ icon, color }: { icon: string, color: string }) {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full aspect-square flex items-center justify-center">
       <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 4, repeat: Infinity }} className="w-48 h-48 rounded-full border border-white/20 flex items-center justify-center">

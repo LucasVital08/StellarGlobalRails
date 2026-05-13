@@ -36,7 +36,7 @@ export default function WhySGR() {
   ];
 
   return (
-    <section id="why-sgr" className="py-48 bg-neutral-950 relative overflow-hidden">
+    <section id="why-sgr" className="py-48 bg-neutral-950 relative">
       {/* 3D Perspective Grid Background */}
       <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{ 
         backgroundImage: `perspective(1000px) rotateX(60deg) linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), perspective(1000px) rotateX(60deg) linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,

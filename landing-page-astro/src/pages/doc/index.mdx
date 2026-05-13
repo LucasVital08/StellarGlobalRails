@@ -1,54 +1,77 @@
 ---
-layout: '../../layouts/DocLayout.astro'
-title: "Ecosystem Overview"
-description: "Visão Geral do Ecossistema Stellar Global Rails"
-status: "Produção"
+layout: ../../layouts/DocLayout.astro
+title: "Documentação Consolidada: Kivo, ContractEase e SocialPay"
+description: "Visão geral e especificações técnicas dos 3 produtos core do Stellar Global Rails."
 ---
 
-# O Ecossistema Stellar Global Rails
+# Stellar Global Rails: Core Products
 
-Bem-vindo ao hub de documentação executiva do **SGR**. Esta área é dedicada a explicar o *porquê* e o *como* o nosso ecossistema gera valor no mundo real.
-
-## 🌟 Nossa Visão
-
-A economia global ainda é fragmentada. O **Stellar Global Rails (SGR)** atua como uma ponte que une a infraestrutura tradicional de pagamentos à inovação sem fronteiras da rede **Stellar**.
-
-Diferente de carteiras crypto voltadas para especulação, o SGR abstrai completamente a complexidade da Web3. Nossos usuários e empresas não precisam saber o que é uma "Seed Phrase" ou "Gas Fee" para realizar operações globais.
-
-## 🏗️ Fluxo do Ecossistema
-
-<pre class="mermaid bg-white/5 p-8 rounded-2xl border border-white/5 my-10 flex justify-center">
-graph TD
-    User((Usuário/Empresa)) --> Anchor[Âncora Fiat]
-    Anchor --> Stellar[Rede Stellar]
-    Stellar --> Kivo[Kivo Pay Gateway]
-    Kivo --> ContractEase[ContractEase]
-    Kivo --> SocialPay[SocialPay]
-    Kivo --> Onyx[Onyx Risk]
-    Kivo --> Global((Mundo Real))
-</pre>
-
-## 🚀 Os Módulos Principais
-
-Nossa arquitetura foi desenhada para ser modular e extensível. Abaixo, as joias da coroa:
-
-### 1. Kivo Pay (Core Engine)
-O motor principal de roteamento e conversão fiat/crypto usando as APIs da rede Stellar e Soroban Smart Contracts.
-
-### 2. ContractEase B2B
-Gestão do ciclo de vida de contratos corporativos. Resolve o problema de fraude através da **imutabilidade on-chain** (Stellar), validando identidades com OTP/Magic Links.
-
-### 3. SocialPay
-Uma sub-rede privada para envio de pagamentos via `@handle` de forma simples, mas que preserva a privacidade da empresa em relação aos balanços globais, expondo apenas um feed auditável das transações.
-
-## 📈 Roadmap & Pós-Hackathon
-
-Nosso compromisso vai além deste Hackathon. Aqui está o que vem por aí:
-
-- **Q3/2026:** Beta fechado de *SocialPay* em favelas e negócios locais.
-- **Q4/2026:** Lançamento público do *ContractEase* focado em PMEs (Pequenas e Médias Empresas).
-- **Q1/2027:** Licenciamento B2B da engine de risco *Onyx*.
+Bem-vindo à documentação oficial consolidada dos produtos centrais do **Stellar Global Rails**. O ecossistema foi refinado para focar em três pilares fundamentais que resolvem os maiores atritos na movimentação de valor global, automação de acordos e onboarding de usuários.
 
 ---
 
-*Utilize a navegação lateral para explorar cada produto em detalhes.*
+## 1. Kivo Pay (O Motor de Liquidação)
+
+O **Kivo Pay** é o coração financeiro da infraestrutura. Ele atua como um gateway e roteador de liquidez atômica, abstraindo a complexidade da rede Stellar e dos contratos Soroban.
+
+### 🎯 Problema que Resolve
+Pagamentos cross-border e B2B tradicionais são lentos (D+2) e caros (taxas SWIFT + spreads altos). Empresas precisam de liquidez instantânea e custos microscópicos.
+
+### 💡 Solução Kivo
+- **Liquidação em 3 segundos** via USDC/BRZ na rede Stellar.
+- **Integração Híbrida:** Suporte a PIX, cartões e open finance na entrada (on-ramp) e saída (off-ramp) via âncoras locais.
+- **Path Payment Strict Receive:** O usuário paga em BRL, e o recebedor obtém USDC na outra ponta de forma atômica e sem flutuação cambial durante o roteamento.
+- **Kivo Payouts (Lote):** Envio massivo de saldos para centenas de endpoints de uma só vez, com conciliação automática.
+
+### 🏗️ Arquitetura
+1. **API Gateway:** Endpoints RESTful para emissão de invoices e links de pagamento.
+2. **Anchor Platform:** Integração nativa com âncoras SEP-24 (como a Kriptos) para entrada e saída de fiat.
+3. **Webhook Engine:** Notificações em tempo real sobre confirmação no ledger.
+
+---
+
+## 2. ContractEase B2B (Motor de Imutabilidade)
+
+O **ContractEase** é a nossa camada jurídica on-chain. Ele une a linguagem natural (avaliada por IA) com a imutabilidade dos Smart Contracts (Soroban).
+
+### 🎯 Problema que Resolve
+Contratos tradicionais são documentos mortos, exigem intermediários custosos para validação e não possuem garantia de execução atrelada ao pagamento (escrow manual é ineficiente).
+
+### 💡 Solução ContractEase
+- **Geração por IA:** Modelos locais criam contratos a partir de prompts naturais ajustados à jurisdição.
+- **Assinatura On-Chain:** O "aceite" do contrato gera um hash único guardado para sempre no ledger da Stellar.
+- **Smart Escrow (Soroban):** Fundos são travados na blockchain e liberados apenas quando as condições do contrato são validadas (através de oráculos ou APIs externas).
+
+### 🏗️ Arquitetura
+1. **AI Layer:** Integração com LLMs para gerar e validar cláusulas contratuais e conformidade AML/KYC.
+2. **Soroban Rust Contracts:** Lógica de escrow on-chain, multisig e conditions-to-release nativa.
+3. **IPFS Storage:** Documentos físicos/legais armazenados de forma descentralizada.
+
+---
+
+## 3. SocialPay (Identidade e Confiança)
+
+O **SocialPay** é a camada de identidade digital e roteamento social. Ele transforma a UX de blockchain em uma experiência familiar, parecida com Venmo ou PicPay, mas rodando globalmente.
+
+### 🎯 Problema que Resolve
+Endereços de blockchain são complexos (`GABC123...`). Onboarding no mundo cripto exige entender chaves privadas e redes, o que assusta o usuário comum (e o varejo B2C).
+
+### 💡 Solução SocialPay
+- **Federação Stellar (SEP-02):** Transações feitas usando nomes legíveis (ex: `carlos*sgr.com` em vez de chaves longas).
+- **Social Split:** Divisão de contas, vaquinhas globais e cobranças grupais que são liquidadas on-chain instantaneamente.
+- **KYC/AML Transparente:** Integração de metadados atestando a validade do usuário sem vazar dados sensíveis, garantindo que o dinheiro só trafegue entre identidades verificadas (Trustlines).
+
+### 🏗️ Arquitetura
+1. **Federation Server:** Resolve human-readable handles para chaves públicas em microssegundos.
+2. **Sponsored Reserves:** A infraestrutura paga a taxa de criação de carteira e trustlines (via muxed accounts ou sponsoring), oferecendo uma experiência 100% bankless e sem custo inicial para o usuário final.
+3. **Graph Network:** Mapeamento de interações frequentes para habilitar pagamentos em um clique.
+
+---
+
+## Como eles se conectam?
+
+O **Stellar Global Rails** prova que essas verticais não são produtos isolados:
+Um **Contrato** gerado no *ContractEase* utiliza a identidade verificada pelo *SocialPay* e liquida os fundos travados em escrow usando a engine de roteamento e off-ramp do *Kivo Pay*.
+
+> **Para Desenvolvedores:**  
+> Todas essas funcionalidades são expostas em nossa API unificada e Webhooks. Comece a integrar acessando o Dashboard de Desenvolvedor.

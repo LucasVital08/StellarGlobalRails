@@ -6,6 +6,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import SpotlightCard from './ui/SpotlightCard';
 
 function FeaturePill({ feature, delay, productId }: { feature: Product['features'][0]; delay: number; productId: string }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -24,8 +25,8 @@ function FeaturePill({ feature, delay, productId }: { feature: Product['features
           <iconify-icon icon={feature.icon} width="24" class="text-white/60 group-hover:text-white transition-colors"></iconify-icon>
         </div>
         <div className="flex-1">
-          <h5 className="text-white font-medium text-base mb-1 group-hover:text-emerald-400 transition-colors">{feature.name}</h5>
-          <p className="text-white/30 text-xs leading-relaxed group-hover:text-white/50 transition-colors">{feature.description}</p>
+          <h5 className="text-white font-medium text-base mb-1 group-hover:text-emerald-400 transition-colors">{t(`product.${productId}.feature.${feature.id}.name`)}</h5>
+          <p className="text-white/30 text-xs leading-relaxed group-hover:text-white/50 transition-colors">{t(`product.${productId}.feature.${feature.id}.desc`)}</p>
         </div>
         <div className="font-mono text-[9px] text-white/10 uppercase tracking-widest self-end pb-1">
           {feature.originModule}
@@ -35,7 +36,8 @@ function FeaturePill({ feature, delay, productId }: { feature: Product['features
   );
 }
 
-function AIAgentCard({ agent, delay, color }: { agent: Product['aiAgents'][0]; delay: number; color: string }) {
+function AIAgentCard({ agent, delay, color, productId }: { agent: Product['aiAgents'][0]; delay: number; color: string; productId: string }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -46,17 +48,17 @@ function AIAgentCard({ agent, delay, color }: { agent: Product['aiAgents'][0]; d
     >
       <div className="relative p-5 rounded-2xl bg-neutral-900/40 border border-white/5 group-hover:border-white/10 transition-all duration-300 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 opacity-20" style={{ backgroundColor: color }} />
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between mb-4">
            <div className="flex items-center gap-3">
              <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center">
                 {/* @ts-ignore */}
                 <iconify-icon icon={agent.icon} width="18" style={{ color }}></iconify-icon>
              </div>
-             <span className="text-white/80 text-sm font-medium uppercase tracking-wider">{agent.title}</span>
+             <span className="text-white/80 text-sm font-medium uppercase tracking-wider">{t(`product.${productId}.agent.${agent.id}.title`)}</span>
            </div>
            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: color }} />
         </div>
-        <p className="text-white/30 text-xs leading-relaxed group-hover:text-white/50 transition-colors">{agent.description}</p>
+        <p className="text-white/30 text-xs leading-relaxed group-hover:text-white/50 transition-colors">{t(`product.${productId}.agent.${agent.id}.desc`)}</p>
         
         {/* Tech decorative numbers */}
         <div className="absolute bottom-2 right-3 font-mono text-[8px] text-white/5">
@@ -76,7 +78,7 @@ function ProductSection({ product, index }: { product: Product; index: number })
   return (
     <motion.div
       ref={sectionRef}
-      className="relative py-32 md:py-48 overflow-hidden"
+      className="relative py-32 md:py-48"
     >
       {/* Background Section Ambient Glow */}
       <div 
@@ -88,7 +90,7 @@ function ProductSection({ product, index }: { product: Product; index: number })
       ></div>
 
       <div className="w-full max-w-[90rem] mx-auto px-6 md:px-12 relative z-10">
-        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-24 lg:gap-32 items-center ${isReversed ? 'lg:flex-row-reverse' : ''}`}>
+        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-24 lg:gap-32 ${isReversed ? 'lg:flex-row-reverse' : ''}`}>
           
           {/* Info column */}
           <div className={`${isReversed ? 'lg:order-2' : 'lg:order-1'}`}>
@@ -108,7 +110,7 @@ function ProductSection({ product, index }: { product: Product; index: number })
                 </div>
                 <div className="space-y-1">
                    <h4 className="text-white/40 text-xs font-mono uppercase tracking-[0.3em]">{t('suite.product')} {index + 1}</h4>
-                   <h3 className="text-3xl font-bricolage font-semibold text-white tracking-tight">{product.name}</h3>
+                   <h3 className="text-3xl font-bricolage font-semibold text-white tracking-tight">{t(`product.${product.id}.name`)}</h3>
                 </div>
               </div>
 
@@ -124,7 +126,7 @@ function ProductSection({ product, index }: { product: Product; index: number })
                  {product.differentials.map((diff, i) => (
                     <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/5 text-[11px] text-white/50 uppercase tracking-widest font-mono">
                        <div className="w-1 h-1 rounded-full" style={{ backgroundColor: product.color }} />
-                       {diff}
+                       {t(`product.${product.id}.diff.${i}`)}
                     </div>
                  ))}
               </div>
@@ -147,6 +149,7 @@ function ProductSection({ product, index }: { product: Product; index: number })
 
           {/* Features column */}
           <div className={`${isReversed ? 'lg:order-1' : 'lg:order-2'} relative`}>
+            <div className="lg:sticky lg:top-32 h-fit">
             {/* Background Decorative Frame */}
             <div className="absolute -inset-10 border border-white/[0.03] rounded-[4rem] -z-10 pointer-events-none" />
             <div className="absolute -top-20 -right-10 font-mono text-[80px] text-white/[0.02] font-bold pointer-events-none uppercase">
@@ -169,7 +172,7 @@ function ProductSection({ product, index }: { product: Product; index: number })
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {product.aiAgents.map((agent, i) => (
-                    <AIAgentCard key={agent.id} agent={agent} delay={0.4 + i * 0.1} color={product.color} />
+                    <AIAgentCard key={agent.id} agent={agent} delay={0.4 + i * 0.1} color={product.color} productId={product.id} />
                   ))}
                 </div>
               </div>
@@ -177,6 +180,7 @@ function ProductSection({ product, index }: { product: Product; index: number })
           </div>
         </div>
       </div>
+    </div>
     </motion.div>
   );
 }
