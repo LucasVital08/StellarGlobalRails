@@ -181,7 +181,6 @@ export default function Platform() {
           >
             {/* Visualizer Background Layer (with rounded corners and overflow hidden) */}
             <div className="absolute inset-0 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-neutral-900/40 backdrop-blur-3xl">
-              <div className="absolute inset-0 z-10 opacity-20 pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
             </div>
 
             {/* The Core Content 3D Layer (NO overflow-hidden, preserves 3D) */}

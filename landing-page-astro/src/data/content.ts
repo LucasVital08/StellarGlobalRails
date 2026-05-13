@@ -295,7 +295,7 @@ const contractEase: Product = {
       id: "multi-sig-workflow",
       name: "Aprovação Multi-Sig Visual",
       description: "Crie fluxos complexos de aprovação em diretoria (ex: 3 de 5 diretores precisam assinar). A interface visualiza a governança corporativa injetada diretamente na blockchain.",
-      icon: "solar:network-linear",
+      icon: "solar:users-group-rounded-bold",
       originModule: "Governança"
     }
   ],

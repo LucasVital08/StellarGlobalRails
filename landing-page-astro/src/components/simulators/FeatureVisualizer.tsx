@@ -767,7 +767,216 @@ function TokenizationVisualizer({ color }: { color: string }) {
 
 function MultiSigVisualizer({ color }: { color: string }) {
   const { t } = useTranslation();
-  return <VaultVisualizer color={color} />;
+  const [stage, setStage] = useState(0);
+
+  useEffect(() => {
+    // Cycle through 4 stages: 
+    // 0: 1st signing
+    // 1: 2nd signing
+    // 2: 3rd signing
+    // 3: Completed (Lock flashes)
+    const timer = setInterval(() => {
+      setStage((s) => (s + 1) % 4);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative w-full h-full flex flex-col items-center justify-center p-8 bg-black/20 rounded-3xl overflow-hidden group">
+      {/* 3D Technical Grid Background */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none" 
+           style={{ 
+             backgroundImage: `linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`, 
+             backgroundSize: '30px 30px', 
+             transform: 'perspective(500px) rotateX(60deg) translateY(20%) scale(2)',
+             maskImage: 'radial-gradient(circle at center, black, transparent 80%)'
+           }} />
+
+      {/* Central Authority Node (The Ledger/Smart Contract) */}
+      <div className="relative z-20 mb-16">
+        <motion.div 
+          animate={{ 
+            scale: stage === 3 ? [1, 1.2, 1] : 1,
+            rotate: stage === 3 ? [0, 5, -5, 0] : 0,
+            borderColor: stage >= 1 ? color : 'rgba(255,255,255,0.1)'
+          }}
+          className="w-24 h-24 rounded-[2.5rem] bg-black border-2 flex items-center justify-center relative shadow-[0_0_60px_rgba(0,0,0,0.8)]"
+        >
+          <div className="absolute inset-0 rounded-[2.5rem] bg-white opacity-[0.02] blur-xl" />
+          
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={stage === 3 ? 'success' : 'lock'}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+                filter: stage === 3 ? ['brightness(1)', 'brightness(2)', 'brightness(1)'] : 'none'
+              }}
+              transition={stage === 3 ? { duration: 0.5, repeat: 3 } : { duration: 0.3 }}
+            >
+              <iconify-icon 
+                icon={stage === 3 ? "solar:lock-unlocked-bold-duotone" : "solar:shield-keyhole-bold-duotone"} 
+                width="48" 
+                style={{ color: stage >= 1 ? color : 'rgba(255,255,255,0.2)' }}
+              ></iconify-icon>
+            </motion.div>
+          </AnimatePresence>
+          
+          {/* Internal Loading Ring */}
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-2 border border-dashed rounded-full opacity-20"
+            style={{ borderColor: color }}
+          />
+        </motion.div>
+        
+        {/* Glow Pulse */}
+        <AnimatePresence>
+          {stage === 3 && (
+            <motion.div 
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1.8, opacity: 0.3 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 rounded-full blur-3xl"
+              style={{ backgroundColor: color }}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* The Signers Bridge */}
+      <div className="relative z-10 flex gap-10">
+        
+        {/* BRIDGE LINE - Horizontal link between signers */}
+        <div className="absolute top-8 left-8 right-8 h-0.5 bg-white/5 overflow-hidden">
+           <motion.div 
+            animate={{ 
+              width: stage === 0 ? '33%' : stage === 1 ? '66%' : '100%',
+              backgroundColor: stage >= 1 ? color : 'rgba(255,255,255,0.1)'
+            }}
+            className="h-full"
+            style={{ boxShadow: stage >= 1 ? `0 0 10px ${color}` : 'none' }}
+           />
+        </div>
+
+        {[0, 1, 2].map((i) => {
+          const hasSigned = stage > i;
+          const currentlySigning = stage === i;
+          const isComplete = stage === 3;
+          
+          return (
+            <div key={i} className="relative flex flex-col items-center">
+              {/* Vertical Connection Beam to Core - Only for the middle one */}
+              {i === 1 && (
+                <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[2px] h-16 overflow-visible">
+                  <div className="w-full h-full bg-white/5" />
+                  {(hasSigned || currentlySigning || isComplete) && (
+                    <motion.div 
+                      initial={{ height: 0 }}
+                      animate={{ height: '100%' }}
+                      className="absolute top-0 left-0 w-full"
+                      style={{ 
+                        backgroundColor: color, 
+                        boxShadow: `0 0 15px ${color}`,
+                        opacity: currentlySigning ? 0.4 : 1 
+                      }}
+                    />
+                  )}
+                </div>
+              )}
+
+              <motion.div
+                animate={{ 
+                  scale: currentlySigning ? 1.1 : 1,
+                  y: currentlySigning ? -5 : 0,
+                  boxShadow: (currentlySigning || (isComplete && i === 2)) ? `0 10px 30px ${color}30` : '0 10px 20px rgba(0,0,0,0.4)'
+                }}
+                className="w-16 h-16 rounded-2xl bg-black border-2 flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-500"
+                style={{ borderColor: (hasSigned || currentlySigning || isComplete) ? color : 'rgba(255,255,255,0.05)' }}
+              >
+                {(hasSigned || isComplete) && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.15 }}
+                    className="absolute inset-0"
+                    style={{ backgroundColor: color }}
+                  />
+                )}
+                
+                <AnimatePresence mode="wait">
+                  {(hasSigned || isComplete) ? (
+                    <motion.div key="check" initial={{ scale: 0, rotate: -45 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0 }}>
+                       <iconify-icon icon="solar:check-read-bold" width="28" style={{ color }}></iconify-icon>
+                    </motion.div>
+                  ) : currentlySigning ? (
+                    <motion.div key="signing" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity }}>
+                       <iconify-icon icon="solar:pen-new-square-bold" width="24" style={{ color }}></iconify-icon>
+                    </motion.div>
+                  ) : (
+                    <motion.div key="idle">
+                       <iconify-icon icon="solar:user-bold" width="24" className="text-white/10"></iconify-icon>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Signing Progress Ring */}
+                {currentlySigning && (
+                  <svg className="absolute inset-0 -rotate-90 pointer-events-none">
+                    <motion.circle 
+                      cx="50%" cy="50%" r="28" 
+                      fill="none" stroke={color} strokeWidth="2" 
+                      strokeDasharray="176" 
+                      initial={{ strokeDashoffset: 176 }}
+                      animate={{ strokeDashoffset: 0 }}
+                      transition={{ duration: 3, ease: "linear" }}
+                    />
+                  </svg>
+                )}
+              </motion.div>
+              
+              <span className="mt-3 text-[7px] font-mono opacity-30 uppercase tracking-[0.2em]">Auth_Node_{i+1}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Cinematic HUD Footer */}
+      <div className="absolute bottom-6 left-8 right-8 flex flex-col gap-4">
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        
+        <div className="flex justify-between items-end">
+          <div className="flex flex-col gap-1">
+            <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest">Workflow Consensus</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bricolage font-bold text-white tracking-tighter">
+                {stage === 0 ? "0" : stage === 1 ? "1" : stage === 2 ? "2" : "3"} <span className="text-white/20 text-sm">/ 3</span>
+              </span>
+              <span className="text-[10px] font-mono text-emerald-500 font-bold opacity-80 uppercase tracking-widest">
+                {stage === 3 ? "Execution Verified" : "Collecting Proofs"}
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-1">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="w-4 h-1 rounded-full bg-white/5 overflow-hidden">
+                  <motion.div 
+                    animate={{ width: (stage > i || stage === 3) ? '100%' : '0%' }}
+                    className="h-full"
+                    style={{ backgroundColor: color }}
+                  />
+                </div>
+              ))}
+            </div>
+            <span className="text-[8px] font-mono text-white/20 uppercase">Network Stability: 100%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function GenericVisualizer({ icon, color }: { icon: string, color: string }) {

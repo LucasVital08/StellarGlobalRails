@@ -6,7 +6,10 @@ import mdx from '@astrojs/mdx';
 export default defineConfig({
   integrations: [react(), mdx()],
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'motion/react', 'motion']
+    }
   },
   output: 'static',
 });

@@ -82,10 +82,10 @@ export default function HowItWorks() {
 
       <div className="max-w-[90rem] mx-auto px-6 md:px-12 py-32 md:py-48 relative z-10">
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 relative">
           
           {/* Left Column: Narrative Content */}
-          <div className="lg:w-1/2 space-y-[40vh] pb-[40vh]">
+          <div className="space-y-[40vh] pb-[40vh]">
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -144,8 +144,8 @@ export default function HowItWorks() {
           </div>
 
           {/* Right Column: Holographic Terminal */}
-          <div className="hidden lg:block relative">
-            <div className="sticky top-[10vh] h-[80vh] flex items-center justify-center">
+          <div className="hidden lg:block relative h-full">
+            <div className="sticky top-24 h-[calc(100vh-120px)] flex items-center justify-center">
               
               <div className="relative w-full max-w-[600px] aspect-square group">
                 {/* 3D Container Effect */}
