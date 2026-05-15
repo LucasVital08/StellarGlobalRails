@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/charl/OneDrive/Documentos/GitHub/StellarGlobalRails/landing-page-astro/**)",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'feat\\(kivo\\): add SDK M2M Templates Gallery, MCP Demo section, and Stellar vs Fiat comparison to ProductPage *)"
+    ]
+  }
+}
