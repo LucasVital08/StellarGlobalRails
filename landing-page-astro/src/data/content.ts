@@ -362,31 +362,63 @@ const kivoPay: Product = {
   color: "#10B981",
   gradient: "from-emerald-500 to-teal-600",
   name: "Kivo Pay",
-  tagline: "Onde o dinheiro se move na velocidade da luz.",
+  tagline: "Máquinas precisam de rede. Kivo é a rede.",
   hero: {
-    title: "O motor de liquidação para humanos e máquinas.",
-    subtitle: "Pagamentos tradicionais via Pix e stablecoins para humanos (H2M). Micropagamentos autônomos via protocolo x402 para IoT e agentes de IA (M2M). Tudo liquidado em 3 segundos na Stellar.",
-    ctas: ["Começar agora", "Falar com a equipe"]
+    title: "SDK M2M + Gateway Programável + MCP para Agentes de IA",
+    subtitle: "Infraestrutura de pagamentos para máquinas. Veículos elétricos carregando autonomamente, casas negociando energia, agentes de IA pagando por serviços. Tudo liquidado em 3-5 segundos na Stellar.",
+    ctas: ["Explorar SDK", "Ver Demo"]
   },
   problem: {
-    title: "Pagamentos globais ainda são lentos, caros e fragmentados.",
+    title: "Máquinas precisam de liquidação, não de pagamentos.",
     items: [
-      "Remessas internacionais custam 5-10% do valor por envio",
-      "Pagamentos em massa exigem planilhas e conciliação manual",
-      "Nenhuma infraestrutura para pagamentos entre máquinas (IoT)",
-      "Vendedores informais não têm acesso a maquininhas ou gateways"
+      "Fiat não consegue liquidar em tempo real para transações autônomas",
+      "Intermediários bloqueiam autonomia das máquinas",
+      "Sem programabilidade de condições em transações tradicionais",
+      "Sem garantia de atomicidade e irreversibilidade instantânea"
     ]
   },
   solution: {
-    title: "Um ecossistema unificado para cada necessidade de pagamento.",
-    description: "Do terminal dedicado para feiras offline ao gateway para e-commerces globais. De remessas familiares a micropagamentos entre carros elétricos e eletropostos. O Kivo Pay liquida tudo em segundos via Stellar."
+    title: "Uma infraestrutura nativa para a economia de máquinas.",
+    description: "SDK M2M com protocolo x402, Gateway Programável com Path Payments, MCP para conectar agentes de IA. Três camadas de funcionalidade para máquinas transacionarem de forma autônoma, segura e irreversível."
   },
   responsibilities: [
-    "H2M: Pagamentos tradicionais via Pix, Cartão e Stablecoins",
-    "H2M: Stellar Invoice (faturamento), Stellar Payouts (massa), FamilyBridge (remessas), Vakinha (crowdfunding)",
-    "M2M: Pagamentos autônomos via protocolo x402 sem intervenção humana",
-    "M2M: IoT financeiro — veículos, smart home, agentes de IA transacionando",
-    "Conformidade: Todas as transações auditadas pelo ONYX Compliance Engine"
+    "SDK M2M: Protocolo x402 com conditional payments e smart contracts",
+    "Gateway Programável: Path Payments, Atomic Bundling, Webhooks",
+    "MCP: Ferramentas para conectar agentes de IA autônomos",
+    "Compliance: ONYX monitora cada transação em tempo real",
+    "Templates: Prontos para EV Charging, Energy Trading, AI Agents"
+  ],
+  templates: [
+    {
+      id: "ev-charging",
+      name: "EV Charging Network",
+      description: "Veículos elétricos pagando por energia em tempo real",
+      icon: "solar:car-2-linear",
+      useCase: "Eletroposte liquida pagamento de recarga em segundos"
+    },
+    {
+      id: "energy-trading",
+      name: "Energy Trading P2P",
+      description: "Casas vendendo energia solar para vizinhos",
+      icon: "solar:bolt-circle-linear",
+      useCase: "Smart meter negocia e liquida energia automaticamente"
+    },
+    {
+      id: "ai-agents",
+      name: "Autonomous AI Agents",
+      description: "Agentes pagando por serviços computacionais",
+      icon: "solar:cpu-bolt-linear",
+      useCase: "Agent pagando por API calls e compute resources"
+    }
+  ],
+  sdkFeatures: [
+    "M2M Protocol (x402) Support",
+    "Conditional Payment Execution",
+    "Zero-Knowledge Proof Integration",
+    "Smart Contract Compatibility",
+    "Webhooks & Real-time Callbacks",
+    "Rate Limiting & Throttling",
+    "Fallback & Redundancy Built-in"
   ],
   aiAgents: [
     {
@@ -416,68 +448,75 @@ const kivoPay: Product = {
   ],
   features: [
     {
-      id: "cross-border",
-      name: "Remessas Cross-border",
-      description: "Envio internacional instantâneo com taxas até 90% menores. Filho nos EUA, pais no Brasil: USDC sai, BRL chega via Pix em segundos com comprovante verificável.",
-      icon: "solar:home-smile-linear",
-      originModule: "FamilyBridge"
+      id: "m2m-protocol",
+      name: "M2M Protocol (x402)",
+      description: "Pagamentos autônomos via protocolo x402 sem intervenção humana. Máquinas negociando e pagando diretamente com lógica embarcada.",
+      icon: "solar:cpu-bolt-linear",
+      originModule: "Kivo Core"
     },
     {
-      id: "mass-disbursements",
-      name: "Mass Disbursements",
-      description: "Pagamentos em massa para centenas de recebedores com um clique. Upload de planilha CSV, depósito em USDC e execução atômica com relatório em tempo real.",
-      icon: "solar:buildings-linear",
-      originModule: "Stellar Payouts"
+      id: "conditional-payments",
+      name: "Conditional Execution",
+      description: "Pague apenas quando condições são cumpridas. Smart contracts Soroban integrados com lógica de negócio.",
+      icon: "solar:settings-linear",
+      originModule: "Soroban"
     },
     {
-      id: "social-fundraising",
-      name: "Social Fundraising",
-      description: "Crowdfunding transparente e auditável. Causas sociais que recebem do mundo todo com arrecadação em USDC/BRZ. Cada doação registrada permanentemente on-chain.",
-      icon: "solar:heart-pulse-linear",
-      originModule: "Vakinha Global"
-    },
-    {
-      id: "m2m-payments",
-      name: "Pagamentos Autônomos M2M",
-      description: "Micro-transações via protocolo x402 da Stellar sem intervenção humana. Veículos elétricos negociando recargas, smart homes transacionando energia, agentes de IA pagando por serviços.",
-      icon: "solar:bolt-circle-linear",
+      id: "iot-financial",
+      name: "IoT Financial",
+      description: "Veículos, smart homes e dispositivos IoT transacionando autonomamente. Micropagamentos contínuos via payment channels.",
+      icon: "solar:devices-linear",
       originModule: "QuiloVolt"
     },
     {
-      id: "kivo-terminal",
-      name: "Kivo Terminal (POS)",
-      description: "Hardware dedicado para pagamentos offline e feiras. Aceite Pix, Cartões e Stablecoins em um terminal robusto que sincroniza automaticamente com a rede Stellar.",
-      icon: "solar:card-2-linear",
-      originModule: "Kivo Terminal"
+      id: "smart-contracts",
+      name: "Smart Contracts",
+      description: "Contratos inteligentes Soroban com lógica de negócio embarcada. Execução automática baseada em eventos.",
+      icon: "solar:document-text-linear",
+      originModule: "Soroban"
+    },
+    {
+      id: "webhooks-m2m",
+      name: "Webhooks & Event-Driven",
+      description: "Comunicação em tempo real entre máquinas. Event-driven architecture para reatividade instantânea.",
+      icon: "solar:widget-2-linear",
+      originModule: "Kivo Core"
+    },
+    {
+      id: "zero-intermediaries",
+      name: "Zero Intermediários",
+      description: "Comunicação P2P direta entre máquinas. Nenhum terceiro no meio. Liquidação direta na Stellar.",
+      icon: "solar:shield-check-linear",
+      originModule: "Stellar"
     }
   ],
   differentials: [
-    "Liquidação T+0 — 3 a 5 segundos para qualquer transação",
-    "Integração nativa com Pix para entrada e saída de BRL",
-    "Conformidade via ONYX Compliance Engine em cada transação",
-    "Dois braços: H2M (humanos) e M2M (máquinas via x402)",
-    "Hardware Kivo Terminal para vendedores informais e POS offline",
-    "Caminho para a economia de agentes de IA e IoT financeiro"
+    "M2M Protocol (x402) — Pagamentos autônomos sem intervenção humana",
+    "Liquidação T+0 — 3 a 5 segundos na Stellar Network",
+    "Conditional Execution — Pague apenas quando condições são cumpridas",
+    "Zero Intermediários — P2P direto entre máquinas",
+    "Pronto para Agentes de IA — MCP nativo integrado e funcionando",
+    "Compliance Automático — ONYX monitora cada transação em tempo real"
   ],
   steps: [
-    "Escolha o módulo Kivo ideal para o seu negócio",
-    "Configure pagamentos: Pix, Cartão, USDC ou M2M autônomo",
-    "Venda via Terminal, Mobile App ou Gateway Web",
-    "Receba em USDC ou BRL na sua carteira Stellar",
-    "Liquidação em 3 a 5 segundos via rede Stellar",
-    "Acesse relatórios e histórico no dashboard unificado"
+    "Integre o SDK M2M via NPM ou API Gateway",
+    "Implemente contratos inteligentes com lógica de negócio",
+    "Configure webhooks para comunicação em tempo real",
+    "Conecte agentes de IA via MCP",
+    "Teste em Stellar Testnet",
+    "Deploy em produção com Stellar Public Network"
   ],
   forWhom: [
-    "Brasileiros no exterior que enviam dinheiro para a família",
-    "ONGs e instituições que pagam bolsistas em massa",
-    "Vendedores ambulantes e negócios locais sem maquininha",
-    "Operadores de redes de carregamento EV e IoT industrial",
-    "E-commerces com vendas internacionais"
+    "Operadores de redes de recarga EV (eletrificação veicular)",
+    "Plataformas de trading de energia (smart grids)",
+    "Startups de agentes de IA autônomos",
+    "IoT industrial e dispositivos conectados",
+    "Pesquisadores de economia descentralizada de máquinas"
   ],
   benefits: [
-    { icon: "lucide:rocket", title: "Liquidação em Segundos", description: "Não espere dias úteis. Em 3 a 5 segundos, o recurso está liquidado e irreversível." },
-    { icon: "lucide:wallet", title: "Taxas até 90% Menores", description: "Use stablecoins para fugir de spreads abusivos, SWIFT e custos de correspondentes bancários." },
-    { icon: "lucide:cpu", title: "Pronto para Máquinas", description: "Protocolo x402 permite que dispositivos IoT negociem e paguem de forma autônoma." }
+    { icon: "lucide:check-circle", title: "Zero Intermediários", description: "Comunicação direta machine-to-machine sem terceiros bloqueando autonomia." },
+    { icon: "lucide:zap", title: "Autonomous Execution", description: "Agentes tomam decisões e executam pagamentos sem intervenção humana." },
+    { icon: "lucide:code", title: "Programmable Payments", description: "Lógica de negócio embarcada com smart contracts Soroban." }
   ],
   techDetails: {
     description: "O Kivo Pay combina o protocolo nativo da Stellar com Soroban smart contracts para criar um motor de liquidação programável que atende tanto humanos (H2M) quanto máquinas (M2M).",
@@ -493,17 +532,17 @@ const kivoPay: Product = {
     ]
   },
   faq: [
-    { question: "Preciso entender de cripto para usar?", answer: "Não. A experiência foca em 'Enviar Dólar' e 'Receber Real'. Toda a parte de blockchain é abstraída para o background." },
-    { question: "O Pix cai na hora?", answer: "Sim. Nossos parceiros (âncoras) efetuam o Pix assim que a transação Stellar é confirmada na rede principal." },
-    { question: "Como funciona o pagamento entre máquinas?", answer: "Dispositivos IoT utilizam o protocolo x402 para negociar e executar micropagamentos automaticamente, baseados em regras pré-definidas no ContractEase." },
-    { question: "Existe limite de pagamentos em massa?", answer: "O sistema suporta milhares de registros, processando em blocos atômicos para otimizar o throughput da rede Stellar." },
-    { question: "Funciona sem internet no POS?", answer: "Sim. O Kivo Terminal suporta assinaturas offline temporárias com reconciliação posterior." }
+    { question: "Qual é a diferença entre H2M e M2M?", answer: "H2M (Human-to-Machine) é para pessoas transacionando com sistemas. M2M (Machine-to-Machine) é máquinas negociando e pagando entre si de forma autônoma, sem intervenção humana." },
+    { question: "Como os agentes de IA pagam?", answer: "Agentes conectados ao MCP Kivo podem chamar kivo_create_payment para iniciar transações. O sistema executa automaticamente baseado em smart contracts pré-definidos." },
+    { question: "Qual é a latência de transação?", answer: "3 a 5 segundos da criação à confirmação final e irreversibilidade na Stellar Network. Zero intermediários para bloquear ou atrasar." },
+    { question: "Preciso entender de blockchain?", answer: "Para usar o SDK M2M, você só precisa entender APIs REST. A complexidade de blockchain é abstraída. Conheça a documentação sobre protocolo x402." },
+    { question: "Como é garantida a conformidade?", answer: "Toda transação M2M passa pelo ONYX Compliance Engine em tempo real. Monitoramento contínuo de padrões suspeitos e conformidade regulatória." }
   ],
-  finalCta: "Conectar minha empresa ao Kivo Pay",
+  finalCta: "Explorar SDK M2M",
   apiSnippet: {
     method: "POST",
-    endpoint: "/v1/payments/payout",
-    body: '{"destination": "GB...XYZ", "amount": 100.50, "currency": "BRL"}'
+    endpoint: "/v1/m2m/create-payment",
+    body: '{"from_device": "EV-001", "to_device": "charger-05", "amount": 2.50, "condition": "energy_delivered_kwh:10", "timeout": 3600}'
   }
 };
 
