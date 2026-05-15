@@ -6,27 +6,93 @@ const { title, description, frontmatter } = Astro.props;
 const pageTitle = title || frontmatter?.title;
 const pageDescription = description || frontmatter?.description;
 
-const businessSections = [
-  {
-    title: 'Fundamentos',
-    links: [
-      { href: '/doc', label: 'Visão Geral do Ecossistema', key: 'doc.nav.overview' }
+const navProducts = {
+  general: {
+    label: 'General',
+    color: 'emerald',
+    sections: [
+      {
+        title: 'Platform',
+        links: [
+          { href: '/doc/ai', label: 'Platform Overview' },
+          { href: '/doc', label: 'Products Index' },
+        ]
+      }
+    ]
+  },
+  contractease: {
+    label: 'ContractEase',
+    color: 'blue',
+    sections: [
+      {
+        title: 'ContractEase',
+        links: [
+          { href: '/doc/ai/contractease', label: 'Product Overview' },
+          { href: '/doc/ai/contractease/architecture', label: 'Architecture & ADRs' },
+          { href: '/doc/ai/contractease/data-models', label: 'Data Models' },
+          { href: '/doc/ai/contractease/api-reference', label: 'API Reference' },
+          { href: '/doc/ai/contractease/auth-security', label: 'Auth & Security' },
+          { href: '/doc/ai/contractease/stellar-integration', label: 'Stellar Integration' },
+          { href: '/doc/ai/contractease/signing-flow', label: 'Signing Flow' },
+          { href: '/doc/ai/contractease/frontend', label: 'Frontend' },
+          { href: '/doc/ai/contractease/deployment', label: 'Deployment' },
+          { href: '/doc/ai/contractease/roadmap', label: 'Roadmap' },
+        ]
+      }
+    ]
+  },
+  socialpay: {
+    label: 'SocialPay',
+    color: 'violet',
+    sections: [
+      {
+        title: 'SocialPay',
+        links: [
+          { href: '/doc/ai/socialpay', label: 'Product Overview' },
+          { href: '/doc/ai/socialpay/architecture', label: 'Architecture & ADRs' },
+          { href: '/doc/ai/socialpay/data-models', label: 'Data Models' },
+          { href: '/doc/ai/socialpay/api-reference', label: 'API Reference' },
+          { href: '/doc/ai/socialpay/auth-security', label: 'Auth & Security' },
+          { href: '/doc/ai/socialpay/stellar-integration', label: 'Stellar Integration' },
+          { href: '/doc/ai/socialpay/handle-system', label: '@Handle System' },
+          { href: '/doc/ai/socialpay/ramp', label: 'Fiat Ramp' },
+          { href: '/doc/ai/socialpay/deployment', label: 'Deployment' },
+          { href: '/doc/ai/socialpay/roadmap', label: 'Roadmap' },
+        ]
+      }
+    ]
+  },
+  kivo: {
+    label: 'Kivo Pay',
+    color: 'emerald',
+    sections: [
+      {
+        title: 'Kivo Pay',
+        links: [
+          { href: '/doc/ai/kivo', label: 'Product Overview' },
+          { href: '/doc/ai/kivo/architecture', label: 'Architecture & ADRs' },
+          { href: '/doc/ai/kivo/data-models', label: 'Data Models' },
+          { href: '/doc/ai/kivo/api-reference', label: 'API Reference' },
+          { href: '/doc/ai/kivo/auth-security', label: 'Auth & Security' },
+          { href: '/doc/ai/kivo/stellar-integration', label: 'Stellar Integration' },
+          { href: '/doc/ai/kivo/x402-protocol', label: 'x402 Protocol' },
+          { href: '/doc/ai/kivo/mcp-tools', label: 'MCP Tools' },
+          { href: '/doc/ai/kivo/deployment', label: 'Deployment' },
+          { href: '/doc/ai/kivo/roadmap', label: 'Roadmap' },
+        ]
+      }
     ]
   }
-];
+};
 
-const aiSections = [
-  {
-    title: 'Core',
-    links: [
-      { href: '/doc', label: 'Core Products', key: 'doc.nav.ai_global' },
-    ]
-  }
-];
+// Auto-detect active product from URL
+const pathname = Astro.url.pathname;
+let activeProduct = 'general';
+if (pathname.includes('/contractease')) activeProduct = 'contractease';
+else if (pathname.includes('/socialpay')) activeProduct = 'socialpay';
+else if (pathname.includes('/kivo')) activeProduct = 'kivo';
 
-const isAiContext = Astro.url.pathname.startsWith('/doc/ai');
-const sections = isAiContext ? aiSections : businessSections;
-
+const sections = navProducts[activeProduct].sections;
 const allLinks = sections.flatMap(s => s.links);
 const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/doc';
 const currentIndex = allLinks.findIndex(l => l.href.replace(/\/$/, '') === currentPath);
@@ -322,38 +388,63 @@ const editUrl = `${githubRepo}${Astro.url.pathname}${Astro.url.pathname.endsWith
           </select>
         </div>
 
-        <nav class="space-y-8" id="doc-nav-sections">
-          {sections.map(section => (
-            <div class="doc-section">
-              <h3 class="text-[11px] font-semibold text-white/30 uppercase tracking-widest mb-3 px-3 section-title">
-                {section.title}
-              </h3>
-              <ul class="space-y-1">
-                {section.links.map(link => {
-                  const isActive = currentPath === link.href.replace(/\/$/, '');
-                  return (
-                    <li>
-                      <a 
-                        href={link.href} 
-                        data-key={link.key}
-                        class={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 nav-link ${
-                          isActive 
-                            ? 'bg-emerald-500/10 text-emerald-400 font-medium border-l-2 border-emerald-500' 
-                            : 'text-white/50 hover:bg-white/5 hover:text-white/80'
-                        }`}
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
+        <!-- Product Tabs -->
+        <div class="mb-5" id="product-tabs-container">
+          <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+            {Object.entries(navProducts).map(([key, product]) => (
+              <button
+                data-product-tab={key}
+                class={`product-tab px-2 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all text-center ${
+                  activeProduct === key
+                    ? 'bg-emerald-500/20 text-emerald-400 shadow-sm'
+                    : 'text-white/30 hover:text-white/60 hover:bg-white/5'
+                }`}
+              >
+                {product.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <!-- Nav: all products rendered, hidden/shown by JS -->
+        <nav class="flex-1 overflow-y-auto" id="doc-nav-sections">
+          {Object.entries(navProducts).map(([productKey, product]) => (
+            <div
+              data-product-nav={productKey}
+              class={activeProduct === productKey ? 'block' : 'hidden'}
+            >
+              {product.sections.map(section => (
+                <div class="doc-section mb-6">
+                  <h3 class="text-[10px] font-bold text-white/25 uppercase tracking-widest mb-2 px-3">
+                    {section.title}
+                  </h3>
+                  <ul class="space-y-0.5">
+                    {section.links.map(link => {
+                      const isActive = currentPath === link.href.replace(/\/$/, '');
+                      return (
+                        <li>
+                          <a
+                            href={link.href}
+                            class={`block px-3 py-2 rounded-lg text-sm transition-all duration-150 nav-link ${
+                              isActive
+                                ? 'bg-emerald-500/10 text-emerald-400 font-medium border-l-2 border-emerald-500'
+                                : 'text-white/50 hover:bg-white/5 hover:text-white/80'
+                            }`}
+                          >
+                            {link.label}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
             </div>
           ))}
         </nav>
 
-        <div class="mt-auto pt-6 space-y-2">
-          <button 
+        <div class="mt-auto pt-4 border-t border-white/5">
+          <button
             id="focus-mode-toggle"
             class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-white/40 hover:text-emerald-400 hover:bg-white/5 transition-all duration-200"
           >
@@ -364,17 +455,6 @@ const editUrl = `${githubRepo}${Astro.url.pathname}${Astro.url.pathname.endsWith
             <span id="focus-mode-label">Focus Mode</span>
             <kbd class="ml-auto text-[10px] bg-white/5 px-1.5 py-0.5 rounded border border-white/10 uppercase">F</kbd>
           </button>
-
-          <a 
-            href={isAiContext ? '/doc' : '/doc/ai'} 
-            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-white/40 hover:text-emerald-400 hover:bg-white/5 transition-all duration-200"
-            id="context-switch-link"
-          >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-            </svg>
-            <span id="context-switch-label">{isAiContext ? 'Business Docs' : 'AI Specs'}</span>
-          </a>
         </div>
       </div>
     </aside>
@@ -574,6 +654,41 @@ const editUrl = `${githubRepo}${Astro.url.pathname}${Astro.url.pathname.endsWith
 
       initDocs();
       document.addEventListener('astro:page-load', initDocs);
+    </script>
+    <script is:inline>
+      // Product tab switching
+      function initProductTabs() {
+        const tabs = document.querySelectorAll('[data-product-tab]');
+        const navs = document.querySelectorAll('[data-product-nav]');
+
+        tabs.forEach(function(tab) {
+          tab.addEventListener('click', function() {
+            var product = tab.getAttribute('data-product-tab');
+
+            // Update tab styles
+            tabs.forEach(function(t) {
+              t.classList.remove('bg-emerald-500/20', 'text-emerald-400', 'shadow-sm');
+              t.classList.add('text-white/30');
+            });
+            tab.classList.add('bg-emerald-500/20', 'text-emerald-400', 'shadow-sm');
+            tab.classList.remove('text-white/30');
+
+            // Show/hide nav sections
+            navs.forEach(function(nav) {
+              if (nav.getAttribute('data-product-nav') === product) {
+                nav.classList.remove('hidden');
+                nav.classList.add('block');
+              } else {
+                nav.classList.add('hidden');
+                nav.classList.remove('block');
+              }
+            });
+          });
+        });
+      }
+
+      initProductTabs();
+      document.addEventListener('astro:page-load', initProductTabs);
     </script>
     <script is:inline>
       // Reading Progress Bar logic
