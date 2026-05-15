@@ -6,6 +6,10 @@ import { useTranslation } from '../hooks/useTranslation';
 import SpotlightCard from './ui/SpotlightCard';
 import CoreSimulator from './simulators/CoreSimulator';
 import FeatureVisualizer from './simulators/FeatureVisualizer';
+import KivoTemplateGallery from './kivo/KivoTemplateGallery';
+import KivoMCPDemo from './kivo/KivoMCPDemo';
+import AgentCard from './kivo/AgentCard';
+import ComparisonTable from './kivo/ComparisonTable';
 
 interface Props {
   slug?: string;
@@ -455,6 +459,138 @@ export default function ProductPage({ slug }: Props) {
             )}
           </div>
         </div>
+      )}
+
+      {/* Kivo-specific sections: Templates, MCP, Comparison */}
+      {slug === 'kivopay' && (
+        <>
+          {/* Section 1: SDK M2M Templates Gallery */}
+          <div className="py-32 border-t border-white/5 relative">
+            <div className="max-w-6xl mx-auto px-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="mb-16"
+              >
+                <h2 className="text-5xl lg:text-6xl font-bricolage font-bold text-white mb-6">
+                  Ready-to-Use Templates
+                </h2>
+                <p className="text-xl text-white/60 max-w-3xl">
+                  Start building M2M payment solutions with pre-configured templates. Each includes architecture diagrams, code examples, and real-world scenarios.
+                </p>
+              </motion.div>
+              <KivoTemplateGallery />
+            </div>
+          </div>
+
+          {/* Section 2: MCP for Autonomous Agents */}
+          <div className="py-32 border-t border-white/5 relative">
+            <div className="max-w-6xl mx-auto px-6">
+              <KivoMCPDemo />
+            </div>
+          </div>
+
+          {/* Section 3: Stellar vs Fiat Comparison */}
+          <div className="py-32 border-t border-white/5 bg-white/[0.01] relative">
+            <div className="max-w-6xl mx-auto px-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="mb-16"
+              >
+                <h2 className="text-5xl lg:text-6xl font-bricolage font-bold text-white mb-6">
+                  Why Stellar for M2M?
+                </h2>
+                <p className="text-xl text-white/60 max-w-3xl">
+                  Traditional payment networks are built for humans. M2M needs different properties: instant settlement, zero intermediaries, atomic guarantees, and programmable conditions.
+                </p>
+              </motion.div>
+
+              <ComparisonTable
+                rows={[
+                  {
+                    label: 'Latency',
+                    fiat: '24-48 hours',
+                    stellar: '3-5 seconds'
+                  },
+                  {
+                    label: 'Cost per transaction',
+                    fiat: '$15-50',
+                    stellar: '$0.00001'
+                  },
+                  {
+                    label: 'Programmability',
+                    fiat: 'None',
+                    stellar: 'Full (Soroban)'
+                  },
+                  {
+                    label: 'Intermediaries',
+                    fiat: '4-7 (correspondent banks)',
+                    stellar: '0 (peer-to-peer)'
+                  },
+                  {
+                    label: 'Atomic guarantee',
+                    fiat: 'No (clearing takes days)',
+                    stellar: 'Yes (ledger finality)'
+                  },
+                  {
+                    label: 'Payment conditions',
+                    fiat: 'Not supported',
+                    stellar: 'Supported (x402 protocol)'
+                  }
+                ]}
+              />
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="mt-16 p-12 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20"
+              >
+                <h3 className="text-2xl font-semibold text-white mb-6">Why Machines Care</h3>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div>
+                    <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span> Speed
+                    </h4>
+                    <p className="text-white/60 text-sm">
+                      In 3-5 seconds, payment is final and irreversible. No clearing risk or settlement delays.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span> Cost
+                    </h4>
+                    <p className="text-white/60 text-sm">
+                      Micropayments become viable at $0.00001 per transaction instead of $15-50.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span> Autonomy
+                    </h4>
+                    <p className="text-white/60 text-sm">
+                      Machines transact without waiting for banks or intermediaries. True P2P settlement.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span> Logic
+                    </h4>
+                    <p className="text-white/60 text-sm">
+                      Conditional payments execute automatically when conditions are met. Smart contracts native.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* AI Agents */}
