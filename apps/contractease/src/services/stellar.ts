@@ -17,7 +17,7 @@ const TESTNET_HORIZON = 'https://horizon-testnet.stellar.org';
 const TESTNET_PASSPHRASE = StellarSdk.Networks.TESTNET;
 
 // Keypair de demonstração (Testnet-only). Em produção, use Freighter ou um cofre seguro.
-const DEMO_SECRET = 'SCZANGBA5YHTNYVVV3C7CAZMCLXPILHSE6PDDL6S2BYYRLGFZLGFBWO3';
+const DEMO_SECRET = 'SAFFCSOPCCZJWHSOAFWMU2Z4HRLF4HISD23A47XGQM6NGDH7Q4CHVFXQ';
 
 export interface AnchorResult {
   success: boolean;
@@ -74,22 +74,19 @@ export async function anchorOnStellar(contractHash: string): Promise<AnchorResul
     // Carregar conta do remetente
     const account = await server.loadAccount(publicKey);
 
-    // Usar os primeiros 28 bytes do hash como Memo (limite do Stellar)
-    const memoHash = Buffer.from(contractHash.slice(0, 56), 'hex');
-
-    // Construir transação
+    // SHA-256 = 64 hex chars = 32 bytes — Memo.hash aceita hex string diretamente
     const tx = new StellarSdk.TransactionBuilder(account, {
       fee: StellarSdk.BASE_FEE,
       networkPassphrase: TESTNET_PASSPHRASE,
     })
       .addOperation(
         StellarSdk.Operation.payment({
-          destination: publicKey, // self-payment (0.0000001 XLM)
+          destination: publicKey,
           asset: StellarSdk.Asset.native(),
           amount: '0.0000001',
         })
       )
-      .addMemo(StellarSdk.Memo.hash(memoHash))
+      .addMemo(StellarSdk.Memo.hash(contractHash))
       .setTimeout(30)
       .build();
 
@@ -132,7 +129,6 @@ export async function anchorWithFreighter(contractHash: string): Promise<AnchorR
 
     const server = new StellarSdk.Horizon.Server(TESTNET_HORIZON);
     const account = await server.loadAccount(publicKey);
-    const memoHash = Buffer.from(contractHash.slice(0, 56), 'hex');
 
     const tx = new StellarSdk.TransactionBuilder(account, {
       fee: StellarSdk.BASE_FEE,
@@ -145,7 +141,7 @@ export async function anchorWithFreighter(contractHash: string): Promise<AnchorR
           amount: '0.0000001',
         })
       )
-      .addMemo(StellarSdk.Memo.hash(memoHash))
+      .addMemo(StellarSdk.Memo.hash(contractHash))
       .setTimeout(30)
       .build();
 
