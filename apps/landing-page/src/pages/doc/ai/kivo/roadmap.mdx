@@ -19,6 +19,7 @@ This document tracks where Kivo Pay is today, where it is going, the open archit
 | Go API scaffold | In progress | Fiber app skeleton, routes wired |
 | Supabase schema | In progress | Migrations written, not yet applied to prod |
 | Device registration API | In progress | Handler written, tests pending |
+| Etherfuse anchor | Planned | Sandbox/testnet contract documented; Go implementation pending |
 | x402 middleware | Planned | Core logic designed, not yet implemented |
 | MCP server | Planned | Tool specs finalized, Go implementation pending |
 | React dashboard | Planned | Wireframes complete |
@@ -40,6 +41,7 @@ This document tracks where Kivo Pay is today, where it is going, the open archit
 - `POST /v1/payments` — create payment (no condition, immediate Stellar submission)
 - `GET /v1/payments/:id` — payment status
 - `GET /v1/health` — health check with DB + Redis + Horizon ping
+- Etherfuse sandbox/testnet anchor endpoints: status, onboarding URL, assets, quote, order, fiat simulation, signed webhook
 - Device API key middleware (SHA-256 hash lookup)
 - Supabase Auth JWT middleware
 - Payment worker goroutine (Redis → Stellar submission)
@@ -197,8 +199,11 @@ This document tracks where Kivo Pay is today, where it is going, the open archit
 
 ## Changelog
 
+### 2026-05-16 — Etherfuse Anchor Added
+Documented the Etherfuse sandbox/testnet anchor integration for Kivo, including onboarding, rampable assets, quotes, orders, sandbox fiat simulation, webhook verification, deployment variables, and the Kivo backend contract.
+
 ### 2025-05-15 — Documentation Complete
-All 10 documentation files written covering architecture, data models, API reference, auth, Stellar integration, x402, MCP, deployment, and roadmap.
+All 11 documentation files written covering architecture, data models, API reference, auth, Stellar integration, Etherfuse integration, x402, MCP, deployment, and roadmap.
 
 ### 2025-04-28 — ADR-006: x402 Protocol Adopted
 Decided to implement x402 as the machine payment protocol rather than a custom header scheme. Aligned with emerging open standard for HTTP micropayments.

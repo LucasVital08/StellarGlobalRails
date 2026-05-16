@@ -94,6 +94,14 @@ This requires no OAuth, no redirect, no session — just HTTP headers. Any HTTP 
 
 ---
 
+## Etherfuse Anchor
+
+Kivo uses Etherfuse as the anchor/ramp layer around Stellar wallets: onboarding, fiat funding, rampable asset discovery, quotes, orders, sandbox fiat simulation, and signed webhooks. The M2M/x402 flow still settles on Stellar; Etherfuse gives the demo and future product a credible way to fund or exit the Stellar side of the system.
+
+For the MVP, this runs against the Etherfuse sandbox at `https://api.sand.etherfuse.com` and targets Stellar testnet. See [Etherfuse Integration](/doc/ai/kivo/etherfuse-integration) for the full contract.
+
+---
+
 ## Use Case Overview
 
 | Use Case | Devices Involved | Payment Flow | Asset |
@@ -159,5 +167,6 @@ See [Roadmap](/doc/ai/kivo/roadmap) for the full implementation plan.
 - [Architecture & ADRs](/doc/ai/kivo/architecture) — how the system is built and why
 - [Data Models](/doc/ai/kivo/data-models) — PostgreSQL schema and Go types
 - [API Reference](/doc/ai/kivo/api-reference) — REST endpoints and MCP tools
+- [Etherfuse Integration](/doc/ai/kivo/etherfuse-integration) — sandbox/testnet anchor, quotes, orders, webhooks, and ramp runbook
 - [x402 Protocol](/doc/ai/kivo/x402-protocol) — deep dive into machine payment headers
 - [Deployment Guide](/doc/ai/kivo/deployment) — run Kivo locally and on Fly.io

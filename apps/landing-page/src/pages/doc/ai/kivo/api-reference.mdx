@@ -378,6 +378,25 @@ X-PAYMENT-REQUIRED: scheme=stellar,network=testnet,payTo=GDQP2KPQ...,amount=0.1,
 
 ---
 
+## Etherfuse Anchor Endpoints
+
+Kivo exposes Etherfuse through its own backend so browser clients never receive anchor credentials. See [Etherfuse Integration](/doc/ai/kivo/etherfuse-integration) for the full sandbox/testnet runbook, schemas, webhook verification, and production checklist.
+
+| Endpoint | Auth | Purpose |
+|---|---|---|
+| `GET /v1/etherfuse/status` | Dashboard JWT | Show whether the sandbox/production anchor is configured |
+| `POST /v1/etherfuse/onboarding-url` | Dashboard JWT | Create hosted onboarding URL for a Kivo operator/customer |
+| `GET /v1/etherfuse/assets` | Dashboard JWT | Discover Stellar rampable assets for a wallet |
+| `POST /v1/etherfuse/quotes` | Dashboard JWT | Create onramp/offramp/swap quote |
+| `POST /v1/etherfuse/orders` | Dashboard JWT | Create ramp order from a quote |
+| `GET /v1/etherfuse/orders/:id` | Dashboard JWT | Poll order state as fallback to webhooks |
+| `POST /v1/etherfuse/orders/:id/simulate-fiat-received` | Dashboard JWT, sandbox only | Advance sandbox onramp demo |
+| `POST /v1/etherfuse/webhook` | `X-Signature` | Receive signed Etherfuse events |
+
+The upstream Etherfuse API expects `Authorization: <api-key>` directly, with no `Bearer` prefix. Kivo stores that key server-side and maps Etherfuse order states into Kivo provider states for the dashboard.
+
+---
+
 ## MCP Tools Specification
 
 The Kivo MCP server exposes the following tools to AI agents. See [MCP Tools](/doc/ai/kivo/mcp-tools) for the full integration guide.

@@ -214,6 +214,16 @@ X402_PLATFORM_KEY=GDQP2KPQ...      # Platform public key (receives x402 payments
 # USDC (testnet)
 USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
 
+# Etherfuse anchor / ramp
+ETHERFUSE_MODE=sandbox # mock | sandbox | production
+ETHERFUSE_BASE_URL=https://api.sand.etherfuse.com
+ETHERFUSE_API_KEY=ef_sand_...
+ETHERFUSE_WEBHOOK_URL=https://api.kivo.pay/v1/etherfuse/webhook
+ETHERFUSE_WEBHOOK_SECRET=base64-secret-returned-by-etherfuse
+ETHERFUSE_WEBHOOK_VERIFY=true
+ETHERFUSE_DEFAULT_FIAT=MXN
+ETHERFUSE_ALLOWED_ASSETS=USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+
 # App
 PORT=8080
 CORS_ORIGINS=http://localhost:5173,https://dashboard.kivo.pay
@@ -227,30 +237,46 @@ Load in Go:
 package config
 
 type Config struct {
-    DatabaseURL        string
-    RedisURL           string
-    SupabaseJWTSecret  string
-    StellarNetwork     string
-    PlatformSecret     string
-    StellarEncryptKey  string
-    X402PlatformKey    string
-    USDCIssuer         string
-    Port               string
-    CORSOrigins        string
+    DatabaseURL             string
+    RedisURL                string
+    SupabaseJWTSecret       string
+    StellarNetwork          string
+    PlatformSecret          string
+    StellarEncryptKey       string
+    X402PlatformKey         string
+    USDCIssuer              string
+    EtherfuseMode           string
+    EtherfuseBaseURL        string
+    EtherfuseAPIKey         string
+    EtherfuseWebhookURL     string
+    EtherfuseWebhookSecret  string
+    EtherfuseWebhookVerify  bool
+    EtherfuseDefaultFiat    string
+    EtherfuseAllowedAssets  string
+    Port                    string
+    CORSOrigins             string
 }
 
 func Load() *Config {
     return &Config{
-        DatabaseURL:       requireEnv("DATABASE_URL"),
-        RedisURL:          requireEnv("REDIS_URL"),
-        SupabaseJWTSecret: requireEnv("SUPABASE_JWT_SECRET"),
-        StellarNetwork:    getEnv("STELLAR_NETWORK", "testnet"),
-        PlatformSecret:    requireEnv("PLATFORM_STELLAR_SECRET"),
-        StellarEncryptKey: requireEnv("STELLAR_ENCRYPTION_KEY"),
-        X402PlatformKey:   requireEnv("X402_PLATFORM_KEY"),
-        USDCIssuer:        getEnv("USDC_ISSUER", "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"),
-        Port:              getEnv("PORT", "8080"),
-        CORSOrigins:       getEnv("CORS_ORIGINS", "http://localhost:5173"),
+        DatabaseURL:              requireEnv("DATABASE_URL"),
+        RedisURL:                 requireEnv("REDIS_URL"),
+        SupabaseJWTSecret:        requireEnv("SUPABASE_JWT_SECRET"),
+        StellarNetwork:           getEnv("STELLAR_NETWORK", "testnet"),
+        PlatformSecret:           requireEnv("PLATFORM_STELLAR_SECRET"),
+        StellarEncryptKey:        requireEnv("STELLAR_ENCRYPTION_KEY"),
+        X402PlatformKey:          requireEnv("X402_PLATFORM_KEY"),
+        USDCIssuer:               getEnv("USDC_ISSUER", "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"),
+        EtherfuseMode:            getEnv("ETHERFUSE_MODE", "mock"),
+        EtherfuseBaseURL:         getEnv("ETHERFUSE_BASE_URL", "https://api.sand.etherfuse.com"),
+        EtherfuseAPIKey:          getEnv("ETHERFUSE_API_KEY", ""),
+        EtherfuseWebhookURL:      getEnv("ETHERFUSE_WEBHOOK_URL", ""),
+        EtherfuseWebhookSecret:  getEnv("ETHERFUSE_WEBHOOK_SECRET", ""),
+        EtherfuseWebhookVerify:  getEnv("ETHERFUSE_WEBHOOK_VERIFY", "true") == "true",
+        EtherfuseDefaultFiat:    getEnv("ETHERFUSE_DEFAULT_FIAT", "MXN"),
+        EtherfuseAllowedAssets:  getEnv("ETHERFUSE_ALLOWED_ASSETS", "USDC:"+getEnv("USDC_ISSUER", "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5")),
+        Port:                    getEnv("PORT", "8080"),
+        CORSOrigins:             getEnv("CORS_ORIGINS", "http://localhost:5173"),
     }
 }
 ```
@@ -357,6 +383,9 @@ primary_region = "iad"
 [env]
   PORT = "8080"
   STELLAR_NETWORK = "mainnet"
+  ETHERFUSE_MODE = "production"
+  ETHERFUSE_BASE_URL = "https://api.etherfuse.com"
+  ETHERFUSE_DEFAULT_FIAT = "MXN"
 
 [http_service]
   internal_port = 8080
@@ -395,7 +424,9 @@ fly secrets set \
   SUPABASE_JWT_SECRET="..." \
   PLATFORM_STELLAR_SECRET="SABC123..." \
   STELLAR_ENCRYPTION_KEY="64hexchars..." \
-  X402_PLATFORM_KEY="GDQP2KPQ..."
+  X402_PLATFORM_KEY="GDQP2KPQ..." \
+  ETHERFUSE_API_KEY="ef_live_or_sand_..." \
+  ETHERFUSE_WEBHOOK_SECRET="base64-secret..."
 ```
 
 Deploy:
