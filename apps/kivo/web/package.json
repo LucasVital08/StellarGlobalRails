@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",
+    "@supabase/supabase-js": "^2.105.4",
     "@vitejs/plugin-react": "^4.3.4",
     "motion": "^12.38.0",
     "react": "^19.2.5",

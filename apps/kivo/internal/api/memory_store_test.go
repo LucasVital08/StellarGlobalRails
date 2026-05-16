@@ -1,8 +1,6 @@
 package api
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"strconv"
 	"strings"
@@ -10,20 +8,20 @@ import (
 	"time"
 )
 
-const ownerID = "usr_mvp_operator"
-
 type MemoryStore struct {
-	mu          sync.Mutex
-	devices     []Device
-	payments    []Payment
-	conditions  []PaymentCondition
-	webhooks    []Webhook
-	deliveries  []WebhookDelivery
-	apiKeys     []APIKey
-	x402Rules   []X402PricingRule
-	x402Nonces  map[string]X402Challenge
+	mu            sync.Mutex
+	devices       []Device
+	payments      []Payment
+	conditions    []PaymentCondition
+	webhooks      []Webhook
+	deliveries    []WebhookDelivery
+	apiKeys       []APIKey
+	x402Rules     []X402PricingRule
+	x402Nonces    map[string]X402Challenge
 	webhookEvents []map[string]any
 }
+
+func (s *MemoryStore) Close() {}
 
 func NewMemoryStore() *MemoryStore {
 	now := nowISO()
@@ -82,7 +80,7 @@ func NewMemoryStore() *MemoryStore {
 		ID:          "x402_premium_sensor",
 		Resource:    "/api/x402/data",
 		Amount:      "0.0500000",
-		Asset:       "USDC:GATESTUSDCISSUER",
+		Asset:       "USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
 		MaxTimeout:  300,
 		Enabled:     true,
 		Description: "Premium IoT sensor reading.",
@@ -174,14 +172,22 @@ func (s *MemoryStore) CreateDevice(input RegisterDeviceInput) DeviceRegistration
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	raw := "kivo_test_" + randomToken(28)
+	raw, _, preview, err := GenerateAPIKey("test")
+	if err != nil {
+		raw = "kivo_test_" + randomToken(28)
+		preview = previewSecret(raw)
+	}
+	kp, err := GenerateStellarKeypair()
+	if err != nil {
+		kp = StellarKeypair{PublicKey: randomStellarPublicKey()}
+	}
 	now := nowISO()
 	device := Device{
 		ID:               newID("dev"),
 		Name:             input.Name,
 		OwnerID:          ownerID,
-		APIKeyPreview:    previewSecret(raw),
-		StellarPublicKey: randomStellarPublicKey(),
+		APIKeyPreview:    preview,
+		StellarPublicKey: kp.PublicKey,
 		Status:           "active",
 		Metadata:         input.Metadata,
 		Balances:         []AssetBalance{{AssetCode: "USDC", Amount: "0.0000000"}, {AssetCode: "XLM", Amount: "10.0000000"}},
@@ -280,7 +286,7 @@ func (s *MemoryStore) GetPayment(id string) (Payment, bool) {
 	return Payment{}, false
 }
 
-func (s *MemoryStore) ExecutePayment(id string) (Payment, bool) {
+func (s *MemoryStore) ExecutePayment(id string, settlement StellarSettlement) (Payment, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for index := range s.payments {
@@ -288,13 +294,13 @@ func (s *MemoryStore) ExecutePayment(id string) (Payment, bool) {
 			now := nowISO()
 			s.payments[index].Status = "confirmed"
 			s.payments[index].ConfirmedAt = now
-			s.payments[index].StellarHash = randomHash()
-			s.payments[index].StellarLedger = 100000 + int64(len(s.payments))*7
-			s.payments[index].FeeCharged = "0.0000100"
+			s.payments[index].StellarHash = settlement.Hash
+			s.payments[index].StellarLedger = settlement.Ledger
+			s.payments[index].FeeCharged = settlement.FeeCharged
 			s.payments[index].Events = append(s.payments[index].Events, PaymentEvent{
 				ID:          newID("evt"),
-				Label:       "MVP settlement recorded",
-				Description: "Stellar testnet settlement hash attached by the API worker.",
+				Label:       "Stellar settlement confirmed",
+				Description: "Horizon accepted the submitted Stellar transaction.",
 				Status:      "done",
 				CreatedAt:   now,
 			})
@@ -398,6 +404,134 @@ func (s *MemoryStore) ConsumeX402Nonce(nonce string) (X402Challenge, bool) {
 	return challenge, ok
 }
 
+func (s *MemoryStore) GetX402Challenge(nonce string) (X402Challenge, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	challenge, ok := s.x402Nonces[nonce]
+	return challenge, ok
+}
+
+func (s *MemoryStore) ListWebhooks() []Webhook {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]Webhook(nil), s.webhooks...)
+}
+
+func (s *MemoryStore) CreateWebhook(url string, events []string) (Webhook, string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	secret := "whsec_" + randomToken(24)
+	webhook := Webhook{
+		ID:                 newID("wh"),
+		URL:                url,
+		Events:             events,
+		SecretPreview:      previewSecret(secret),
+		Active:             true,
+		CreatedAt:          nowISO(),
+		LastDeliveryStatus: "pending",
+	}
+	s.webhooks = append([]Webhook{webhook}, s.webhooks...)
+	return webhook, secret
+}
+
+func (s *MemoryStore) ToggleWebhook(id string, active bool) (Webhook, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for index := range s.webhooks {
+		if s.webhooks[index].ID == id {
+			s.webhooks[index].Active = active
+			return s.webhooks[index], true
+		}
+	}
+	return Webhook{}, false
+}
+
+func (s *MemoryStore) DeleteWebhook(id string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	filtered := s.webhooks[:0]
+	removed := false
+	for _, webhook := range s.webhooks {
+		if webhook.ID == id {
+			removed = true
+			continue
+		}
+		filtered = append(filtered, webhook)
+	}
+	s.webhooks = filtered
+	return removed
+}
+
+func (s *MemoryStore) TestWebhook(id string) (WebhookTestResult, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for index := range s.webhooks {
+		if s.webhooks[index].ID != id {
+			continue
+		}
+		now := nowISO()
+		delivery := WebhookDelivery{ID: newID("wd"), WebhookID: id, Event: "webhook.test", Payload: map[string]any{"type": "webhook.test"}, Status: "delivered", Attempts: 1, ResponseCode: 200, DeliveredAt: now, CreatedAt: now}
+		s.webhooks[index].DeliveryCount += 1
+		s.webhooks[index].LastDeliveryStatus = "delivered"
+		s.deliveries = append([]WebhookDelivery{delivery}, s.deliveries...)
+		return WebhookTestResult{WebhookID: id, Status: "delivered", ResponseCode: 200, LatencyMS: 72, SignedPayloadPreview: "sha256=" + randomHash()[:24], Delivery: delivery}, true
+	}
+	return WebhookTestResult{}, false
+}
+
+func (s *MemoryStore) ListWebhookDeliveries(webhookID string) []WebhookDelivery {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := make([]WebhookDelivery, 0)
+	for _, delivery := range s.deliveries {
+		if webhookID == "" || delivery.WebhookID == webhookID {
+			out = append(out, delivery)
+		}
+	}
+	return out
+}
+
+func (s *MemoryStore) ListAPIKeys() []APIKey {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]APIKey(nil), s.apiKeys...)
+}
+
+func (s *MemoryStore) CreateAPIKey(name string, scopes []string, expiresAt string) (APIKey, string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	raw, _, preview, err := GenerateAPIKey("live")
+	if err != nil {
+		raw = "kivo_live_" + randomToken(28)
+		preview = previewSecret(raw)
+	}
+	key := APIKey{ID: newID("key"), Name: name, KeyPreview: preview, Scopes: scopes, Status: "active", ExpiresAt: expiresAt, CreatedAt: nowISO()}
+	s.apiKeys = append([]APIKey{key}, s.apiKeys...)
+	return key, raw
+}
+
+func (s *MemoryStore) RevokeAPIKey(id string) (APIKey, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for index := range s.apiKeys {
+		if s.apiKeys[index].ID == id {
+			s.apiKeys[index].Status = "revoked"
+			return s.apiKeys[index], true
+		}
+	}
+	return APIKey{}, false
+}
+
+func (s *MemoryStore) AuthenticateAPIKey(raw string) bool {
+	return strings.HasPrefix(raw, "kivo_")
+}
+
+func (s *MemoryStore) RecordEtherfuseWebhook(payload map[string]any) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.webhookEvents = append([]map[string]any{payload}, s.webhookEvents...)
+}
+
 func (s *MemoryStore) deviceExistsLocked(id string) bool {
 	for _, device := range s.devices {
 		if device.ID == id {
@@ -407,42 +541,6 @@ func (s *MemoryStore) deviceExistsLocked(id string) bool {
 	return false
 }
 
-func newID(prefix string) string {
-	return prefix + "_" + randomToken(8)
-}
-
-func randomToken(bytesLen int) string {
-	buf := make([]byte, bytesLen)
-	if _, err := rand.Read(buf); err != nil {
-		return fmt.Sprintf("%d", time.Now().UnixNano())
-	}
-	return hex.EncodeToString(buf)
-}
-
 func randomHash() string {
 	return randomToken(32)
-}
-
-func randomStellarPublicKey() string {
-	alphabet := "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
-	token := strings.ToUpper(randomToken(40))
-	var out strings.Builder
-	out.WriteByte('G')
-	for out.Len() < 56 {
-		for _, ch := range token {
-			if out.Len() >= 56 {
-				break
-			}
-			out.WriteByte(alphabet[int(ch)%len(alphabet)])
-		}
-		token = randomToken(40)
-	}
-	return out.String()
-}
-
-func previewSecret(secret string) string {
-	if len(secret) <= 14 {
-		return secret
-	}
-	return secret[:10] + "..." + strings.ToUpper(secret[len(secret)-4:])
 }

@@ -25,7 +25,7 @@ const navGroups = [
     title: 'Produto',
     items: [
       { to: '/templates', icon: 'solar:bolt-circle-bold-duotone', label: 'Templates' },
-      { to: '/workflows', icon: 'solar:flow-bold-duotone', label: 'Workflows' },
+      { to: '/workflows', icon: 'solar:routing-2-bold-duotone', label: 'Workflows' },
       { to: '/deploy', icon: 'solar:rocket-bold-duotone', label: 'Deploy' },
       { to: '/settings', icon: 'solar:settings-bold-duotone', label: 'Configurações' },
     ],

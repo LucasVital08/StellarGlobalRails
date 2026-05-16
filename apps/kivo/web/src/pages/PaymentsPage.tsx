@@ -16,13 +16,13 @@ export default function PaymentsPage() {
   const devices = useAsyncData(() => kivoClient.listDevices(), []);
   const [modalOpen, setModalOpen] = useState(false);
   const [status, setStatus] = useState<PaymentStatus | 'all'>('all');
-  const [fromDeviceId, setFromDeviceId] = useState('dev_ev_001');
-  const [toDeviceId, setToDeviceId] = useState('dev_charger_a12');
-  const [amount, setAmount] = useState('10.0000000');
+  const [fromDeviceId, setFromDeviceId] = useState('');
+  const [toDeviceId, setToDeviceId] = useState('');
+  const [amount, setAmount] = useState('');
   const [assetCode, setAssetCode] = useState<AssetCode>('USDC');
-  const [conditionType, setConditionType] = useState<ConditionType>('energy_kwh');
-  const [conditionValue, setConditionValue] = useState('10');
-  const [memo, setMemo] = useState('m2m payment');
+  const [conditionType, setConditionType] = useState<ConditionType>('none');
+  const [conditionValue, setConditionValue] = useState('');
+  const [memo, setMemo] = useState('');
 
   const filtered = useMemo(() => {
     const data = payments.data ?? [];
@@ -46,6 +46,7 @@ export default function PaymentsPage() {
   };
 
   const deviceName = (id: string) => devices.data?.find((device) => device.id === id)?.name ?? id;
+  const canCreate = Boolean(fromDeviceId && toDeviceId && fromDeviceId !== toDeviceId && amount);
 
   return (
     <div className="space-y-8">
@@ -103,14 +104,16 @@ export default function PaymentsPage() {
         <form onSubmit={submit} className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <select value={fromDeviceId} onChange={(event) => setFromDeviceId(event.target.value)} className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-emerald-500">
+              <option value="">Origem</option>
               {(devices.data ?? []).map((device) => <option key={device.id} value={device.id}>{device.name}</option>)}
             </select>
             <select value={toDeviceId} onChange={(event) => setToDeviceId(event.target.value)} className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-emerald-500">
+              <option value="">Destino</option>
               {(devices.data ?? []).map((device) => <option key={device.id} value={device.id}>{device.name}</option>)}
             </select>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <input value={amount} onChange={(event) => setAmount(event.target.value)} className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" />
+            <input value={amount} onChange={(event) => setAmount(event.target.value)} className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" placeholder="0.0000000" />
             <select value={assetCode} onChange={(event) => setAssetCode(event.target.value as AssetCode)} className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-emerald-500">
               <option value="USDC">USDC</option>
               <option value="XLM">XLM</option>
@@ -125,7 +128,7 @@ export default function PaymentsPage() {
           </div>
           {conditionType !== 'none' && <input value={conditionValue} onChange={(event) => setConditionValue(event.target.value)} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Valor da condição" />}
           <input value={memo} onChange={(event) => setMemo(event.target.value)} maxLength={28} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Memo Stellar" />
-          <button className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black">
+          <button disabled={!canCreate} className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black disabled:cursor-not-allowed disabled:opacity-50">
             Criar pagamento
             <Icon icon="solar:arrow-right-bold" />
           </button>

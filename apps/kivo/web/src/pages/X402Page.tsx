@@ -7,26 +7,31 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { useNotificationStore } from '@/stores';
-import type { X402Challenge, X402PaidResponse } from '@/types/kivo';
+import type { X402Challenge, X402PaidResponse, X402UnlockedResponse } from '@/types/kivo';
 
 export default function X402Page() {
   const pricing = useAsyncData(() => kivoClient.listX402PricingRules(), []);
   const notify = useNotificationStore((state) => state.add);
   const [resource, setResource] = useState('/api/x402/data');
   const [amount, setAmount] = useState('0.0500000');
-  const [asset, setAsset] = useState('USDC:GATESTUSDCISSUER');
+  const [asset, setAsset] = useState('USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5');
   const [maxTimeout, setMaxTimeout] = useState(300);
+  const [txXDR, setTxXDR] = useState('');
   const [challenge, setChallenge] = useState<X402Challenge | null>(null);
   const [paid, setPaid] = useState<X402PaidResponse | null>(null);
+  const [unlocked, setUnlocked] = useState<X402UnlockedResponse | null>(null);
 
   const requestChallenge = async () => {
     setPaid(null);
+    setUnlocked(null);
     setChallenge(await kivoClient.getX402Challenge(resource));
   };
 
   const pay = async () => {
     if (!challenge) return;
-    setPaid(await kivoClient.payX402Challenge(challenge.nonce));
+    const paidResponse = await kivoClient.payX402Challenge(challenge.nonce, txXDR);
+    setPaid(paidResponse);
+    setUnlocked(await kivoClient.unlockX402Resource(resource, paidResponse.paymentHeader));
   };
 
   const savePricing = async (event: FormEvent) => {
@@ -49,7 +54,7 @@ if (initial.status === 402) {
   const paid = await fetch('/v1/x402/pay', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nonce: challenge.nonce })
+    body: JSON.stringify({ nonce: challenge.nonce, txXDR: signedTransactionXdr })
   }).then((res) => res.json());
 
   const unlocked = await fetch('${resource}', {
@@ -64,8 +69,9 @@ if (initial.status === 402) {
         <Card>
           <h2 className="font-bricolage text-xl font-bold text-white">Request</h2>
           <input value={resource} onChange={(event) => setResource(event.target.value)} className="mt-4 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" />
+          <textarea value={txXDR} onChange={(event) => setTxXDR(event.target.value)} placeholder="Cole o txXDR assinado da Stellar" className="mt-3 min-h-32 w-full rounded-xl border border-white/10 bg-black/40 p-3 font-mono text-xs text-emerald-100 outline-none focus:border-emerald-500" />
           <button type="button" onClick={requestChallenge} className="mt-4 w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black">GET sem pagamento</button>
-          <button type="button" onClick={pay} disabled={!challenge} className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-neutral-300 disabled:opacity-40">Retry com X-PAYMENT</button>
+          <button type="button" onClick={pay} disabled={!challenge || !txXDR.trim()} className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-neutral-300 disabled:opacity-40">Retry com X-PAYMENT</button>
         </Card>
         <Card className="min-w-0 xl:col-span-2">
           <h2 className="font-bricolage text-xl font-bold text-white">Headers</h2>
@@ -82,7 +88,7 @@ if (initial.status === 402) {
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">HTTP/1.1 200 OK</p>
                 {paid && <CopyButton value={paid.paymentHeader} label="Copiar X-PAYMENT" />}
               </div>
-              <pre className="mt-3 overflow-auto whitespace-pre-wrap break-all text-xs text-emerald-100">{paid ? JSON.stringify(paid.data, null, 2) : 'Resposta liberada aparecera aqui'}</pre>
+              <pre className="mt-3 overflow-auto whitespace-pre-wrap break-all text-xs text-emerald-100">{unlocked ? JSON.stringify(unlocked, null, 2) : paid ? JSON.stringify(paid.data, null, 2) : 'Resposta liberada aparecera aqui'}</pre>
             </div>
           </div>
         </Card>

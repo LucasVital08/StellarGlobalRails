@@ -2,19 +2,26 @@ package api
 
 import (
 	"bytes"
+	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/stellar/go-stellar-sdk/keypair"
 )
 
 func TestHealthAndDashboardContract(t *testing.T) {
 	server := NewServer(NewMemoryStore(), Config{Version: "test"})
 
 	health := doJSON(t, server, http.MethodGet, "/v1/health", nil)
-	if health["api"] != "ok" || health["db"] != "ok" || health["stellar"] != "ok" {
+	if health["api"] != "ok" || health["stellar"] != "ok" {
 		t.Fatalf("unexpected health payload: %#v", health)
+	}
+	if _, ok := health["db"].(string); !ok {
+		t.Fatalf("health payload should expose db status, got %#v", health)
 	}
 
 	summary := doJSON(t, server, http.MethodGet, "/v1/dashboard", nil)
@@ -26,8 +33,23 @@ func TestHealthAndDashboardContract(t *testing.T) {
 	}
 }
 
+func TestProtectedRoutesRequireJWTOrAPIKeyWhenEnabled(t *testing.T) {
+	server := NewServer(NewMemoryStore(), Config{Version: "test", RequireAuth: true})
+
+	blocked := doRequest(server, http.MethodGet, "/v1/dashboard", nil, nil)
+	if blocked.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 for dashboard without auth, got %d", blocked.Code)
+	}
+
+	allowed := doRequest(server, http.MethodGet, "/v1/dashboard", nil, map[string]string{"X-API-Key": "kivo_test_local"})
+	if allowed.Code != http.StatusOK {
+		t.Fatalf("expected dashboard with api key to pass, got %d: %s", allowed.Code, allowed.Body.String())
+	}
+}
+
 func TestDevicePaymentAndX402Flow(t *testing.T) {
-	server := NewServer(NewMemoryStore(), Config{Version: "test", X402PlatformKey: "GDESTINATION"})
+	horizon := newHorizonStub(t)
+	server := NewServer(NewMemoryStore(), Config{Version: "test", X402PlatformKey: "GDESTINATION", StellarHorizonURL: horizon.URL})
 
 	from := doJSON(t, server, http.MethodPost, "/v1/devices", map[string]any{
 		"name":     "EV Test Device",
@@ -46,6 +68,9 @@ func TestDevicePaymentAndX402Flow(t *testing.T) {
 	if !strings.HasPrefix(fromDevice["stellarPublicKey"].(string), "G") {
 		t.Fatalf("expected stellar-looking public key, got %#v", fromDevice["stellarPublicKey"])
 	}
+	if _, err := keypair.ParseAddress(fromDevice["stellarPublicKey"].(string)); err != nil {
+		t.Fatalf("registered device must have a valid Stellar public key: %v", err)
+	}
 
 	payment := doJSON(t, server, http.MethodPost, "/v1/payments", map[string]any{
 		"fromDeviceId":  fromDevice["id"],
@@ -58,6 +83,10 @@ func TestDevicePaymentAndX402Flow(t *testing.T) {
 	if payment["status"] != "processing" {
 		t.Fatalf("none-condition payment should move to processing, got %#v", payment["status"])
 	}
+	executed := doJSON(t, server, http.MethodPost, "/v1/payments/"+payment["id"].(string)+"/execute", map[string]any{"txXDR": "AAAA_REAL_PAYMENT_XDR"})
+	if executed["stellarHash"] != "stellar_hash_real" {
+		t.Fatalf("execute must attach the submitted Stellar hash, got %#v", executed)
+	}
 
 	challenge := doJSON(t, server, http.MethodGet, "/v1/x402/challenge?resource=/api/x402/data", nil)
 	if challenge["status"].(float64) != 402 {
@@ -67,22 +96,116 @@ func TestDevicePaymentAndX402Flow(t *testing.T) {
 		t.Fatalf("challenge must include nonce and requiredHeader: %#v", challenge)
 	}
 
-	paid := doJSON(t, server, http.MethodPost, "/v1/x402/pay", map[string]any{"nonce": challenge["nonce"]})
-	if paid["status"].(float64) != 200 || paid["paymentHeader"] == "" {
+	paid := doJSON(t, server, http.MethodPost, "/v1/x402/pay", map[string]any{"nonce": challenge["nonce"], "txXDR": "AAAA_REAL_X402_XDR"})
+	if paid["status"].(float64) != 200 || paid["paymentHeader"] == "" || paid["stellarHash"] != "stellar_hash_real" {
 		t.Fatalf("expected paid x402 response, got %#v", paid)
+	}
+	envelope := decodePaymentHeader(t, paid["paymentHeader"].(string))
+	if envelope["txXDR"] != "AAAA_REAL_X402_XDR" || strings.Contains(envelope["txXDR"].(string), "MVP") {
+		t.Fatalf("payment header must contain the submitted XDR, got %#v", envelope)
+	}
+}
+
+func TestProtectedX402DataRequiresValidFreshPaymentHeader(t *testing.T) {
+	horizon := newHorizonStub(t)
+	server := NewServer(NewMemoryStore(), Config{Version: "test", X402PlatformKey: "GDESTINATION", StellarHorizonURL: horizon.URL})
+
+	challenge := doJSON(t, server, http.MethodGet, "/v1/x402/challenge?resource=/api/x402/data", nil)
+	paid := doJSON(t, server, http.MethodPost, "/v1/x402/pay", map[string]any{"nonce": challenge["nonce"], "txXDR": "AAAA_REAL_X402_XDR"})
+	header := paid["paymentHeader"].(string)
+
+	rec := doRequest(server, http.MethodGet, "/api/x402/data", nil, map[string]string{"X-PAYMENT": header})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("valid payment header should unlock resource, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	replay := doRequest(server, http.MethodGet, "/api/x402/data", nil, map[string]string{"X-PAYMENT": header})
+	if replay.Code != http.StatusBadRequest {
+		t.Fatalf("replayed payment header should be rejected, got %d: %s", replay.Code, replay.Body.String())
+	}
+}
+
+func TestX402PayRequiresRealSubmittedTransactionXDR(t *testing.T) {
+	server := NewServer(NewMemoryStore(), Config{Version: "test", X402PlatformKey: "GDESTINATION"})
+
+	challenge := doJSON(t, server, http.MethodGet, "/v1/x402/challenge?resource=/api/x402/data", nil)
+	rec := doRequest(server, http.MethodPost, "/v1/x402/pay", jsonReader(t, map[string]any{"nonce": challenge["nonce"]}), nil)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("x402 pay without txXDR must fail instead of fabricating a payment header, got %d: %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestStoreFromConfigRequiresDatabaseURL(t *testing.T) {
+	store, err := NewStoreFromConfig(context.Background(), Config{})
+	if err == nil {
+		store.Close()
+		t.Fatalf("NewStoreFromConfig must reject missing DATABASE_URL instead of falling back to MemoryStore")
+	}
+}
+
+func TestStoreFromConfigRequiresSecretEncryptionKey(t *testing.T) {
+	store, err := NewStoreFromConfig(context.Background(), Config{DatabaseURL: "postgres://example.invalid/kivo"})
+	if err == nil {
+		store.Close()
+		t.Fatalf("NewStoreFromConfig must reject missing KIVO_SECRET_ENCRYPTION_KEY instead of using a local fallback")
+	}
+}
+
+func TestMCPServerExposesOnlyRealTools(t *testing.T) {
+	server := NewServer(NewMemoryStore(), Config{Version: "test"})
+
+	tools := doJSON(t, server, http.MethodPost, "/mcp", map[string]any{
+		"jsonrpc": "2.0",
+		"id":      1,
+		"method":  "tools/list",
+		"params":  map[string]any{},
+	})
+	result := tools["result"].(map[string]any)
+	list := result["tools"].([]any)
+	if len(list) == 0 {
+		t.Fatalf("MCP tools/list should expose Kivo tools, got %#v", tools)
+	}
+	for _, item := range list {
+		tool := item.(map[string]any)
+		if strings.Contains(tool["name"].(string), "simulate") {
+			t.Fatalf("MCP tools/list must not expose simulation tools in zero-mock mode: %#v", tool)
+		}
+	}
+
+	call := doJSON(t, server, http.MethodPost, "/mcp", map[string]any{
+		"jsonrpc": "2.0",
+		"id":      2,
+		"method":  "tools/call",
+		"params": map[string]any{
+			"name":      "kivo_check_status",
+			"arguments": map[string]any{"paymentId": "pay_demo_x402"},
+		},
+	})
+	callResult := call["result"].(map[string]any)
+	if callResult["isError"] == true {
+		t.Fatalf("MCP status call should succeed, got %#v", call)
+	}
+}
+
+func TestEtherfuseAssetsRequireRealConfiguration(t *testing.T) {
+	server := NewServer(NewMemoryStore(), Config{Version: "test", EtherfuseMode: "sandbox"})
+
+	rec := doRequest(server, http.MethodGet, "/v1/etherfuse/assets?wallet=GDESTINATION", nil, nil)
+	if rec.Code != http.StatusPreconditionFailed {
+		t.Fatalf("Etherfuse assets without API key must fail instead of returning mock assets, got %d: %s", rec.Code, rec.Body.String())
 	}
 }
 
 func TestEtherfuseStatusAndWebhookContract(t *testing.T) {
 	server := NewServer(NewMemoryStore(), Config{
-		Version:                  "test",
-		EtherfuseMode:           "sandbox",
-		EtherfuseBaseURL:        "https://api.sand.etherfuse.com",
-		EtherfuseAPIKey:         "secret",
-		EtherfuseWebhookURL:     "https://api.example.test/v1/etherfuse/webhook",
-		EtherfuseWebhookVerify:  false,
-		EtherfuseDefaultFiat:    "MXN",
-		EtherfuseAllowedAssets:  "USDC:GTEST",
+		Version:                "test",
+		EtherfuseMode:          "sandbox",
+		EtherfuseBaseURL:       "https://api.sand.etherfuse.com",
+		EtherfuseAPIKey:        "secret",
+		EtherfuseWebhookURL:    "https://api.example.test/v1/etherfuse/webhook",
+		EtherfuseWebhookVerify: false,
+		EtherfuseDefaultFiat:   "MXN",
+		EtherfuseAllowedAssets: "USDC:GTEST",
 	})
 
 	status := doJSON(t, server, http.MethodGet, "/v1/etherfuse/status", nil)
@@ -103,24 +226,9 @@ func TestEtherfuseStatusAndWebhookContract(t *testing.T) {
 func doJSON(t *testing.T, handler http.Handler, method string, path string, body any) map[string]any {
 	t.Helper()
 
-	var reader *bytes.Reader
-	if body != nil {
-		payload, err := json.Marshal(body)
-		if err != nil {
-			t.Fatalf("marshal request: %v", err)
-		}
-		reader = bytes.NewReader(payload)
-	} else {
-		reader = bytes.NewReader(nil)
-	}
+	reader := jsonReader(t, body)
 
-	req := httptest.NewRequest(method, path, reader)
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	rec := httptest.NewRecorder()
-
-	handler.ServeHTTP(rec, req)
+	rec := doRequest(handler, method, path, reader, nil)
 	if rec.Code < 200 || rec.Code > 299 {
 		t.Fatalf("%s %s returned %d: %s", method, path, rec.Code, rec.Body.String())
 	}
@@ -128,6 +236,64 @@ func doJSON(t *testing.T, handler http.Handler, method string, path string, body
 	var out map[string]any
 	if err := json.Unmarshal(rec.Body.Bytes(), &out); err != nil {
 		t.Fatalf("decode response %q: %v", rec.Body.String(), err)
+	}
+	return out
+}
+
+func jsonReader(t *testing.T, body any) *bytes.Reader {
+	t.Helper()
+	if body == nil {
+		return bytes.NewReader(nil)
+	}
+	payload, err := json.Marshal(body)
+	if err != nil {
+		t.Fatalf("marshal request: %v", err)
+	}
+	return bytes.NewReader(payload)
+}
+
+func doRequest(handler http.Handler, method string, path string, body *bytes.Reader, headers map[string]string) *httptest.ResponseRecorder {
+	if body == nil {
+		body = bytes.NewReader(nil)
+	}
+	req := httptest.NewRequest(method, path, body)
+	if body.Len() > 0 {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	return rec
+}
+
+func newHorizonStub(t *testing.T) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/transactions" || r.Method != http.MethodPost {
+			http.NotFound(w, r)
+			return
+		}
+		if err := r.ParseForm(); err != nil {
+			t.Fatalf("parse form: %v", err)
+		}
+		if r.Form.Get("tx") == "" {
+			t.Fatalf("expected submitted tx XDR")
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"hash": "stellar_hash_real", "ledger": 12345})
+	}))
+}
+
+func decodePaymentHeader(t *testing.T, header string) map[string]any {
+	t.Helper()
+	raw, err := base64.StdEncoding.DecodeString(header)
+	if err != nil {
+		t.Fatalf("decode payment header: %v", err)
+	}
+	var out map[string]any
+	if err := json.Unmarshal(raw, &out); err != nil {
+		t.Fatalf("unmarshal payment header: %v", err)
 	}
 	return out
 }

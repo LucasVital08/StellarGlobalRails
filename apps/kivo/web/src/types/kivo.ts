@@ -155,8 +155,8 @@ export interface McpTool {
   exampleInput: Record<string, unknown>;
 }
 
-export interface McpSimulationResult {
-  simulated: boolean;
+export interface McpToolCallResult {
+  isError: boolean;
   toolName: string;
   output: Record<string, unknown>;
   createdAt: string;
@@ -194,7 +194,16 @@ export interface X402Challenge {
 export interface X402PaidResponse {
   status: 200;
   paymentHeader: string;
+  stellarHash: string;
+  stellarLedger: number;
   data: Record<string, unknown>;
+}
+
+export interface X402UnlockedResponse {
+  data?: unknown;
+  unlocked?: boolean;
+  timestamp?: string;
+  [key: string]: unknown;
 }
 
 export interface X402PricingRule {
@@ -258,6 +267,33 @@ export interface DeployServiceStatus {
   url?: string;
   description: string;
   updatedAt: string;
+}
+
+export interface EtherfuseStatus {
+  mode: 'sandbox' | 'production';
+  configured: boolean;
+  base_url: string;
+  webhook_url?: string;
+  webhook_verify: boolean;
+  default_fiat: string;
+  allowed_assets: string[];
+  auth_header: string;
+  network: 'testnet' | 'mainnet';
+  last_checked_at: string;
+}
+
+export interface EtherfuseAsset {
+  symbol: string;
+  identifier: string;
+  name: string;
+  currency: string;
+  balance: string | null;
+  image?: string;
+}
+
+export interface EtherfuseAssetsResponse {
+  providerMode?: 'sandbox' | 'production';
+  assets: EtherfuseAsset[];
 }
 
 export interface DashboardSummary {

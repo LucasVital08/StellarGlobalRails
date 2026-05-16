@@ -11,7 +11,7 @@ const routeTitles: Record<string, { title: string; icon: string }> = {
   '/mcp': { title: 'MCP Console', icon: 'solar:cpu-bolt-bold-duotone' },
   '/x402': { title: 'x402 Playground', icon: 'solar:shield-keyhole-bold-duotone' },
   '/templates': { title: 'Templates', icon: 'solar:bolt-circle-bold-duotone' },
-  '/workflows': { title: 'Workflows', icon: 'solar:flow-bold-duotone' },
+  '/workflows': { title: 'Workflows', icon: 'solar:routing-2-bold-duotone' },
   '/settings': { title: 'Configurações', icon: 'solar:settings-bold-duotone' },
 };
 
@@ -68,7 +68,7 @@ export default function Topbar() {
 
         <button
           onClick={() => {
-            logout();
+            void logout();
             navigate('/login');
           }}
           className="rounded-xl p-2 text-neutral-500 hover:bg-red-500/10 hover:text-red-400"

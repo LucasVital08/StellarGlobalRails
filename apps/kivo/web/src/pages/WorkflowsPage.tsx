@@ -13,7 +13,7 @@ export default function WorkflowsPage() {
       <PageHeader
         eyebrow="Orquestração"
         title="Workflows e workers"
-        icon="solar:flow-bold-duotone"
+        icon="solar:routing-2-bold-duotone"
         description="Observabilidade dos workers Redis atuais e visão futura de Temporal para retries duráveis, signals e long-running sessions."
       />
       <div className="grid gap-6 lg:grid-cols-2">

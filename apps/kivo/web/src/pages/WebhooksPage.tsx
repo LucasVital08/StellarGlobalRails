@@ -18,7 +18,7 @@ export default function WebhooksPage() {
   const deliveries = useAsyncData(() => kivoClient.listWebhookDeliveries(), []);
   const notify = useNotificationStore((state) => state.add);
   const [modalOpen, setModalOpen] = useState(false);
-  const [url, setUrl] = useState('https://example.com/kivo/webhook');
+  const [url, setUrl] = useState('');
   const [secret, setSecret] = useState<string | undefined>();
   const [busyId, setBusyId] = useState<string | null>(null);
 

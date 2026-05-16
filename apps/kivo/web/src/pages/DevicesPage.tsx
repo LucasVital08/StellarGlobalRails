@@ -16,9 +16,9 @@ export default function DevicesPage() {
   const devices = useAsyncData(() => kivoClient.listDevices(), []);
   const [modalOpen, setModalOpen] = useState(false);
   const [created, setCreated] = useState<DeviceRegistrationResult | null>(null);
-  const [name, setName] = useState('Novo Device Kivo');
-  const [location, setLocation] = useState('São Paulo, BR');
-  const [model, setModel] = useState('Kivo Edge');
+  const [name, setName] = useState('');
+  const [location, setLocation] = useState('');
+  const [model, setModel] = useState('');
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -77,7 +77,7 @@ export default function DevicesPage() {
             <input value={location} onChange={(event) => setLocation(event.target.value)} className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Localização" />
             <input value={model} onChange={(event) => setModel(event.target.value)} className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Modelo" />
           </div>
-          <button className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black">Criar wallet e API key</button>
+          <button disabled={!name} className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black disabled:cursor-not-allowed disabled:opacity-50">Criar wallet e API key</button>
         </form>
         {created && (
           <div className="mt-5 space-y-4">

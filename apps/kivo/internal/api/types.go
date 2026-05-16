@@ -3,21 +3,26 @@ package api
 import "time"
 
 type Config struct {
-	Version                  string
-	Port                     string
-	CORSOrigins              string
-	StellarNetwork           string
-	StellarHorizonURL        string
-	X402PlatformKey          string
-	USDCIssuer               string
-	EtherfuseMode            string
-	EtherfuseBaseURL         string
-	EtherfuseAPIKey          string
-	EtherfuseWebhookURL      string
-	EtherfuseWebhookSecret   string
-	EtherfuseWebhookVerify   bool
-	EtherfuseDefaultFiat     string
-	EtherfuseAllowedAssets   string
+	Version                string
+	Port                   string
+	CORSOrigins            string
+	DatabaseURL            string
+	RedisURL               string
+	SupabaseJWTSecret      string
+	SecretEncryptionKey    string
+	RequireAuth            bool
+	StellarNetwork         string
+	StellarHorizonURL      string
+	X402PlatformKey        string
+	USDCIssuer             string
+	EtherfuseMode          string
+	EtherfuseBaseURL       string
+	EtherfuseAPIKey        string
+	EtherfuseWebhookURL    string
+	EtherfuseWebhookSecret string
+	EtherfuseWebhookVerify bool
+	EtherfuseDefaultFiat   string
+	EtherfuseAllowedAssets string
 }
 
 type APIHealth string
@@ -94,15 +99,21 @@ type Payment struct {
 	Events         []PaymentEvent `json:"events"`
 }
 
+type StellarSettlement struct {
+	Hash       string `json:"hash"`
+	Ledger     int64  `json:"ledger"`
+	FeeCharged string `json:"feeCharged,omitempty"`
+}
+
 type CreatePaymentInput struct {
-	FromDeviceID    string `json:"fromDeviceId"`
-	ToDeviceID      string `json:"toDeviceId"`
-	Amount          string `json:"amount"`
-	AssetCode       string `json:"assetCode"`
-	ConditionType   string `json:"conditionType"`
-	ConditionValue  string `json:"conditionValue"`
-	TimeoutSeconds  int    `json:"timeoutSeconds"`
-	Memo            string `json:"memo"`
+	FromDeviceID   string `json:"fromDeviceId"`
+	ToDeviceID     string `json:"toDeviceId"`
+	Amount         string `json:"amount"`
+	AssetCode      string `json:"assetCode"`
+	ConditionType  string `json:"conditionType"`
+	ConditionValue string `json:"conditionValue"`
+	TimeoutSeconds int    `json:"timeoutSeconds"`
+	Memo           string `json:"memo"`
 }
 
 type PaymentCondition struct {
@@ -155,6 +166,8 @@ type X402Challenge struct {
 type X402PaidResponse struct {
 	Status        int            `json:"status"`
 	PaymentHeader string         `json:"paymentHeader"`
+	StellarHash   string         `json:"stellarHash"`
+	StellarLedger int64          `json:"stellarLedger"`
 	Data          map[string]any `json:"data"`
 }
 
@@ -192,6 +205,15 @@ type WebhookDelivery struct {
 	NextRetryAt  string         `json:"nextRetryAt,omitempty"`
 	DeliveredAt  string         `json:"deliveredAt,omitempty"`
 	CreatedAt    string         `json:"createdAt"`
+}
+
+type WebhookTestResult struct {
+	WebhookID            string          `json:"webhookId"`
+	Status               string          `json:"status"`
+	ResponseCode         int             `json:"responseCode"`
+	LatencyMS            int             `json:"latencyMs"`
+	SignedPayloadPreview string          `json:"signedPayloadPreview"`
+	Delivery             WebhookDelivery `json:"delivery"`
 }
 
 type APIKey struct {

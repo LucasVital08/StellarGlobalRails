@@ -17,12 +17,12 @@ import (
 )
 
 type Server struct {
-	store      *MemoryStore
+	store      KivoStore
 	cfg        Config
 	httpClient *http.Client
 }
 
-func NewServer(store *MemoryStore, cfg Config) http.Handler {
+func NewServer(store KivoStore, cfg Config) http.Handler {
 	if cfg.Version == "" {
 		cfg.Version = "0.1.0-mvp"
 	}
@@ -30,13 +30,13 @@ func NewServer(store *MemoryStore, cfg Config) http.Handler {
 		cfg.StellarNetwork = "testnet"
 	}
 	if cfg.USDCIssuer == "" {
-		cfg.USDCIssuer = "GATESTUSDCISSUER"
+		cfg.USDCIssuer = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
 	}
 	if cfg.EtherfuseBaseURL == "" {
 		cfg.EtherfuseBaseURL = "https://api.sand.etherfuse.com"
 	}
 	if cfg.EtherfuseMode == "" {
-		cfg.EtherfuseMode = "mock"
+		cfg.EtherfuseMode = "sandbox"
 	}
 	if cfg.EtherfuseDefaultFiat == "" {
 		cfg.EtherfuseDefaultFiat = "MXN"
@@ -62,6 +62,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		path = "/"
 	}
 
+	if s.cfg.RequireAuth && !isPublicRoute(path) && !s.authenticateRequest(r) {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "valid Supabase JWT or Kivo API key is required")
+		return
+	}
+
 	switch {
 	case path == "/v1/health" && r.Method == http.MethodGet:
 		writeJSON(w, http.StatusOK, s.store.Health(s.cfg))
@@ -83,6 +88,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.handleX402PricingRules(w, r)
 	case path == "/api/x402/data" && r.Method == http.MethodGet:
 		s.handleProtectedX402Data(w, r)
+	case path == "/mcp" && r.Method == http.MethodPost:
+		s.handleMCP(w, r)
 	case strings.HasPrefix(path, "/v1/etherfuse/"):
 		s.handleEtherfuse(w, r, strings.TrimPrefix(path, "/v1/etherfuse/"))
 	case path == "/v1/webhooks":
@@ -90,7 +97,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasPrefix(path, "/v1/webhooks/"):
 		s.handleWebhook(w, r, strings.TrimPrefix(path, "/v1/webhooks/"))
 	case path == "/v1/webhook-deliveries" && r.Method == http.MethodGet:
-		writeJSON(w, http.StatusOK, s.store.deliveries)
+		writeJSON(w, http.StatusOK, s.store.ListWebhookDeliveries(""))
 	case path == "/v1/api-keys":
 		s.handleAPIKeys(w, r)
 	case strings.HasPrefix(path, "/v1/api-keys/"):
@@ -99,8 +106,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, mcpTools())
 	case path == "/v1/mcp/config" && r.Method == http.MethodGet:
 		writeJSON(w, http.StatusOK, mcpConfig(r))
-	case strings.HasPrefix(path, "/v1/mcp/tools/") && strings.HasSuffix(path, "/simulate"):
-		s.handleMCPSimulate(w, r, path)
 	case path == "/v1/workflows" && r.Method == http.MethodGet:
 		writeJSON(w, http.StatusOK, workflows())
 	case path == "/v1/deploy/checks" && r.Method == http.MethodGet:
@@ -109,6 +114,45 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, s.deployServices(r))
 	default:
 		writeError(w, http.StatusNotFound, "not_found", "route not found")
+	}
+}
+
+func (s *Server) authenticateRequest(r *http.Request) bool {
+	apiKey := strings.TrimSpace(r.Header.Get("X-API-Key"))
+	if apiKey != "" && s.store.AuthenticateAPIKey(apiKey) {
+		return true
+	}
+
+	authHeader := strings.TrimSpace(r.Header.Get("Authorization"))
+	if authHeader == "" {
+		return false
+	}
+	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+	if token == authHeader {
+		return false
+	}
+	if strings.HasPrefix(token, "kivo_") {
+		return s.store.AuthenticateAPIKey(token)
+	}
+	if s.cfg.SupabaseJWTSecret == "" {
+		return false
+	}
+	_, err := ValidateSupabaseJWT(token, s.cfg.SupabaseJWTSecret)
+	return err == nil
+}
+
+func isPublicRoute(path string) bool {
+	switch {
+	case path == "/v1/health":
+		return true
+	case path == "/v1/etherfuse/webhook":
+		return true
+	case path == "/v1/x402/challenge" || path == "/v1/x402/pay":
+		return true
+	case path == "/api/x402/data":
+		return true
+	default:
+		return false
 	}
 }
 
@@ -204,7 +248,27 @@ func (s *Server) handlePayment(w http.ResponseWriter, r *http.Request, rest stri
 		return
 	}
 	if len(parts) == 2 && parts[1] == "execute" && r.Method == http.MethodPost {
-		payment, ok := s.store.ExecutePayment(id)
+		if _, ok := s.store.GetPayment(id); !ok {
+			writeError(w, http.StatusNotFound, "payment_not_found", "payment not found")
+			return
+		}
+		var input struct {
+			TXXDR string `json:"txXDR"`
+		}
+		if err := readJSON(r, &input); err != nil {
+			writeError(w, http.StatusBadRequest, "invalid_json", err.Error())
+			return
+		}
+		if strings.TrimSpace(input.TXXDR) == "" {
+			writeError(w, http.StatusBadRequest, "missing_tx_xdr", "txXDR is required for zero-mock Stellar settlement")
+			return
+		}
+		settlement, err := SubmitStellarTransaction(r.Context(), s.cfg.StellarHorizonURL, input.TXXDR)
+		if err != nil {
+			writeError(w, http.StatusBadGateway, "stellar_submit_failed", err.Error())
+			return
+		}
+		payment, ok := s.store.ExecutePayment(id, settlement)
 		if !ok {
 			writeError(w, http.StatusNotFound, "payment_not_found", "payment not found")
 			return
@@ -251,44 +315,63 @@ func (s *Server) handleX402Challenge(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleX402Pay(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Nonce string `json:"nonce"`
+		TXXDR string `json:"txXDR"`
 	}
 	if err := readJSON(r, &input); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid_json", err.Error())
 		return
 	}
-	challenge, ok := s.store.ConsumeX402Nonce(input.Nonce)
+	if strings.TrimSpace(input.TXXDR) == "" {
+		writeError(w, http.StatusBadRequest, "missing_tx_xdr", "txXDR is required for zero-mock x402 payment")
+		return
+	}
+	challenge, ok := s.store.GetX402Challenge(input.Nonce)
 	if !ok {
 		writeError(w, http.StatusBadRequest, "invalid_nonce", "unknown or already used x402 nonce")
 		return
 	}
+	settlement, err := SubmitStellarTransaction(r.Context(), s.cfg.StellarHorizonURL, input.TXXDR)
+	if err != nil {
+		writeError(w, http.StatusBadGateway, "stellar_submit_failed", err.Error())
+		return
+	}
 	envelope := map[string]any{
-		"scheme":    "stellar",
-		"network":   challenge.Network,
-		"nonce":     challenge.Nonce,
-		"resource":  challenge.Resource,
-		"amount":    challenge.Amount,
-		"asset":     challenge.Asset,
-		"timestamp": nowISO(),
-		"txXDR":     "AAAA_MVP_" + randomHash(),
+		"scheme":        "stellar",
+		"network":       challenge.Network,
+		"nonce":         challenge.Nonce,
+		"resource":      challenge.Resource,
+		"amount":        challenge.Amount,
+		"asset":         challenge.Asset,
+		"timestamp":     nowISO(),
+		"txXDR":         input.TXXDR,
+		"stellarHash":   settlement.Hash,
+		"stellarLedger": settlement.Ledger,
 	}
 	raw, _ := json.Marshal(envelope)
 	writeJSON(w, http.StatusOK, X402PaidResponse{
 		Status:        200,
 		PaymentHeader: base64.StdEncoding.EncodeToString(raw),
+		StellarHash:   settlement.Hash,
+		StellarLedger: settlement.Ledger,
 		Data: map[string]any{
-			"reading":                  "premium sensor reading",
+			"reading":                   "premium sensor reading",
 			"carbon_intensity_gco2_kwh": 185,
-			"provider":                 "kivo-mvp",
-			"timestamp":                nowISO(),
+			"provider":                  "stellar-horizon",
+			"timestamp":                 nowISO(),
 		},
 	})
 }
 
 func (s *Server) handleProtectedX402Data(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("X-PAYMENT") == "" {
+	paymentHeader := r.Header.Get("X-PAYMENT")
+	if paymentHeader == "" {
 		challenge := s.store.CreateX402Challenge("/api/x402/data", s.cfg)
 		w.Header().Set("X-PAYMENT-REQUIRED", challenge.RequiredHeader)
 		writeJSON(w, http.StatusPaymentRequired, challenge)
+		return
+	}
+	if err := s.validateX402PaymentHeader(paymentHeader, "/api/x402/data"); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_x402_payment", err.Error())
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
@@ -296,6 +379,57 @@ func (s *Server) handleProtectedX402Data(w http.ResponseWriter, r *http.Request)
 		"unlocked":  true,
 		"timestamp": nowISO(),
 	})
+}
+
+type x402PaymentEnvelope struct {
+	Scheme    string `json:"scheme"`
+	Network   string `json:"network"`
+	Resource  string `json:"resource"`
+	Nonce     string `json:"nonce"`
+	Amount    string `json:"amount"`
+	Asset     string `json:"asset"`
+	Timestamp string `json:"timestamp"`
+	TXXDR     string `json:"txXDR"`
+}
+
+func (s *Server) validateX402PaymentHeader(header string, resource string) error {
+	raw, err := base64.StdEncoding.DecodeString(header)
+	if err != nil {
+		return fmt.Errorf("payment header must be base64 JSON")
+	}
+
+	var envelope x402PaymentEnvelope
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		return fmt.Errorf("payment envelope is invalid JSON")
+	}
+
+	challenge, ok := s.store.ConsumeX402Nonce(envelope.Nonce)
+	if !ok {
+		return fmt.Errorf("unknown, expired, or already used nonce")
+	}
+	if envelope.Scheme != "stellar" {
+		return fmt.Errorf("scheme must be stellar")
+	}
+	if envelope.Network != challenge.Network {
+		return fmt.Errorf("network mismatch")
+	}
+	if envelope.Resource != resource || envelope.Resource != challenge.Resource {
+		return fmt.Errorf("resource mismatch")
+	}
+	if envelope.Amount != challenge.Amount || envelope.Asset != challenge.Asset {
+		return fmt.Errorf("amount or asset mismatch")
+	}
+	if strings.TrimSpace(envelope.TXXDR) == "" {
+		return fmt.Errorf("txXDR is required")
+	}
+	timestamp, err := time.Parse(time.RFC3339, envelope.Timestamp)
+	if err != nil {
+		return fmt.Errorf("timestamp must be RFC3339")
+	}
+	if time.Since(timestamp) > 5*time.Minute || time.Until(timestamp) > 5*time.Minute {
+		return fmt.Errorf("timestamp is outside the allowed window")
+	}
+	return nil
 }
 
 func (s *Server) handleX402PricingRules(w http.ResponseWriter, r *http.Request) {
@@ -334,8 +468,8 @@ func (s *Server) handleEtherfuse(w http.ResponseWriter, r *http.Request, rest st
 	case strings.HasPrefix(rest, "orders/") && r.Method == http.MethodGet:
 		orderID := strings.TrimPrefix(rest, "orders/")
 		s.proxyEtherfuseGET(w, r, "/ramp/order/"+url.PathEscape(orderID), nil)
-	case strings.HasPrefix(rest, "orders/") && strings.HasSuffix(rest, "/simulate-fiat-received") && r.Method == http.MethodPost:
-		orderID := strings.TrimSuffix(strings.TrimPrefix(rest, "orders/"), "/simulate-fiat-received")
+	case strings.HasPrefix(rest, "orders/") && strings.HasSuffix(rest, "/fiat-received") && r.Method == http.MethodPost:
+		orderID := strings.TrimSuffix(strings.TrimPrefix(rest, "orders/"), "/fiat-received")
 		s.handleEtherfuseFiatReceived(w, r, orderID)
 	case rest == "webhook" && r.Method == http.MethodPost:
 		s.handleEtherfuseWebhook(w, r)
@@ -346,39 +480,31 @@ func (s *Server) handleEtherfuse(w http.ResponseWriter, r *http.Request, rest st
 
 func (s *Server) etherfuseStatus() map[string]any {
 	return map[string]any{
-		"mode":                 s.cfg.EtherfuseMode,
-		"configured":           s.cfg.EtherfuseAPIKey != "",
-		"base_url":             s.cfg.EtherfuseBaseURL,
-		"webhook_url":          s.cfg.EtherfuseWebhookURL,
-		"webhook_verify":       s.cfg.EtherfuseWebhookVerify,
-		"default_fiat":         s.cfg.EtherfuseDefaultFiat,
-		"allowed_assets":       splitCSV(s.cfg.EtherfuseAllowedAssets),
-		"auth_header":          "Authorization: <api-key>",
-		"network":              s.cfg.StellarNetwork,
-		"last_checked_at":      nowISO(),
+		"mode":            s.cfg.EtherfuseMode,
+		"configured":      s.cfg.EtherfuseAPIKey != "",
+		"base_url":        s.cfg.EtherfuseBaseURL,
+		"webhook_url":     s.cfg.EtherfuseWebhookURL,
+		"webhook_verify":  s.cfg.EtherfuseWebhookVerify,
+		"default_fiat":    s.cfg.EtherfuseDefaultFiat,
+		"allowed_assets":  splitCSV(s.cfg.EtherfuseAllowedAssets),
+		"auth_header":     "Authorization: <api-key>",
+		"network":         s.cfg.StellarNetwork,
+		"last_checked_at": nowISO(),
 	}
 }
 
 func (s *Server) handleEtherfuseAssets(w http.ResponseWriter, r *http.Request) {
 	wallet := r.URL.Query().Get("wallet")
 	if wallet == "" {
-		wallet = "GMVPTESTWALLET000000000000000000000000000000000000000000"
+		writeError(w, http.StatusBadRequest, "missing_wallet", "wallet query parameter is required")
+		return
 	}
 	query := url.Values{}
 	query.Set("blockchain", "stellar")
 	query.Set("currency", valueOrDefault(r.URL.Query().Get("currency"), s.cfg.EtherfuseDefaultFiat))
 	query.Set("wallet", wallet)
-	if s.cfg.EtherfuseAPIKey == "" || s.cfg.EtherfuseMode == "mock" {
-		writeJSON(w, http.StatusOK, map[string]any{
-			"providerMode": "mock",
-			"assets": []map[string]any{{
-				"symbol":     "USDC",
-				"identifier": s.cfg.EtherfuseAllowedAssets,
-				"name":       "USD Coin Testnet",
-				"currency":   "usd",
-				"balance":    "100.0000000",
-			}},
-		})
+	if s.cfg.EtherfuseAPIKey == "" {
+		writeError(w, http.StatusPreconditionFailed, "etherfuse_not_configured", "ETHERFUSE_API_KEY is required")
 		return
 	}
 	s.proxyEtherfuseGET(w, r, "/ramp/assets", query)
@@ -386,11 +512,11 @@ func (s *Server) handleEtherfuseAssets(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleEtherfuseFiatReceived(w http.ResponseWriter, r *http.Request, orderID string) {
 	if s.cfg.EtherfuseMode != "sandbox" {
-		writeError(w, http.StatusForbidden, "sandbox_only", "fiat simulation is allowed only in sandbox")
+		writeError(w, http.StatusForbidden, "sandbox_only", "fiat receipt signal is allowed only in sandbox")
 		return
 	}
 	if s.cfg.EtherfuseAPIKey == "" {
-		writeJSON(w, http.StatusOK, map[string]any{"order_id": orderID, "status": "funded", "providerMode": "mock"})
+		writeError(w, http.StatusPreconditionFailed, "etherfuse_not_configured", "ETHERFUSE_API_KEY is required")
 		return
 	}
 	body := map[string]any{"order_id": orderID}
@@ -422,9 +548,7 @@ func (s *Server) handleEtherfuseWebhook(w http.ResponseWriter, r *http.Request) 
 		writeError(w, http.StatusBadRequest, "invalid_json", err.Error())
 		return
 	}
-	s.store.mu.Lock()
-	s.store.webhookEvents = append([]map[string]any{payload}, s.store.webhookEvents...)
-	s.store.mu.Unlock()
+	s.store.RecordEtherfuseWebhook(payload)
 	writeJSON(w, http.StatusOK, map[string]any{"accepted": true, "receivedAt": nowISO()})
 }
 
@@ -469,18 +593,12 @@ func (s *Server) proxyEtherfuseGET(w http.ResponseWriter, _ *http.Request, endpo
 }
 
 func (s *Server) proxyEtherfusePOST(w http.ResponseWriter, r *http.Request, endpoint string) {
-	if s.cfg.EtherfuseAPIKey == "" || s.cfg.EtherfuseMode == "mock" {
-		var input map[string]any
-		_ = readJSON(r, &input)
-		writeJSON(w, http.StatusOK, map[string]any{
-			"providerMode": "mock",
-			"id":           newID("ef"),
-			"orderId":      newID("ord"),
-			"quoteId":      valueOrDefault(fmt.Sprint(input["quoteId"]), newID("quote")),
-			"status":       "created",
-			"expiresAt":    time.Now().UTC().Add(10 * time.Minute).Format(time.RFC3339),
-			"echo":         input,
-		})
+	if s.cfg.EtherfuseAPIKey == "" {
+		writeError(w, http.StatusPreconditionFailed, "etherfuse_not_configured", "ETHERFUSE_API_KEY is required")
+		return
+	}
+	if s.cfg.EtherfuseMode == "mock" {
+		writeError(w, http.StatusPreconditionFailed, "etherfuse_mode_disabled", "ETHERFUSE_MODE=mock is disabled")
 		return
 	}
 	raw, err := io.ReadAll(r.Body)
@@ -518,11 +636,9 @@ func (s *Server) forward(w http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Server) handleWebhooks(w http.ResponseWriter, r *http.Request) {
-	s.store.mu.Lock()
-	defer s.store.mu.Unlock()
 	switch r.Method {
 	case http.MethodGet:
-		writeJSON(w, http.StatusOK, s.store.webhooks)
+		writeJSON(w, http.StatusOK, s.store.ListWebhooks())
 	case http.MethodPost:
 		var input struct {
 			URL    string   `json:"url"`
@@ -532,17 +648,7 @@ func (s *Server) handleWebhooks(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusBadRequest, "invalid_json", err.Error())
 			return
 		}
-		secret := "whsec_" + randomToken(24)
-		webhook := Webhook{
-			ID:                 newID("wh"),
-			URL:                input.URL,
-			Events:             input.Events,
-			SecretPreview:      previewSecret(secret),
-			Active:             true,
-			CreatedAt:          nowISO(),
-			LastDeliveryStatus: "pending",
-		}
-		s.store.webhooks = append([]Webhook{webhook}, s.store.webhooks...)
+		webhook, secret := s.store.CreateWebhook(input.URL, input.Events)
 		writeJSON(w, http.StatusCreated, map[string]any{"id": webhook.ID, "url": webhook.URL, "events": webhook.Events, "secretPreview": webhook.SecretPreview, "active": webhook.Active, "createdAt": webhook.CreatedAt, "deliveryCount": webhook.DeliveryCount, "lastDeliveryStatus": webhook.LastDeliveryStatus, "secret": secret})
 	default:
 		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "method not allowed")
@@ -553,24 +659,16 @@ func (s *Server) handleWebhook(w http.ResponseWriter, r *http.Request, rest stri
 	parts := strings.Split(rest, "/")
 	id := parts[0]
 	if len(parts) == 2 && parts[1] == "deliveries" && r.Method == http.MethodGet {
-		s.store.mu.Lock()
-		defer s.store.mu.Unlock()
-		out := make([]WebhookDelivery, 0)
-		for _, delivery := range s.store.deliveries {
-			if delivery.WebhookID == id {
-				out = append(out, delivery)
-			}
-		}
-		writeJSON(w, http.StatusOK, out)
+		writeJSON(w, http.StatusOK, s.store.ListWebhookDeliveries(id))
 		return
 	}
 	if len(parts) == 2 && parts[1] == "test" && r.Method == http.MethodPost {
-		now := nowISO()
-		delivery := WebhookDelivery{ID: newID("wd"), WebhookID: id, Event: "webhook.test", Payload: map[string]any{"type": "webhook.test"}, Status: "delivered", Attempts: 1, ResponseCode: 200, DeliveredAt: now, CreatedAt: now}
-		s.store.mu.Lock()
-		s.store.deliveries = append([]WebhookDelivery{delivery}, s.store.deliveries...)
-		s.store.mu.Unlock()
-		writeJSON(w, http.StatusOK, map[string]any{"webhookId": id, "status": "delivered", "responseCode": 200, "latencyMs": 72, "signedPayloadPreview": "sha256=" + randomHash()[:24], "delivery": delivery})
+		result, ok := s.store.TestWebhook(id)
+		if !ok {
+			writeError(w, http.StatusNotFound, "webhook_not_found", "webhook not found")
+			return
+		}
+		writeJSON(w, http.StatusOK, result)
 		return
 	}
 	if len(parts) == 1 && r.Method == http.MethodPatch {
@@ -578,26 +676,19 @@ func (s *Server) handleWebhook(w http.ResponseWriter, r *http.Request, rest stri
 			Active bool `json:"active"`
 		}
 		_ = readJSON(r, &input)
-		s.store.mu.Lock()
-		defer s.store.mu.Unlock()
-		for index := range s.store.webhooks {
-			if s.store.webhooks[index].ID == id {
-				s.store.webhooks[index].Active = input.Active
-				writeJSON(w, http.StatusOK, s.store.webhooks[index])
-				return
-			}
+		webhook, ok := s.store.ToggleWebhook(id, input.Active)
+		if !ok {
+			writeError(w, http.StatusNotFound, "webhook_not_found", "webhook not found")
+			return
 		}
+		writeJSON(w, http.StatusOK, webhook)
+		return
 	}
 	if len(parts) == 1 && r.Method == http.MethodDelete {
-		s.store.mu.Lock()
-		defer s.store.mu.Unlock()
-		filtered := s.store.webhooks[:0]
-		for _, webhook := range s.store.webhooks {
-			if webhook.ID != id {
-				filtered = append(filtered, webhook)
-			}
+		if !s.store.DeleteWebhook(id) {
+			writeError(w, http.StatusNotFound, "webhook_not_found", "webhook not found")
+			return
 		}
-		s.store.webhooks = filtered
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
@@ -605,11 +696,9 @@ func (s *Server) handleWebhook(w http.ResponseWriter, r *http.Request, rest stri
 }
 
 func (s *Server) handleAPIKeys(w http.ResponseWriter, r *http.Request) {
-	s.store.mu.Lock()
-	defer s.store.mu.Unlock()
 	switch r.Method {
 	case http.MethodGet:
-		writeJSON(w, http.StatusOK, s.store.apiKeys)
+		writeJSON(w, http.StatusOK, s.store.ListAPIKeys())
 	case http.MethodPost:
 		var input struct {
 			Name      string   `json:"name"`
@@ -620,9 +709,7 @@ func (s *Server) handleAPIKeys(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusBadRequest, "invalid_json", err.Error())
 			return
 		}
-		raw := "kivo_live_" + randomToken(28)
-		key := APIKey{ID: newID("key"), Name: input.Name, KeyPreview: previewSecret(raw), Scopes: input.Scopes, Status: "active", ExpiresAt: input.ExpiresAt, CreatedAt: nowISO()}
-		s.store.apiKeys = append([]APIKey{key}, s.store.apiKeys...)
+		key, raw := s.store.CreateAPIKey(input.Name, input.Scopes, input.ExpiresAt)
 		writeJSON(w, http.StatusCreated, map[string]any{"apiKey": key, "rawKey": raw})
 	default:
 		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "method not allowed")
@@ -632,49 +719,148 @@ func (s *Server) handleAPIKeys(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleAPIKey(w http.ResponseWriter, r *http.Request, rest string) {
 	parts := strings.Split(rest, "/")
 	if len(parts) == 2 && parts[1] == "revoke" && r.Method == http.MethodPost {
-		s.store.mu.Lock()
-		defer s.store.mu.Unlock()
-		for index := range s.store.apiKeys {
-			if s.store.apiKeys[index].ID == parts[0] {
-				s.store.apiKeys[index].Status = "revoked"
-				writeJSON(w, http.StatusOK, s.store.apiKeys[index])
-				return
-			}
+		key, ok := s.store.RevokeAPIKey(parts[0])
+		if !ok {
+			writeError(w, http.StatusNotFound, "api_key_not_found", "api key not found")
+			return
 		}
+		writeJSON(w, http.StatusOK, key)
+		return
 	}
 	writeError(w, http.StatusNotFound, "not_found", "api key route not found")
 }
 
-func (s *Server) handleMCPSimulate(w http.ResponseWriter, r *http.Request, path string) {
-	toolName := strings.TrimSuffix(strings.TrimPrefix(path, "/v1/mcp/tools/"), "/simulate")
-	var input map[string]any
-	_ = readJSON(r, &input)
-	writeJSON(w, http.StatusOK, map[string]any{
-		"simulated": true,
-		"toolName":  toolName,
-		"output": map[string]any{
-			"mock_payment_id":          newID("sim"),
-			"mock_stellar_hash":        "SIM_" + randomHash()[:18],
-			"estimated_fee_xlm":        "0.00001",
-			"estimated_settlement_seconds": 4,
-			"network":                 s.cfg.StellarNetwork,
-			"input":                   input,
+func (s *Server) handleMCP(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		JSONRPC string         `json:"jsonrpc"`
+		ID      any            `json:"id"`
+		Method  string         `json:"method"`
+		Params  map[string]any `json:"params"`
+	}
+	if err := readJSON(r, &req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"jsonrpc": "2.0", "id": nil, "error": map[string]any{"code": -32700, "message": "invalid JSON"}})
+		return
+	}
+	if req.JSONRPC == "" {
+		req.JSONRPC = "2.0"
+	}
+
+	switch req.Method {
+	case "initialize":
+		writeJSON(w, http.StatusOK, map[string]any{
+			"jsonrpc": "2.0",
+			"id":      req.ID,
+			"result": map[string]any{
+				"protocolVersion": "2024-11-05",
+				"capabilities":    map[string]any{"tools": map[string]any{}},
+				"serverInfo":      map[string]string{"name": "kivo-mcp", "title": "Kivo Pay", "version": s.cfg.Version},
+			},
+		})
+	case "tools/list":
+		writeJSON(w, http.StatusOK, map[string]any{"jsonrpc": "2.0", "id": req.ID, "result": map[string]any{"tools": mcpTools()}})
+	case "tools/call":
+		s.handleMCPToolCall(w, req.ID, req.Params)
+	default:
+		writeJSON(w, http.StatusOK, map[string]any{
+			"jsonrpc": "2.0",
+			"id":      req.ID,
+			"error":   map[string]any{"code": -32601, "message": "method not found"},
+		})
+	}
+}
+
+func (s *Server) handleMCPToolCall(w http.ResponseWriter, id any, params map[string]any) {
+	name, _ := params["name"].(string)
+	args, _ := params["arguments"].(map[string]any)
+	var output any
+
+	switch name {
+	case "kivo_check_status":
+		paymentID, _ := args["paymentId"].(string)
+		if paymentID == "" {
+			output = map[string]any{"status": "missing_payment_id"}
+			break
+		}
+		payment, ok := s.store.GetPayment(paymentID)
+		if !ok {
+			output = map[string]any{"status": "not_found", "paymentId": paymentID}
+			break
+		}
+		output = payment
+	case "kivo_create_payment":
+		input := CreatePaymentInput{
+			FromDeviceID:  fmt.Sprint(args["fromDeviceId"]),
+			ToDeviceID:    fmt.Sprint(args["toDeviceId"]),
+			Amount:        fmt.Sprint(args["amount"]),
+			AssetCode:     valueOrDefault(fmt.Sprint(args["assetCode"]), "USDC"),
+			ConditionType: valueOrDefault(fmt.Sprint(args["conditionType"]), "none"),
+			Memo:          fmt.Sprint(args["memo"]),
+		}
+		payment, err := s.store.CreatePayment(input)
+		if err != nil {
+			writeJSON(w, http.StatusOK, mcpToolResult(id, map[string]any{"error": err.Error()}, true))
+			return
+		}
+		output = payment
+	default:
+		writeJSON(w, http.StatusOK, mcpToolResult(id, map[string]any{"error": "unknown tool: " + name}, true))
+		return
+	}
+
+	writeJSON(w, http.StatusOK, mcpToolResult(id, output, false))
+}
+
+func mcpToolResult(id any, output any, isError bool) map[string]any {
+	raw, _ := json.Marshal(output)
+	return map[string]any{
+		"jsonrpc": "2.0",
+		"id":      id,
+		"result": map[string]any{
+			"content": []map[string]string{{"type": "text", "text": string(raw)}},
+			"isError": isError,
 		},
-		"createdAt": nowISO(),
-	})
+	}
 }
 
 func (s *Server) deployChecks() []DeployCheck {
 	statusAPI := "ready"
+	statusDB := "warning"
+	if s.cfg.DatabaseURL != "" {
+		statusDB = "ready"
+	}
+	statusWorkers := "warning"
+	if s.cfg.RedisURL != "" {
+		statusWorkers = "ready"
+	}
+	statusAuth := "warning"
+	if s.cfg.RequireAuth && s.cfg.SupabaseJWTSecret != "" {
+		statusAuth = "ready"
+	}
+	statusSecrets := "warning"
+	if s.cfg.SecretEncryptionKey != "" {
+		statusSecrets = "ready"
+	}
 	statusEtherfuse := "warning"
 	if s.cfg.EtherfuseAPIKey != "" {
 		statusEtherfuse = "ready"
 	}
 	return []DeployCheck{
 		{ID: "api", Label: "Kivo API", Scope: "api", Status: statusAPI, Owner: "backend", Description: "Go API exposes dashboard, devices, payments, x402, and Etherfuse endpoints.", Value: "/v1/health"},
-		{ID: "etherfuse", Label: "Etherfuse sandbox", Scope: "stellar", Status: statusEtherfuse, Owner: "anchor", Description: "ETHERFUSE_API_KEY controls whether calls are live sandbox or local mock.", Value: s.cfg.EtherfuseMode},
-		{ID: "security", Label: "Secret isolation", Scope: "security", Status: "ready", Owner: "platform", Description: "Etherfuse API key and webhook secret stay server-side only."},
+		{ID: "supabase-db", Label: "Supabase Postgres", Scope: "api", Status: statusDB, Owner: "platform", Description: "DATABASE_URL enables durable devices, payments, webhooks, API keys, x402 nonces, and Etherfuse events.", Value: maskConfigured(s.cfg.DatabaseURL)},
+		{ID: "auth", Label: "Supabase Auth", Scope: "security", Status: statusAuth, Owner: "security", Description: "KIVO_REQUIRE_AUTH with SUPABASE_JWT_SECRET protects dashboard API routes while allowing x402 public challenge flow.", Value: mapBoolStatus(s.cfg.RequireAuth)},
+		{ID: "workers", Label: "Redis workers", Scope: "workers", Status: statusWorkers, Owner: "backend", Description: "REDIS_URL is used as the MVP queue readiness signal before durable workflow migration.", Value: maskConfigured(s.cfg.RedisURL)},
+		{ID: "x402", Label: "x402 replay guard", Scope: "security", Status: "ready", Owner: "protocol", Description: "Protected resources consume each nonce once and reject stale or mismatched X-PAYMENT headers.", Value: "/api/x402/data"},
+		{ID: "mcp", Label: "MCP JSON-RPC", Scope: "api", Status: "ready", Owner: "agents", Description: "The /mcp endpoint exposes tool discovery and MVP payment/status tools for generic agents.", Value: "/mcp"},
+		{ID: "etherfuse", Label: "Etherfuse sandbox", Scope: "stellar", Status: statusEtherfuse, Owner: "anchor", Description: "ETHERFUSE_API_KEY controls live sandbox/production calls.", Value: s.cfg.EtherfuseMode},
+		{ID: "security", Label: "Secret isolation", Scope: "security", Status: statusSecrets, Owner: "platform", Description: "KIVO_SECRET_ENCRYPTION_KEY protects device and webhook secrets; Etherfuse credentials stay server-side only."},
 	}
+}
+
+func maskConfigured(value string) string {
+	if strings.TrimSpace(value) == "" {
+		return "not configured"
+	}
+	return "configured"
 }
 
 func (s *Server) deployServices(r *http.Request) []DeployServiceStatus {
@@ -696,19 +882,18 @@ func mapBoolStatus(ok bool) string {
 func mcpTools() []map[string]any {
 	return []map[string]any{
 		{"id": "tool_create", "name": "kivo_create_payment", "title": "Create payment", "description": "Create an M2M payment between registered devices.", "safeForAutoUse": false, "inputSchema": map[string]any{"type": "object"}, "exampleInput": map[string]any{"amount": "0.0500000"}},
-		{"id": "tool_status", "name": "kivo_check_status", "title": "Check status", "description": "Check payment or device status.", "safeForAutoUse": true, "inputSchema": map[string]any{"type": "object"}, "exampleInput": map[string]any{"paymentId": "pay_demo_x402"}},
-		{"id": "tool_simulate", "name": "kivo_simulate_payment", "title": "Simulate payment", "description": "Run a no-money simulation for agents.", "safeForAutoUse": true, "inputSchema": map[string]any{"type": "object"}, "exampleInput": map[string]any{"resource": "/api/x402/data"}},
+		{"id": "tool_status", "name": "kivo_check_status", "title": "Check status", "description": "Check payment or device status.", "safeForAutoUse": true, "inputSchema": map[string]any{"type": "object"}, "exampleInput": map[string]any{"paymentId": "pay_<id>"}},
 	}
 }
 
 func mcpConfig(r *http.Request) map[string]any {
 	base := "http://" + r.Host
 	return map[string]any{
-		"server": map[string]any{"name": "kivo-mcp", "transport": "http", "url": base + "/mcp"},
-		"env": map[string]string{"KIVO_API_URL": base, "KIVO_API_KEY": "env:KIVO_API_KEY", "KIVO_DEVICE_ID": "env:KIVO_DEVICE_ID", "KIVO_NETWORK": "testnet"},
-		"tools": []string{"kivo_create_payment", "kivo_check_status", "kivo_simulate_payment"},
+		"server":         map[string]any{"name": "kivo-mcp", "transport": "http", "url": base + "/mcp"},
+		"env":            map[string]string{"KIVO_API_URL": base, "KIVO_API_KEY": "env:KIVO_API_KEY", "KIVO_DEVICE_ID": "env:KIVO_DEVICE_ID", "KIVO_NETWORK": "testnet"},
+		"tools":          []string{"kivo_create_payment", "kivo_check_status"},
 		"approvalPolicy": map[string]any{"autoApproveSafeTools": true, "maxAutoPaymentAmount": "0.5000000 USDC", "requireHumanFor": []string{"kivo_create_payment"}},
-		"sampleConfig": map[string]any{"mcpServers": map[string]any{"kivo": map[string]any{"url": base + "/mcp"}}},
+		"sampleConfig":   map[string]any{"mcpServers": map[string]any{"kivo": map[string]any{"url": base + "/mcp"}}},
 	}
 }
 

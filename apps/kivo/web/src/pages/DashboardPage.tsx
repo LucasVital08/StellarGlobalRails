@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
         <Card>
           <h2 className="font-bricolage text-xl font-bold text-white">Saúde do sistema</h2>
-          <p className="mt-1 text-sm text-neutral-500">Mocks alinhados ao health check `/v1/health`.</p>
+          <p className="mt-1 text-sm text-neutral-500">Status reportado diretamente pelo health check `/v1/health`.</p>
           <div className="mt-5 space-y-3">
             {healthEntries.map(([key, value]) => (
               <div key={key} className="flex items-center justify-between rounded-xl bg-black/30 p-3">

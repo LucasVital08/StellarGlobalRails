@@ -7,16 +7,44 @@ import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { formatDateTime, statusLabel } from '@/utils/format';
 
-const envTemplate = `VITE_KIVO_API_MODE=mock
-VITE_KIVO_API_URL=https://api.kivo.example
-KIVO_NETWORK=testnet
-KIVO_STELLAR_HORIZON=https://horizon-testnet.stellar.org
-KIVO_REDIS_URL=redis://localhost:6379`;
+const envTemplate = `PORT=8080
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+REDIS_URL=redis://localhost:6379
+KIVO_SECRET_ENCRYPTION_KEY=change-me-32-plus-random-chars
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_ANON_KEY=...
+SUPABASE_JWT_SECRET=...
+KIVO_REQUIRE_AUTH=true
+STELLAR_NETWORK=testnet
+STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+X402_PLATFORM_KEY=G...
+USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+ETHERFUSE_MODE=sandbox
+ETHERFUSE_BASE_URL=https://api.sand.etherfuse.com
+ETHERFUSE_API_KEY=ef_sand_...
+ETHERFUSE_WEBHOOK_URL=https://api.kivo.pay/v1/etherfuse/webhook
+ETHERFUSE_WEBHOOK_VERIFY=true
 
-const releaseCommands = `npm install
+VITE_SUPABASE_URL=http://127.0.0.1:54321
+VITE_SUPABASE_PUBLISHABLE_KEY=...
+VITE_KIVO_API_URL=http://localhost:8080`;
+
+const releaseCommands = `supabase db advisors --local --workdir .
+supabase db lint --local --workdir .
+npm install
 npm run lint
 npm test
 npm run build`;
+
+const supabaseServices = [
+  { name: 'Database', value: '10 tabelas kivo_* com RLS', icon: 'solar:database-bold-duotone' },
+  { name: 'Auth', value: 'profiles por trigger auth.users', icon: 'solar:user-check-bold-duotone' },
+  { name: 'Realtime', value: 'payments, deliveries e orders', icon: 'solar:translation-2-bold-duotone' },
+  { name: 'Storage', value: 'kivo-proofs e device-assets privados', icon: 'solar:cloud-storage-bold-duotone' },
+  { name: 'Edge Function', value: 'kivo-etherfuse-webhook', icon: 'solar:bolt-bold-duotone' },
+  { name: 'MCP', value: 'http://127.0.0.1:54321/mcp', icon: 'solar:cpu-bolt-bold-duotone' },
+];
 
 const scopeIcon: Record<string, string> = {
   frontend: 'solar:monitor-bold-duotone',
@@ -29,6 +57,8 @@ const scopeIcon: Record<string, string> = {
 export default function DeployPage() {
   const checks = useAsyncData(() => kivoClient.listDeployChecks(), []);
   const services = useAsyncData(() => kivoClient.listDeployServices(), []);
+  const etherfuse = useAsyncData(() => kivoClient.getEtherfuseStatus(), []);
+  const etherfuseAssets = useAsyncData(() => kivoClient.listEtherfuseAssets(), []);
 
   return (
     <div className="space-y-8">
@@ -36,7 +66,7 @@ export default function DeployPage() {
         eyebrow="Release ops"
         title="Deploy readiness"
         icon="solar:rocket-bold-duotone"
-        description="Checklist operacional para publicar o front MVP e plugar a API Go quando ela chegar."
+        description="Checklist operacional para publicar o front MVP, API Go, Etherfuse e Supabase local."
       />
 
       <div className="grid gap-6 xl:grid-cols-3">
@@ -106,6 +136,69 @@ export default function DeployPage() {
           </div>
         </Card>
       </div>
+
+      <Card>
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h2 className="font-bricolage text-xl font-bold text-white">Supabase MVP</h2>
+            <p className="mt-1 text-sm text-neutral-500">Auth, database, realtime, storage, edge functions e MCP local prontos para o caminho do operador.</p>
+          </div>
+          <Badge tone="ready">validado local</Badge>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {supabaseServices.map((service) => (
+            <div key={service.name} className="rounded-xl border border-white/5 bg-black/25 p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-300">
+                  <Icon icon={service.icon} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-white">{service.name}</p>
+                  <p className="mt-1 break-words text-sm text-neutral-500">{service.value}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h2 className="font-bricolage text-xl font-bold text-white">Etherfuse Anchor</h2>
+            <p className="mt-1 text-sm text-neutral-500">Status do proxy server-side para sandbox/testnet. A API key nunca vai para o browser.</p>
+          </div>
+          {etherfuse.data && <Badge tone={etherfuse.data.configured ? 'ready' : 'warning'}>{etherfuse.data.configured ? 'configurada' : 'sandbox sem chave'}</Badge>}
+        </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <div className="rounded-xl border border-white/5 bg-black/25 p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Modo</p>
+            <p className="mt-2 font-mono text-sm text-emerald-300">{etherfuse.data?.mode ?? 'carregando'}</p>
+          </div>
+          <div className="rounded-xl border border-white/5 bg-black/25 p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Base URL</p>
+            <p className="mt-2 break-all font-mono text-sm text-emerald-300">{etherfuse.data?.base_url ?? '...'}</p>
+          </div>
+          <div className="rounded-xl border border-white/5 bg-black/25 p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Webhook</p>
+            <p className="mt-2 break-all font-mono text-sm text-emerald-300">{etherfuse.data?.webhook_url || 'nao definido'}</p>
+          </div>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          {(etherfuseAssets.data?.assets ?? []).map((asset) => (
+            <div key={asset.identifier} className="rounded-xl border border-emerald-500/10 bg-emerald-500/5 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-bold text-white">{asset.symbol}</p>
+                  <p className="text-xs text-neutral-500">{asset.name} · {asset.currency.toUpperCase()}</p>
+                </div>
+                <Badge tone="active">{asset.balance ?? '0'}</Badge>
+              </div>
+              <p className="mt-3 break-all font-mono text-xs text-emerald-200">{asset.identifier}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 }

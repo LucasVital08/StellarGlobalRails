@@ -28,7 +28,7 @@ export default function DeviceDetailPage() {
         eyebrow="Device detail"
         title={device.name}
         icon="solar:devices-bold-duotone"
-        description="Chave Stellar, saldos mockados, metadata e histórico de pagamentos do device."
+        description="Chave Stellar, saldos reportados pela API, metadata e histórico de pagamentos do device."
         action={<Badge tone={device.status}>{statusLabel(device.status)}</Badge>}
       />
 

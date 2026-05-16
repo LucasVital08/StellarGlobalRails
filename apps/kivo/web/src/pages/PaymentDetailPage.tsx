@@ -14,7 +14,8 @@ export default function PaymentDetailPage() {
   const { id = '' } = useParams();
   const paymentData = useAsyncData(() => kivoClient.getPayment(id), [id]);
   const devices = useAsyncData(() => kivoClient.listDevices(), []);
-  const [actualValue, setActualValue] = useState('50');
+  const [actualValue, setActualValue] = useState('');
+  const [txXDR, setTxXDR] = useState('');
 
   if (paymentData.loading || !paymentData.data) return <Card>Carregando pagamento...</Card>;
   const payment = paymentData.data;
@@ -22,7 +23,7 @@ export default function PaymentDetailPage() {
   const toDevice = devices.data?.find((device) => device.id === payment.toDeviceId);
 
   const execute = async () => {
-    await kivoClient.executePayment(payment.id);
+    await kivoClient.executePayment(payment.id, txXDR);
     await paymentData.reload();
   };
 
@@ -31,7 +32,7 @@ export default function PaymentDetailPage() {
     await kivoClient.submitConditionProof(payment.id, {
       conditionKey: payment.conditionType,
       actualValue,
-      proofData: { signed_reading: `mock_${Date.now()}` },
+      proofData: { operator_submitted_at: new Date().toISOString() },
     });
     await paymentData.reload();
   };
@@ -70,7 +71,9 @@ export default function PaymentDetailPage() {
 
         <Card>
           <h2 className="font-bricolage text-xl font-bold text-white">Ações</h2>
-          <button onClick={execute} className="mt-4 w-full rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-400">Executar pagamento</button>
+          <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-neutral-500">Stellar transaction XDR</label>
+          <textarea value={txXDR} onChange={(event) => setTxXDR(event.target.value)} className="mt-2 min-h-32 w-full rounded-xl border border-white/10 bg-black/40 p-3 font-mono text-xs text-emerald-100 outline-none focus:border-emerald-500" />
+          <button onClick={execute} disabled={!txXDR.trim()} className="mt-3 w-full rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-400 disabled:cursor-not-allowed disabled:opacity-40">Submeter na Stellar</button>
           {payment.conditionType !== 'none' && (
             <form onSubmit={submitProof} className="mt-4 space-y-3">
               <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">Prova da condição</label>

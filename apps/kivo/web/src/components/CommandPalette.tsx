@@ -8,9 +8,9 @@ const commands = [
   { label: 'Dashboard', path: '/dashboard', icon: 'solar:widget-5-bold-duotone', keywords: 'home metrics health' },
   { label: 'Registrar device', path: '/devices', icon: 'solar:devices-bold-duotone', keywords: 'device api key wallet' },
   { label: 'Criar pagamento', path: '/payments', icon: 'solar:wallet-money-bold-duotone', keywords: 'payment stellar usdc' },
-  { label: 'MCP Console', path: '/mcp', icon: 'solar:cpu-bolt-bold-duotone', keywords: 'agent tool simulate' },
+  { label: 'MCP Console', path: '/mcp', icon: 'solar:cpu-bolt-bold-duotone', keywords: 'agent tool json-rpc' },
   { label: 'x402 Playground', path: '/x402', icon: 'solar:shield-keyhole-bold-duotone', keywords: 'payment required header' },
-  { label: 'Workflows', path: '/workflows', icon: 'solar:flow-bold-duotone', keywords: 'redis temporal worker' },
+  { label: 'Workflows', path: '/workflows', icon: 'solar:routing-2-bold-duotone', keywords: 'redis temporal worker' },
   { label: 'Deploy readiness', path: '/deploy', icon: 'solar:rocket-bold-duotone', keywords: 'ops release env build' },
 ];
 

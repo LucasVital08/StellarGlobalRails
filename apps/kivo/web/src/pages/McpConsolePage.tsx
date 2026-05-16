@@ -37,9 +37,9 @@ export default function McpConsolePage() {
     event.preventDefault();
     if (!active) return;
     try {
-      const response = await kivoClient.simulateMcpTool(active.name, JSON.parse(payload) as Record<string, unknown>);
+      const response = await kivoClient.callMcpTool(active.name, JSON.parse(payload) as Record<string, unknown>);
       setResult(JSON.stringify(response.output, null, 2));
-      notify({ type: 'success', title: 'Tool call simulado', message: active.name });
+      notify({ type: response.isError ? 'error' : 'success', title: response.isError ? 'Tool call falhou' : 'Tool call executado', message: active.name });
     } catch (error) {
       notify({ type: 'error', title: 'Payload invalido', message: error instanceof Error ? error.message : 'Revise o JSON.' });
     }
@@ -74,8 +74,8 @@ export default function McpConsolePage() {
           </div>
           <form onSubmit={submit} className="grid gap-4 lg:grid-cols-2">
             <textarea value={payload} onChange={(event) => setPayload(event.target.value)} className="min-h-80 rounded-xl border border-white/10 bg-black/50 p-4 font-mono text-xs text-emerald-200 outline-none focus:border-emerald-500" />
-            <pre className="min-h-80 overflow-auto rounded-xl border border-white/10 bg-black/50 p-4 text-xs text-blue-200">{result || '// output simulado aparece aqui'}</pre>
-            <button className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black lg:col-span-2">Simular tool call</button>
+            <pre className="min-h-80 overflow-auto rounded-xl border border-white/10 bg-black/50 p-4 text-xs text-blue-200">{result || '// output real da tool aparece aqui'}</pre>
+            <button className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black lg:col-span-2">Executar tool call</button>
           </form>
         </Card>
       </div>
