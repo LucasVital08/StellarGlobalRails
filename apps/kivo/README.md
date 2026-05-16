@@ -53,6 +53,29 @@ npm test -- --run
 npm run build
 ```
 
+## Fly.io Deploy
+
+The Fly app should point at this monorepo folder:
+
+- Current Working Directory: `apps/kivo`
+- Config path: `fly.toml`
+- Deploy branch: `main`
+
+The tracked `fly.toml` contains only non-secret runtime defaults. Set secrets in the Fly dashboard or with `fly secrets set`:
+
+```bash
+fly secrets set DATABASE_URL="..."
+fly secrets set REDIS_URL="..."
+fly secrets set KIVO_SECRET_ENCRYPTION_KEY="..."
+fly secrets set SUPABASE_URL="https://<project-ref>.supabase.co"
+fly secrets set SUPABASE_SERVICE_ROLE_KEY="..."
+fly secrets set SUPABASE_JWT_SECRET="..."
+fly secrets set X402_PLATFORM_KEY="G..."
+fly secrets set ETHERFUSE_API_KEY="api_sand:..."
+fly secrets set ETHERFUSE_WEBHOOK_URL="https://<project-ref>.supabase.co/functions/v1/kivo-etherfuse-webhook"
+fly secrets set ETHERFUSE_WEBHOOK_SECRET="..."
+```
+
 ## MVP Endpoints
 
 - `GET /v1/health`
