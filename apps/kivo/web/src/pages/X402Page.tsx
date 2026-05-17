@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
+import { formatProviderModeLabel } from '@/config/productMode';
 import { formatX402AssetLabel, previewPublicKey, x402CheckoutResources } from '@/data/x402Experience';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
@@ -30,6 +31,7 @@ export default function X402Page() {
   const [error, setError] = useState('');
 
   const challengeAsset = challenge ? formatX402AssetLabel(challenge.asset) : null;
+  const providerModeLabel = formatProviderModeLabel(etherfuse.data?.mode);
 
   const requestChallenge = async () => {
     setBusy('challenge');
@@ -204,9 +206,9 @@ if (initial.status === 402) {
 
         <Card className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-400">Anchor</p>
-          <h2 className="mt-2 font-bricolage text-xl font-bold text-white">Etherfuse testnet</h2>
+          <h2 className="mt-2 font-bricolage text-xl font-bold text-white">Etherfuse Devnet</h2>
           <div className="mt-4 space-y-3">
-            <InfoRow label="Modo" value={etherfuse.data?.mode ?? 'sandbox'} />
+            <InfoRow label="Modo" value={providerModeLabel} />
             <InfoRow label="Rede" value={etherfuse.data?.network ?? 'testnet'} />
             <InfoRow label="Fiat base" value={etherfuse.data?.default_fiat ?? 'MXN'} />
             <InfoRow label="Status" value={etherfuse.loading ? 'checando' : etherfuse.error ?? (etherfuse.data?.configured ? 'configurado' : 'sem secrets')} />

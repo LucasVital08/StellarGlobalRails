@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { areDevControlsEnabled, formatProviderModeLabel } from '@/config/productMode';
 import {
   buildEtherfuseOnboardingPayload,
   buildEtherfuseOrderPayload,
@@ -88,6 +89,8 @@ export default function CheckoutPage() {
   const orderId = extractEtherfuseId(anchorOrder, ['orderId', 'id']);
   const onboardingUrl = onboarding?.presigned_url ?? onboarding?.presignedUrl ?? onboarding?.url;
   const anchorPreview = anchorOrder ?? anchorQuote ?? anchorAssets ?? onboarding ?? etherfuse.data;
+  const providerModeLabel = formatProviderModeLabel(etherfuse.data?.mode);
+  const showDevControls = areDevControlsEnabled();
 
   const resetPaymentState = () => {
     setChallenge(null);
@@ -212,14 +215,67 @@ export default function CheckoutPage() {
     void runAnchorStep('order', () => kivoClient.createEtherfuseOrder(payload), setAnchorOrder);
   };
 
-  const simulateFiatReceived = () => {
+  const signalFiatReceived = () => {
     if (!orderId) {
       setAnchorError('Crie uma order Etherfuse antes de confirmar recebimento.');
       return;
     }
 
-    void runAnchorStep('fiat', () => kivoClient.simulateEtherfuseFiatReceived(orderId), setAnchorOrder);
+    void runAnchorStep('fiat', () => kivoClient.signalEtherfuseFiatReceived(orderId), setAnchorOrder);
   };
+
+  const anchorSteps: Array<{
+    key: AnchorStep;
+    title: string;
+    icon: string;
+    detail: string;
+    action: () => void;
+    disabled: boolean;
+  }> = [
+    {
+      key: 'onboarding',
+      title: '0. Onboarding',
+      icon: 'solar:user-check-bold-duotone',
+      detail: onboardingUrl ? 'URL gerada para KYC/banco' : 'Vincula customer, banco e wallet',
+      action: createOnboardingUrl,
+      disabled: false,
+    },
+    {
+      key: 'assets',
+      title: '1. Assets',
+      icon: 'solar:database-bold-duotone',
+      detail: assets.length ? `${assets.length} asset(s) retornados` : 'Descobre USDC/rails disponiveis',
+      action: discoverEtherfuseAssets,
+      disabled: false,
+    },
+    {
+      key: 'quote',
+      title: '2. Quote',
+      icon: 'solar:tag-price-bold-duotone',
+      detail: quoteId ? previewPublicKey(quoteId) : `${sourceAmount || '100'} ${fiatCurrency} -> USDC`,
+      action: createQuote,
+      disabled: false,
+    },
+    {
+      key: 'order',
+      title: '3. Order',
+      icon: 'solar:bill-list-bold-duotone',
+      detail: orderId ? previewPublicKey(orderId) : 'Converte quote em ordem Etherfuse',
+      action: createOrder,
+      disabled: !quoteId,
+    },
+  ];
+
+  if (showDevControls) {
+    anchorSteps.push({
+      key: 'fiat',
+      title: '4. Confirmar recebimento',
+      icon: 'solar:card-recive-bold-duotone',
+      detail: anchorOrder?.status ? String(anchorOrder.status) : 'Registra recebimento controlado',
+      action: signalFiatReceived,
+      disabled: !orderId,
+    });
+  }
 
   const requestPrice = async () => {
     setLoading(true);
@@ -274,7 +330,7 @@ export default function CheckoutPage() {
             </div>
             <h2 className="mt-3 font-bricolage text-2xl font-bold text-white">Anchor Etherfuse antes do x402</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-400">
-              Este bloco chama os endpoints reais `/v1/etherfuse/*` no backend. A chave da Etherfuse fica no servidor; se o provedor negar customer, bank account ou quote, o erro aparece aqui em vez de fingir liquidacao.
+              Este bloco chama os endpoints reais `/v1/etherfuse/*` no backend. A chave da Etherfuse fica no servidor; se o provedor negar customer, bank account ou quote, o erro aparece aqui sem marcar sucesso artificial.
             </p>
           </div>
           <div className="rounded-2xl border border-white/5 bg-black/25 p-4 xl:w-72">
@@ -330,48 +386,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            {[
-              {
-                key: 'onboarding' as const,
-                title: '0. Onboarding',
-                icon: 'solar:user-check-bold-duotone',
-                detail: onboardingUrl ? 'URL gerada para KYC/banco' : 'Vincula customer, banco e wallet',
-                action: createOnboardingUrl,
-                disabled: false,
-              },
-              {
-                key: 'assets' as const,
-                title: '1. Assets',
-                icon: 'solar:database-bold-duotone',
-                detail: assets.length ? `${assets.length} asset(s) retornados` : 'Descobre USDC/rails disponiveis',
-                action: discoverEtherfuseAssets,
-                disabled: false,
-              },
-              {
-                key: 'quote' as const,
-                title: '2. Quote',
-                icon: 'solar:tag-price-bold-duotone',
-                detail: quoteId ? previewPublicKey(quoteId) : `${sourceAmount || '100'} ${fiatCurrency} -> USDC`,
-                action: createQuote,
-                disabled: false,
-              },
-              {
-                key: 'order' as const,
-                title: '3. Order',
-                icon: 'solar:bill-list-bold-duotone',
-                detail: orderId ? previewPublicKey(orderId) : 'Converte quote em ordem Etherfuse',
-                action: createOrder,
-                disabled: !quoteId,
-              },
-              {
-                key: 'fiat' as const,
-                title: '4. Fiat recebido',
-                icon: 'solar:card-recive-bold-duotone',
-                detail: anchorOrder?.status ? String(anchorOrder.status) : 'Confirma recebimento no ambiente de teste',
-                action: simulateFiatReceived,
-                disabled: !orderId,
-              },
-            ].map((step) => (
+            {anchorSteps.map((step) => (
               <button
                 key={step.key}
                 type="button"
@@ -397,7 +412,7 @@ export default function CheckoutPage() {
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">Onboarding Etherfuse</p>
               <p className="mt-1 break-all text-xs text-emerald-100">{onboardingUrl}</p>
-              <p className="mt-2 text-xs text-neutral-500">Abra esta URL, conclua KYC/conta bancaria de teste e depois rode Quote e Order com os mesmos IDs.</p>
+              <p className="mt-2 text-xs text-neutral-500">Abra esta URL, conclua KYC/conta bancaria valida e depois rode Quote e Order com os mesmos IDs.</p>
             </div>
             <a href={onboardingUrl} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black hover:bg-emerald-400">
               Abrir onboarding
@@ -410,7 +425,7 @@ export default function CheckoutPage() {
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Provider</p>
-              <p className="mt-2 text-sm font-bold text-white">{etherfuse.data?.mode ?? 'ambiente de teste'}</p>
+              <p className="mt-2 text-sm font-bold text-white">{providerModeLabel}</p>
               <p className="mt-1 text-xs text-neutral-500">{etherfuse.loading ? 'checando...' : etherfuse.error ?? 'via backend Kivo'}</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
@@ -517,7 +532,7 @@ export default function CheckoutPage() {
           <div className="mt-6 grid gap-4 lg:grid-cols-3">
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Anchor</p>
-              <p className="mt-2 text-sm font-bold text-white">Etherfuse {etherfuse.data?.mode ?? 'ambiente de teste'}</p>
+              <p className="mt-2 text-sm font-bold text-white">Etherfuse {providerModeLabel}</p>
               <p className="mt-1 text-xs text-neutral-500">{etherfuse.loading ? 'checando status...' : etherfuse.error ?? (etherfuse.data?.configured ? 'configurado no backend' : 'aguardando secrets')}</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
@@ -553,7 +568,7 @@ export default function CheckoutPage() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Pagamento real</p>
                 <h3 className="mt-1 font-bricolage text-xl font-bold text-white">Carteira ou SDK assina a transacao</h3>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">O MVP nao marca sucesso sozinho: a API so libera o recurso quando recebe um txXDR assinado e aceito pela Stellar testnet.</p>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">Kivo nao marca sucesso sozinho: a API so libera o recurso quando recebe um txXDR assinado e aceito pela Stellar testnet.</p>
               </div>
               {paid && <Badge tone="processing">ledger {paid.stellarLedger}</Badge>}
             </div>

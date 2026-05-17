@@ -70,7 +70,7 @@ describe('etherfuseExperience', () => {
       bankAccountId: '80dd9b70-581f-4b43-b634-b4cfdd481d6d',
       publicKey: 'GDESTINATION',
       quoteId: '6edc1703-e8f6-47b1-a33a-ac776d01332a',
-      memo: 'kivo-x402-demo',
+      memo: 'kivo-x402-payment',
     });
     expect(extractEtherfuseId({ orderId: order.orderId }, ['orderId', 'id'])).toBe(order.orderId);
     expect(extractEtherfuseId({ id: order.quoteId }, ['quoteId', 'id'])).toBe(order.quoteId);

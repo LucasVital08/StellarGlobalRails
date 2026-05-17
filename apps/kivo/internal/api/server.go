@@ -271,7 +271,7 @@ func (s *Server) handlePayment(w http.ResponseWriter, r *http.Request, rest stri
 			return
 		}
 		if strings.TrimSpace(input.TXXDR) == "" {
-			writeError(w, http.StatusBadRequest, "missing_tx_xdr", "txXDR is required for zero-mock Stellar settlement")
+			writeError(w, http.StatusBadRequest, "missing_tx_xdr", "txXDR is required for Stellar settlement")
 			return
 		}
 		settlement, err := SubmitStellarTransaction(r.Context(), s.cfg.StellarHorizonURL, input.TXXDR)
@@ -333,7 +333,7 @@ func (s *Server) handleX402Pay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if strings.TrimSpace(input.TXXDR) == "" {
-		writeError(w, http.StatusBadRequest, "missing_tx_xdr", "txXDR is required for zero-mock x402 payment")
+		writeError(w, http.StatusBadRequest, "missing_tx_xdr", "txXDR is required for x402 payment")
 		return
 	}
 	challenge, ok := s.store.GetX402Challenge(input.Nonce)
@@ -526,7 +526,7 @@ func (s *Server) handleEtherfuseAssets(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleEtherfuseFiatReceived(w http.ResponseWriter, r *http.Request, orderID string) {
 	if s.cfg.EtherfuseMode != "sandbox" {
-		writeError(w, http.StatusForbidden, "sandbox_only", "fiat receipt signal is allowed only in sandbox")
+		writeError(w, http.StatusForbidden, "devnet_only", "fiat receipt signal is allowed only in devnet mode")
 		return
 	}
 	if s.cfg.EtherfuseAPIKey == "" {
@@ -612,7 +612,7 @@ func (s *Server) proxyEtherfusePOST(w http.ResponseWriter, r *http.Request, endp
 		return
 	}
 	if s.cfg.EtherfuseMode == "mock" {
-		writeError(w, http.StatusPreconditionFailed, "etherfuse_mode_disabled", "ETHERFUSE_MODE=mock is disabled")
+		writeError(w, http.StatusPreconditionFailed, "etherfuse_mode_disabled", "ETHERFUSE_MODE must point to a live provider mode")
 		return
 	}
 	raw, err := io.ReadAll(r.Body)
@@ -865,7 +865,7 @@ func (s *Server) deployChecks() []DeployCheck {
 		{ID: "workers", Label: "Redis workers", Scope: "workers", Status: statusWorkers, Owner: "backend", Description: "REDIS_URL is used as the MVP queue readiness signal before durable workflow migration.", Value: maskConfigured(s.cfg.RedisURL)},
 		{ID: "x402", Label: "x402 replay guard", Scope: "security", Status: "ready", Owner: "protocol", Description: "Protected resources consume each nonce once and reject stale or mismatched X-PAYMENT headers.", Value: "/api/x402/data"},
 		{ID: "mcp", Label: "MCP JSON-RPC", Scope: "api", Status: "ready", Owner: "agents", Description: "The /mcp endpoint exposes tool discovery and MVP payment/status tools for generic agents.", Value: "/mcp"},
-		{ID: "etherfuse", Label: "Etherfuse sandbox", Scope: "stellar", Status: statusEtherfuse, Owner: "anchor", Description: "ETHERFUSE_API_KEY controls live sandbox/production calls.", Value: s.cfg.EtherfuseMode},
+		{ID: "etherfuse", Label: "Etherfuse anchor", Scope: "stellar", Status: statusEtherfuse, Owner: "anchor", Description: "ETHERFUSE_API_KEY controls live devnet/production calls.", Value: s.cfg.EtherfuseMode},
 		{ID: "security", Label: "Secret isolation", Scope: "security", Status: statusSecrets, Owner: "platform", Description: "KIVO_SECRET_ENCRYPTION_KEY protects device and webhook secrets; Etherfuse credentials stay server-side only."},
 	}
 }
@@ -882,7 +882,7 @@ func (s *Server) deployServices(r *http.Request) []DeployServiceStatus {
 	now := nowISO()
 	return []DeployServiceStatus{
 		{ID: "api", Name: "Kivo Go API", Environment: "local", Status: "online", Region: "local", URL: base + "/v1/health", Description: "MVP API process.", UpdatedAt: now},
-		{ID: "etherfuse", Name: "Etherfuse Anchor", Environment: s.cfg.EtherfuseMode, Status: mapBoolStatus(s.cfg.EtherfuseAPIKey != ""), URL: s.cfg.EtherfuseBaseURL, Description: "Sandbox/production anchor proxy.", UpdatedAt: now},
+		{ID: "etherfuse", Name: "Etherfuse Anchor", Environment: s.cfg.EtherfuseMode, Status: mapBoolStatus(s.cfg.EtherfuseAPIKey != ""), URL: s.cfg.EtherfuseBaseURL, Description: "Devnet/production anchor proxy.", UpdatedAt: now},
 	}
 }
 

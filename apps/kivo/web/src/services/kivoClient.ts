@@ -73,6 +73,7 @@ export interface KivoApiClient {
   createEtherfuseQuote(input: EtherfuseQuoteInput): Promise<EtherfuseQuoteResponse>;
   createEtherfuseOrder(input: EtherfuseOrderInput): Promise<EtherfuseOrderResponse>;
   getEtherfuseOrder(orderId: string): Promise<EtherfuseOrderResponse>;
+  signalEtherfuseFiatReceived(orderId: string): Promise<EtherfuseOrderResponse>;
   simulateEtherfuseFiatReceived(orderId: string): Promise<EtherfuseOrderResponse>;
 }
 
@@ -262,6 +263,10 @@ export class HttpKivoApiClient implements KivoApiClient {
 
   async getEtherfuseOrder(orderId: string): Promise<EtherfuseOrderResponse> {
     return this.request(`/v1/etherfuse/orders/${encodeURIComponent(orderId)}`);
+  }
+
+  async signalEtherfuseFiatReceived(orderId: string): Promise<EtherfuseOrderResponse> {
+    return this.request(`/v1/etherfuse/orders/${encodeURIComponent(orderId)}/fiat-received`, { method: 'POST' });
   }
 
   async simulateEtherfuseFiatReceived(orderId: string): Promise<EtherfuseOrderResponse> {

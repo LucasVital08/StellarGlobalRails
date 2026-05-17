@@ -85,7 +85,7 @@ export const buildEtherfuseOrderPayload = ({
   bankAccountId,
   publicKey,
   quoteId,
-  memo = 'kivo-x402-demo',
+  memo = 'kivo-x402-payment',
 }: {
   orderId: string;
   bankAccountId: string;

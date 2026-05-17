@@ -123,13 +123,13 @@ describe('HttpKivoApiClient', () => {
     expect(onboarding.presigned_url).toContain('etherfuse');
   });
 
-  it('creates and advances Etherfuse sandbox orders through documented Kivo routes', async () => {
+  it('creates and advances Etherfuse orders through documented Kivo routes', async () => {
     const requested: Array<{ url: string; method?: string; body?: string }> = [];
     const client = createKivoClient({
       baseUrl: 'https://api.kivo.example',
       fetcher: async (inputUrl, init) => {
         requested.push({ url: String(inputUrl), method: init?.method, body: String(init?.body ?? '') });
-        if (String(inputUrl).endsWith('/simulate-fiat-received')) {
+        if (String(inputUrl).endsWith('/fiat-received')) {
           return jsonResponse({ orderId: 'ed14a9d7-f9be-4584-8f11-527d32ddab31', status: 'funded' });
         }
         return jsonResponse({ orderId: 'ed14a9d7-f9be-4584-8f11-527d32ddab31', status: 'created' });
@@ -143,12 +143,12 @@ describe('HttpKivoApiClient', () => {
     };
 
     const order = await client.createEtherfuseOrder(input);
-    const advanced = await client.simulateEtherfuseFiatReceived(input.orderId);
+    const advanced = await client.signalEtherfuseFiatReceived(input.orderId);
 
     expect(requested[0]).toMatchObject({ url: 'https://api.kivo.example/v1/etherfuse/orders', method: 'POST' });
     expect(JSON.parse(requested[0].body ?? '{}')).toEqual(input);
     expect(requested[1]).toMatchObject({
-      url: 'https://api.kivo.example/v1/etherfuse/orders/ed14a9d7-f9be-4584-8f11-527d32ddab31/simulate-fiat-received',
+      url: 'https://api.kivo.example/v1/etherfuse/orders/ed14a9d7-f9be-4584-8f11-527d32ddab31/fiat-received',
       method: 'POST',
     });
     expect(order.status).toBe('created');

@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
+import { formatProviderModeLabel } from '@/config/productMode';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { formatDateTime, statusLabel } from '@/utils/format';
@@ -21,7 +22,7 @@ STELLAR_NETWORK=testnet
 STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
 X402_PLATFORM_KEY=G...
 USDC_ISSUER=GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
-ETHERFUSE_MODE=sandbox
+ETHERFUSE_MODE=production
 ETHERFUSE_BASE_URL=https://api.sand.etherfuse.com
 ETHERFUSE_API_KEY=ef_sand_...
 ETHERFUSE_WEBHOOK_URL=https://api.kivo.pay/v1/etherfuse/webhook
@@ -72,7 +73,7 @@ export default function DeployPage() {
 
       <WorkspaceContextBanner
         eyebrow="Readiness enterprise"
-        title="Do demo local ao ambiente de cliente"
+        title="Do ambiente local ao cliente"
         icon="solar:rocket-bold-duotone"
         tone="warning"
         description="Deploy continua avancado, mas agora serve para provar que o workspace pode sair do modo solo e virar operacao real com secrets, API, Supabase e Etherfuse."
@@ -100,7 +101,11 @@ export default function DeployPage() {
                   <Badge tone={check.status}>{statusLabel(check.status)}</Badge>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-neutral-400">{check.description}</p>
-                {check.value && <p className="mt-2 break-all font-mono text-xs text-emerald-300">{check.value}</p>}
+                {check.value && (
+                  <p className="mt-2 break-all font-mono text-xs text-emerald-300">
+                    {check.id === 'etherfuse' ? formatProviderModeLabel(check.value) : check.value}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -136,7 +141,7 @@ export default function DeployPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={service.status}>{statusLabel(service.status)}</Badge>
-                    <Badge>{service.environment}</Badge>
+                    <Badge>{service.id === 'etherfuse' ? formatProviderModeLabel(service.environment) : service.environment}</Badge>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-col gap-2 text-xs text-neutral-600 md:flex-row md:items-center md:justify-between">
@@ -178,14 +183,14 @@ export default function DeployPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h2 className="font-bricolage text-xl font-bold text-white">Etherfuse Anchor</h2>
-            <p className="mt-1 text-sm text-neutral-500">Status do proxy server-side para sandbox/testnet. A API key nunca vai para o browser.</p>
+            <p className="mt-1 text-sm text-neutral-500">Status do proxy server-side para Etherfuse e Stellar. A API key nunca vai para o browser.</p>
           </div>
-          {etherfuse.data && <Badge tone={etherfuse.data.configured ? 'ready' : 'warning'}>{etherfuse.data.configured ? 'configurada' : 'sandbox sem chave'}</Badge>}
+          {etherfuse.data && <Badge tone={etherfuse.data.configured ? 'ready' : 'warning'}>{etherfuse.data.configured ? 'configurada' : 'aguardando chave'}</Badge>}
         </div>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           <div className="rounded-xl border border-white/5 bg-black/25 p-4">
             <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Modo</p>
-            <p className="mt-2 font-mono text-sm text-emerald-300">{etherfuse.data?.mode ?? 'carregando'}</p>
+            <p className="mt-2 font-mono text-sm text-emerald-300">{etherfuse.data ? formatProviderModeLabel(etherfuse.data.mode) : 'carregando'}</p>
           </div>
           <div className="rounded-xl border border-white/5 bg-black/25 p-4">
             <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Base URL</p>

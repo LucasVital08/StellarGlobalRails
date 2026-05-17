@@ -34,7 +34,7 @@ export default function SettingsPage() {
         </Card>
         <Card>
           <h2 className="font-bricolage text-xl font-bold text-white">Ambiente</h2>
-          <p className="mt-3 text-sm text-neutral-400">Referencias tecnicas usadas por SDKs, workers e telas avancadas: API HTTP, Supabase Auth, Postgres, Horizon e Etherfuse sem fallback mock silencioso.</p>
+          <p className="mt-3 text-sm text-neutral-400">Referencias tecnicas usadas por SDKs, workers e telas avancadas: API HTTP, Supabase Auth, Postgres, Horizon e Etherfuse com conexoes reais.</p>
           <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm text-emerald-300">Ambiente atual: {environment}</div>
           <div className="mt-4 grid gap-3 text-sm">
             <div className="rounded-xl bg-black/25 p-3">

@@ -38,10 +38,10 @@ type KivoStore interface {
 
 func NewStoreFromConfig(ctx context.Context, cfg Config) (KivoStore, error) {
 	if cfg.DatabaseURL == "" {
-		return nil, fmt.Errorf("DATABASE_URL is required in zero-mock mode")
+		return nil, fmt.Errorf("DATABASE_URL is required for persistent mode")
 	}
 	if cfg.SecretEncryptionKey == "" {
-		return nil, fmt.Errorf("KIVO_SECRET_ENCRYPTION_KEY is required in zero-mock mode")
+		return nil, fmt.Errorf("KIVO_SECRET_ENCRYPTION_KEY is required for persistent mode")
 	}
 	return NewPostgresStore(ctx, cfg)
 }

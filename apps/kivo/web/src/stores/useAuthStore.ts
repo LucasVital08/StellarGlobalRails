@@ -24,7 +24,7 @@ interface AuthState {
 
 const requireSupabase = () => {
   if (!supabase) {
-    throw new Error('Supabase Auth precisa estar configurado para rodar o Kivo sem mock.');
+    throw new Error('Supabase Auth precisa estar configurado para rodar o Kivo com autenticacao real.');
   }
   return supabase;
 };
