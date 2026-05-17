@@ -50,6 +50,13 @@ const flowStatusLabel = (status: keyof typeof flowTone) => {
   return statusLabel(status);
 };
 
+const loaderLabels = {
+  summary: 'Resumo',
+  payments: 'Pagamentos',
+  devices: 'Devices',
+  pricingRules: 'Regras x402',
+} as const;
+
 export default function WorkspaceHomePage() {
   const user = useAuthStore((state) => state.user);
   const summary = useAsyncData(() => kivoClient.getDashboardSummary(), []);
@@ -88,6 +95,22 @@ export default function WorkspaceHomePage() {
   const apiLabelStatus = apiStatus === 'ok' ? 'online' : apiStatus;
   const hasFlows = flows.length > 0;
   const hasPayments = paymentData.length > 0;
+  const loaders = [
+    { id: 'summary', label: loaderLabels.summary, state: summary },
+    { id: 'payments', label: loaderLabels.payments, state: payments },
+    { id: 'devices', label: loaderLabels.devices, state: devices },
+    { id: 'pricingRules', label: loaderLabels.pricingRules, state: pricingRules },
+  ];
+  const failedLoaders = loaders.filter((loader) => loader.state.error);
+  const loadingLoaders = loaders.filter((loader) => loader.state.loading);
+  const hasLoadErrors = failedLoaders.length > 0;
+  const isInitialLoad = loadingLoaders.length > 0 && loaders.every((loader) => !loader.state.data);
+  const summaryUnavailable = Boolean(summary.error && !summaryData);
+  const flowsUnavailable = Boolean((devices.error || pricingRules.error || payments.error) && !hasFlows);
+
+  const retryFailedLoaders = () => {
+    void Promise.all(failedLoaders.map((loader) => loader.state.reload()));
+  };
 
   return (
     <div className="space-y-8">
@@ -107,27 +130,79 @@ export default function WorkspaceHomePage() {
         }
       />
 
+      {(hasLoadErrors || isInitialLoad) && (
+        <Card className="border-amber-500/20 bg-amber-500/[0.06]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <Icon
+                  icon={hasLoadErrors ? 'solar:danger-triangle-bold-duotone' : 'solar:refresh-circle-bold-duotone'}
+                  className={hasLoadErrors ? 'text-2xl text-amber-300' : 'text-2xl text-blue-300'}
+                />
+                <h2 className="font-bricolage text-lg font-bold text-white">
+                  {hasLoadErrors ? 'Alguns dados nao carregaram' : 'Carregando dados do workspace'}
+                </h2>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-neutral-400">
+                {hasLoadErrors
+                  ? 'Mantivemos os dados parciais visiveis, mas receita, flows ou pagamentos podem estar incompletos.'
+                  : 'Buscando resumo, pagamentos, devices e regras x402 antes de calcular os indicadores.'}
+              </p>
+              {hasLoadErrors && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {failedLoaders.map((loader) => (
+                    <button
+                      key={loader.id}
+                      type="button"
+                      onClick={() => {
+                        void loader.state.reload();
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-200 transition hover:border-amber-300/50"
+                    >
+                      <Icon icon="solar:refresh-linear" />
+                      Tentar {loader.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {hasLoadErrors ? (
+              <button
+                type="button"
+                onClick={retryFailedLoaders}
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-bold text-black transition hover:bg-amber-300"
+              >
+                Tentar novamente
+                <Icon icon="solar:refresh-linear" />
+              </button>
+            ) : (
+              <Badge tone="processing">{loadingLoaders.length} carregando</Badge>
+            )}
+          </div>
+        </Card>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           title="Flows ativos"
-          value={activeFlows.length.toString()}
-          detail={`${flows.length} flows no total`}
+          value={flowsUnavailable ? 'Indisponivel' : activeFlows.length.toString()}
+          detail={flowsUnavailable ? 'Falha ao carregar flows' : `${flows.length} flows no total`}
           icon="solar:bolt-circle-bold-duotone"
-          tone="emerald"
+          tone={flowsUnavailable ? 'amber' : 'emerald'}
         />
         <StatCard
           title="Receita"
-          value={formatCurrency(summaryData?.totalVolumeUsdc ?? 0)}
-          detail={`${summaryData?.confirmedPayments ?? 0} pagamentos confirmados`}
+          value={summaryUnavailable ? 'Indisponivel' : formatCurrency(summaryData?.totalVolumeUsdc ?? 0)}
+          detail={summaryUnavailable ? 'Falha ao carregar resumo' : `${summaryData?.confirmedPayments ?? 0} pagamentos confirmados`}
           icon="solar:wallet-money-bold-duotone"
-          tone="blue"
+          tone={summaryUnavailable ? 'amber' : 'blue'}
         />
         <StatCard
           title="Pagamentos"
-          value={(summaryData?.confirmedPayments ?? 0).toString()}
-          detail={`${summaryData?.pendingPayments ?? 0} pendentes`}
+          value={summaryUnavailable ? 'Indisponivel' : (summaryData?.confirmedPayments ?? 0).toString()}
+          detail={summaryUnavailable ? 'Falha ao carregar resumo' : `${summaryData?.pendingPayments ?? 0} pendentes`}
           icon="solar:card-transfer-bold-duotone"
-          tone="violet"
+          tone={summaryUnavailable ? 'amber' : 'violet'}
         />
         <StatCard
           title="Setup"
@@ -293,16 +368,18 @@ export default function WorkspaceHomePage() {
                 <Link
                   key={payment.id}
                   to={`/payments/${payment.id}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-white/5 bg-black/25 p-4 transition hover:bg-white/5"
+                  className="flex min-w-0 flex-col gap-3 rounded-xl border border-white/5 bg-black/25 p-4 transition hover:bg-white/5 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div>
-                    <p className="font-mono text-xs text-emerald-400">{shortId(payment.id)}</p>
-                    <p className="mt-1 text-sm text-white">
+                  <div className="min-w-0">
+                    <p className="truncate font-mono text-xs text-emerald-400">{shortId(payment.id)}</p>
+                    <p className="mt-1 truncate text-sm text-white">
                       {payment.amount} {payment.assetCode} · {formatDateTime(payment.createdAt)}
                     </p>
-                    {payment.memo && <p className="mt-1 text-xs text-neutral-500">{payment.memo}</p>}
+                    {payment.memo && <p className="mt-1 break-words text-xs leading-5 text-neutral-500">{payment.memo}</p>}
                   </div>
-                  <Badge tone={payment.status}>{statusLabel(payment.status)}</Badge>
+                  <span className="self-start sm:self-center">
+                    <Badge tone={payment.status}>{statusLabel(payment.status)}</Badge>
+                  </span>
                 </Link>
               ))
             ) : (
