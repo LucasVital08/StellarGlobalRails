@@ -2,7 +2,6 @@ import type {
   Device,
   KivoFlow,
   KivoFlowUnit,
-  KivoIntegrationMode,
   KivoTemplate,
   KivoTemplateId,
   Payment,
