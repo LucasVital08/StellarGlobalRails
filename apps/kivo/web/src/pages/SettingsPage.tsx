@@ -12,13 +12,13 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Workspace" title="Configuracoes" icon="solar:settings-bold-duotone" description="Preferencias locais do console e integracoes reais obrigatorias do Kivo." />
+      <PageHeader eyebrow="Advanced" title="Configuracoes tecnicas" icon="solar:settings-bold-duotone" description="Workspace, ambiente e endpoints usados pelas integracoes avancadas do Kivo." />
       <WorkspaceContextBanner
-        eyebrow="Conta e ambiente"
-        title="Configuracoes como painel de workspace"
+        eyebrow="Developer tooling"
+        title="Ambiente e conexoes do workspace"
         icon="solar:settings-bold-duotone"
         tone="ready"
-        description="Esta tela deixa de ser so variavel de ambiente: ela mostra quem esta no workspace, qual ambiente esta ativo e onde conferir readiness."
+        description="Use esta tela para confirmar contexto tecnico antes de configurar API keys, webhooks, deploy ou regras x402."
         checkpoints={['Usuario autenticado', 'Ambiente testnet/mainnet', 'API e Supabase conectados']}
         primaryAction={{ to: '/team', label: 'Time e escala' }}
         secondaryAction={{ to: '/deploy', label: 'Checklist deploy' }}
@@ -34,7 +34,7 @@ export default function SettingsPage() {
         </Card>
         <Card>
           <h2 className="font-bricolage text-xl font-bold text-white">Ambiente</h2>
-          <p className="mt-3 text-sm text-neutral-400">O console usa API HTTP, Supabase Auth, Postgres, Horizon e Etherfuse sem fallback mock silencioso.</p>
+          <p className="mt-3 text-sm text-neutral-400">Referencias tecnicas usadas por SDKs, workers e telas avancadas: API HTTP, Supabase Auth, Postgres, Horizon e Etherfuse sem fallback mock silencioso.</p>
           <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm text-emerald-300">Ambiente atual: {environment}</div>
           <div className="mt-4 grid gap-3 text-sm">
             <div className="rounded-xl bg-black/25 p-3">

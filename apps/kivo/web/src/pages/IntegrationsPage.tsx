@@ -11,7 +11,7 @@ const integrationCards = [
     title: 'Templates',
     route: '/templates',
     icon: 'solar:bolt-circle-bold-duotone',
-    description: 'EV charging, P2P energy, AI agents, IoT data marketplace e edge compute.',
+    description: 'Tres pontos de partida do Solo MVP para configurar flows sem catalogo amplo.',
     status: 'ready',
   },
   {
@@ -58,10 +58,10 @@ export default function IntegrationsPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Integracao"
-        title="Hub para builders"
+        eyebrow="Advanced"
+        title="Ferramentas de integracao"
         icon="solar:code-square-bold-duotone"
-        description="Tudo que um integrador precisa para plugar pagamentos M2M, x402, webhooks e agentes em outro produto."
+        description="Superficie tecnica para conectar SDKs, webhooks, x402 e agentes quando o flow principal ja precisa virar integracao."
         action={<Link to="/api-keys" className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black hover:bg-emerald-400">Gerar credencial</Link>}
       />
 
@@ -86,14 +86,14 @@ export default function IntegrationsPage() {
 
       <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
         <Card>
-          <h2 className="font-bricolage text-xl font-bold text-white">Primeiro fluxo de integracao</h2>
-          <p className="mt-1 text-sm text-neutral-500">Caminho curto para sair de zero ate um recurso pago funcionando.</p>
+          <h2 className="font-bricolage text-xl font-bold text-white">Sequencia tecnica de integracao</h2>
+          <p className="mt-1 text-sm text-neutral-500">Atalhos para validar credenciais, eventos e pagamento depois que o flow base ja foi escolhido.</p>
           <div className="mt-5 space-y-3">
             {[
-              ['Escolher template', '/templates'],
+              ['Escolher template MVP', '/templates'],
               ['Criar API key', '/api-keys'],
               ['Configurar webhook', '/webhooks'],
-              ['Testar checkout x402', '/checkout'],
+              ['Testar pagamento x402', '/checkout'],
             ].map(([label, route], index) => (
               <Link key={label} to={route} className="flex items-center justify-between rounded-xl bg-black/30 p-3 hover:bg-white/5">
                 <span className="flex items-center gap-3 text-sm text-neutral-300">
