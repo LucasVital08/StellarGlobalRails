@@ -1,17 +1,7 @@
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/PageHeader';
-
-const advancedTools = [
-  { title: 'Devices', route: '/devices', icon: 'solar:devices-bold-duotone', description: 'Device registry, wallets, API keys and status.' },
-  { title: 'API Keys', route: '/api-keys', icon: 'solar:key-minimalistic-bold-duotone', description: 'Server-side credentials for SDKs, gateways and workers.' },
-  { title: 'Webhooks', route: '/webhooks', icon: 'solar:widget-2-bold-duotone', description: 'Delivery logs, retry state and event subscriptions.' },
-  { title: 'x402 Rules', route: '/x402', icon: 'solar:shield-keyhole-bold-duotone', description: 'Pricing rules and protected HTTP resources.' },
-  { title: 'MCP Tools', route: '/mcp', icon: 'solar:cpu-bolt-bold-duotone', description: 'Agent tools for paid resources and automation.' },
-  { title: 'Deploy', route: '/deploy', icon: 'solar:rocket-bold-duotone', description: 'Cloud readiness, secrets and service checks.' },
-  { title: 'Workflows', route: '/workflows', icon: 'solar:routing-2-bold-duotone', description: 'Workers, queues and durable automation direction.' },
-  { title: 'Settings', route: '/settings', icon: 'solar:settings-bold-duotone', description: 'Workspace, environment and integration settings.' },
-];
+import { advancedTools } from '@/data/advancedTools';
 
 export default function AdvancedPage() {
   return (

@@ -2,7 +2,15 @@ import { Icon } from '@iconify/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { advancedTools } from '@/data/advancedTools';
 import { useUIStore } from '@/stores';
+
+const advancedCommands = advancedTools.map((tool) => ({
+  label: tool.title,
+  path: tool.route,
+  icon: tool.icon,
+  keywords: `advanced ${tool.keywords}`,
+}));
 
 const commands = [
   { label: 'Home', path: '/dashboard', icon: 'solar:home-angle-bold-duotone', keywords: 'home personas workspace' },
@@ -16,11 +24,7 @@ const commands = [
   { label: 'Financeiro', path: '/finance', icon: 'solar:chart-square-bold-duotone', keywords: 'recebiveis conciliacao settlement receita' },
   { label: 'Time e escala', path: '/team', icon: 'solar:users-group-rounded-bold-duotone', keywords: 'workspace roles solo team enterprise' },
   { label: 'Console tecnico', path: '/ops-dashboard', icon: 'solar:widget-5-bold-duotone', keywords: 'metrics health dashboard advanced' },
-  { label: 'Registrar device', path: '/devices', icon: 'solar:devices-bold-duotone', keywords: 'device api key wallet' },
-  { label: 'MCP Console', path: '/mcp', icon: 'solar:cpu-bolt-bold-duotone', keywords: 'agent tool json-rpc' },
-  { label: 'x402 Playground', path: '/x402', icon: 'solar:shield-keyhole-bold-duotone', keywords: 'payment required header' },
-  { label: 'Workflows', path: '/workflows', icon: 'solar:routing-2-bold-duotone', keywords: 'redis temporal worker' },
-  { label: 'Deploy readiness', path: '/deploy', icon: 'solar:rocket-bold-duotone', keywords: 'ops release env build' },
+  ...advancedCommands,
 ];
 
 export default function CommandPalette() {

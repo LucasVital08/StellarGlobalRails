@@ -5,6 +5,8 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { soloMvpTemplates } from '@/data/soloMvp';
 
+const createFlowRoute = (templateId: string) => `/create-flow?template=${templateId}`;
+
 export default function TemplatesPage() {
   return (
     <div className="space-y-8">
@@ -16,7 +18,7 @@ export default function TemplatesPage() {
         tone="ready"
         description="Esta tela nao e catalogo amplo: os templates apenas preenchem o create flow com o caminho minimo para validar um MVP operacional."
         checkpoints={['Device pay', 'Paid API', 'IoT data feed']}
-        primaryAction={{ to: '/create-flow', label: 'Criar flow' }}
+        primaryAction={{ to: createFlowRoute(soloMvpTemplates[0].id), label: 'Criar flow' }}
         secondaryAction={{ to: '/create-flow', label: 'Abrir criador' }}
       />
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -35,7 +37,7 @@ export default function TemplatesPage() {
                 <code className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-emerald-300">por {template.defaultUnit}</code>
                 <code className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-emerald-300">{template.integrationMode}</code>
               </div>
-              <Link to="/create-flow" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black transition-colors hover:bg-emerald-400">
+              <Link to={createFlowRoute(template.id)} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black transition-colors hover:bg-emerald-400">
                 {template.primaryActionLabel}
                 <Icon icon="solar:arrow-right-linear" className="text-base" />
               </Link>

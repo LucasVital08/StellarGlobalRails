@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { advancedTools } from '@/data/advancedTools';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
+
+const integrationToolRoutes = ['/api-keys', '/webhooks', '/mcp', '/x402', '/deploy'];
 
 const integrationCards = [
   {
@@ -14,41 +17,12 @@ const integrationCards = [
     description: 'Tres pontos de partida do Solo MVP para configurar flows sem catalogo amplo.',
     status: 'ready',
   },
-  {
-    title: 'API Keys',
-    route: '/api-keys',
-    icon: 'solar:key-minimalistic-bold-duotone',
-    description: 'Credenciais server-side para devices, apps e workers externos.',
-    status: 'ready',
-  },
-  {
-    title: 'Webhooks',
-    route: '/webhooks',
-    icon: 'solar:widget-2-bold-duotone',
-    description: 'Eventos de payment, settlement, falha e retry para sistemas do cliente.',
-    status: 'ready',
-  },
-  {
-    title: 'MCP tools',
-    route: '/mcp',
-    icon: 'solar:cpu-bolt-bold-duotone',
-    description: 'Ferramentas para agentes criarem pagamentos, checarem status e simularem fluxos.',
-    status: 'ready',
-  },
-  {
-    title: 'x402 rules',
-    route: '/x402',
-    icon: 'solar:shield-keyhole-bold-duotone',
-    description: 'Pricing rules e headers para recursos HTTP pagos por uso.',
-    status: 'ready',
-  },
-  {
-    title: 'Deploy checks',
-    route: '/deploy',
-    icon: 'solar:rocket-bold-duotone',
-    description: 'Ambientes, secrets, workers e readiness para colocar em producao.',
-    status: 'warning',
-  },
+  ...advancedTools
+    .filter((tool) => integrationToolRoutes.includes(tool.route))
+    .map((tool) => ({
+      ...tool,
+      status: tool.route === '/deploy' ? 'warning' : 'ready',
+    })),
 ];
 
 export default function IntegrationsPage() {

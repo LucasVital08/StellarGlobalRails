@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -18,9 +18,23 @@ const units: KivoFlowUnit[] = ['session', 'kWh', 'minute', 'request', 'reading',
 const inputClass =
   'mt-2 w-full rounded-xl border border-white/10 bg-neutral-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10';
 
+const defaultTemplateId: KivoTemplateId = 'device-pay-ev-charging';
+
+function getTemplateIdFromSearchParams(searchParams: URLSearchParams): KivoTemplateId {
+  const templateId = searchParams.get('template');
+
+  if (soloMvpTemplates.some((template) => template.id === templateId)) {
+    return templateId as KivoTemplateId;
+  }
+
+  return defaultTemplateId;
+}
+
 export default function CreateFlowPage() {
-  const [selectedTemplateId, setSelectedTemplateId] = useState<KivoTemplateId>('device-pay-ev-charging');
-  const [draft, setDraft] = useState<CreateFlowDraft>(() => createDefaultFlowDraft('device-pay-ev-charging'));
+  const [searchParams] = useSearchParams();
+  const routeTemplateId = getTemplateIdFromSearchParams(searchParams);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<KivoTemplateId>(routeTemplateId);
+  const [draft, setDraft] = useState<CreateFlowDraft>(() => createDefaultFlowDraft(routeTemplateId));
 
   const selectedTemplate = useMemo(() => getTemplateById(selectedTemplateId), [selectedTemplateId]);
   const integrationSnippet = useMemo(
@@ -33,6 +47,11 @@ export default function CreateFlowPage() {
       }),
     [draft],
   );
+
+  useEffect(() => {
+    setSelectedTemplateId(routeTemplateId);
+    setDraft(createDefaultFlowDraft(routeTemplateId));
+  }, [routeTemplateId]);
 
   const selectTemplate = (templateId: KivoTemplateId) => {
     setSelectedTemplateId(templateId);
