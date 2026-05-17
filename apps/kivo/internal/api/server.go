@@ -63,7 +63,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if s.cfg.RequireAuth && !isPublicRoute(path) && !s.authenticateRequest(r) {
-		writeError(w, http.StatusUnauthorized, "unauthorized", "valid Supabase JWT or Kivo API key is required")
+		writeError(w, http.StatusUnauthorized, "unauthorized", "valid Supabase access token or Kivo API key is required")
 		return
 	}
 
@@ -133,6 +133,17 @@ func (s *Server) authenticateRequest(r *http.Request) bool {
 	}
 	if strings.HasPrefix(token, "kivo_") {
 		return s.store.AuthenticateAPIKey(token)
+	}
+	if s.cfg.SupabaseURL != "" {
+		supabaseAPIKey := strings.TrimSpace(s.cfg.SupabaseServiceRoleKey)
+		if supabaseAPIKey == "" {
+			supabaseAPIKey = strings.TrimSpace(s.cfg.SupabaseAnonKey)
+		}
+		if supabaseAPIKey != "" {
+			if _, err := ValidateSupabaseAccessToken(r.Context(), s.httpClient, s.cfg.SupabaseURL, supabaseAPIKey, token); err == nil {
+				return true
+			}
+		}
 	}
 	if s.cfg.SupabaseJWTSecret == "" {
 		return false
@@ -833,7 +844,7 @@ func (s *Server) deployChecks() []DeployCheck {
 		statusWorkers = "ready"
 	}
 	statusAuth := "warning"
-	if s.cfg.RequireAuth && s.cfg.SupabaseJWTSecret != "" {
+	if s.cfg.RequireAuth && s.cfg.SupabaseURL != "" && (s.cfg.SupabaseServiceRoleKey != "" || s.cfg.SupabaseAnonKey != "" || s.cfg.SupabaseJWTSecret != "") {
 		statusAuth = "ready"
 	}
 	statusSecrets := "warning"
@@ -847,7 +858,7 @@ func (s *Server) deployChecks() []DeployCheck {
 	return []DeployCheck{
 		{ID: "api", Label: "Kivo API", Scope: "api", Status: statusAPI, Owner: "backend", Description: "Go API exposes dashboard, devices, payments, x402, and Etherfuse endpoints.", Value: "/v1/health"},
 		{ID: "supabase-db", Label: "Supabase Postgres", Scope: "api", Status: statusDB, Owner: "platform", Description: "DATABASE_URL enables durable devices, payments, webhooks, API keys, x402 nonces, and Etherfuse events.", Value: maskConfigured(s.cfg.DatabaseURL)},
-		{ID: "auth", Label: "Supabase Auth", Scope: "security", Status: statusAuth, Owner: "security", Description: "KIVO_REQUIRE_AUTH with SUPABASE_JWT_SECRET protects dashboard API routes while allowing x402 public challenge flow.", Value: mapBoolStatus(s.cfg.RequireAuth)},
+		{ID: "auth", Label: "Supabase Auth", Scope: "security", Status: statusAuth, Owner: "security", Description: "KIVO_REQUIRE_AUTH validates browser access tokens through Supabase Auth and keeps Kivo API keys for machine clients.", Value: mapBoolStatus(s.cfg.RequireAuth)},
 		{ID: "workers", Label: "Redis workers", Scope: "workers", Status: statusWorkers, Owner: "backend", Description: "REDIS_URL is used as the MVP queue readiness signal before durable workflow migration.", Value: maskConfigured(s.cfg.RedisURL)},
 		{ID: "x402", Label: "x402 replay guard", Scope: "security", Status: "ready", Owner: "protocol", Description: "Protected resources consume each nonce once and reject stale or mismatched X-PAYMENT headers.", Value: "/api/x402/data"},
 		{ID: "mcp", Label: "MCP JSON-RPC", Scope: "api", Status: "ready", Owner: "agents", Description: "The /mcp endpoint exposes tool discovery and MVP payment/status tools for generic agents.", Value: "/mcp"},

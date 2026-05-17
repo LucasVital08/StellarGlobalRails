@@ -249,8 +249,7 @@ export class HttpKivoApiClient implements KivoApiClient {
 
     const response = await this.fetcher(this.resolveUrl(path), { ...init, headers });
     if (!response.ok) {
-      const message = await response.text();
-      throw new Error(message || `Kivo API error ${response.status}`);
+      throw new Error(await readApiErrorMessage(response));
     }
     if (response.status === 204) {
       return undefined as T;
@@ -268,6 +267,31 @@ export class HttpKivoApiClient implements KivoApiClient {
     return `${this.baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
   }
 }
+
+const readApiErrorMessage = async (response: Response): Promise<string> => {
+  const fallback = `Kivo API error ${response.status}`;
+  const body = await response.text();
+  if (!body) {
+    return fallback;
+  }
+
+  try {
+    const payload = JSON.parse(body) as { message?: unknown; error?: unknown; code?: unknown };
+    if (typeof payload.message === 'string' && payload.message.trim()) {
+      return payload.message;
+    }
+    if (typeof payload.error === 'string' && payload.error.trim()) {
+      return payload.error;
+    }
+    if (typeof payload.code === 'string' && payload.code.trim()) {
+      return `${fallback}: ${payload.code}`;
+    }
+  } catch {
+    return body;
+  }
+
+  return body;
+};
 
 export const createKivoClient = (options: CreateKivoClientOptions = {}): KivoApiClient => {
   const envBaseUrl = import.meta.env.VITE_KIVO_API_URL as string | undefined;

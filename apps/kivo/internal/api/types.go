@@ -8,6 +8,9 @@ type Config struct {
 	CORSOrigins            string
 	DatabaseURL            string
 	RedisURL               string
+	SupabaseURL            string
+	SupabaseServiceRoleKey string
+	SupabaseAnonKey        string
 	SupabaseJWTSecret      string
 	SecretEncryptionKey    string
 	RequireAuth            bool

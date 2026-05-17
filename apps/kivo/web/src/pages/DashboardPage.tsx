@@ -13,8 +13,65 @@ export default function DashboardPage() {
   const payments = useAsyncData(() => kivoClient.listPayments(), []);
   const workflows = useAsyncData(() => kivoClient.listWorkflows(), []);
 
-  if (summary.loading || !summary.data) {
+  if (summary.loading && !summary.data) {
     return <div className="h-96 rounded-2xl border border-white/5 bg-neutral-900 animate-pulse" />;
+  }
+
+  if (summary.error || !summary.data) {
+    const normalizedError = summary.error?.toLowerCase() ?? '';
+    const authHint =
+      normalizedError.includes('supabase jwt') ||
+      normalizedError.includes('supabase access token') ||
+      normalizedError.includes('api key');
+
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          eyebrow="Kivo Pay"
+          title="Dashboard indisponivel"
+          icon="solar:danger-triangle-bold-duotone"
+          description="O shell carregou, mas a API nao retornou o resumo operacional."
+        />
+
+        <Card>
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-300">
+                <Icon icon="solar:shield-warning-bold-duotone" className="text-2xl" />
+              </div>
+              <h2 className="font-bricolage text-2xl font-bold text-white">Nao foi possivel carregar o dashboard</h2>
+              <p className="mt-3 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+                {summary.error ?? 'A API nao retornou dados para o resumo.'}
+              </p>
+              {authHint ? (
+                <p className="mt-4 text-sm leading-6 text-neutral-400">
+                  Esse erro normalmente significa que o frontend esta autenticado no Supabase, mas a API do Fly nao conseguiu validar o token.
+                  Confira se `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` no Fly pertencem ao mesmo projeto usado em `VITE_SUPABASE_URL` e depois faca um novo login.
+                </p>
+              ) : (
+                <p className="mt-4 text-sm leading-6 text-neutral-400">
+                  Recarregue a chamada; se persistir, confira a saude da API em `/v1/health` e os logs do Fly.
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <button
+                type="button"
+                onClick={() => void summary.reload()}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black hover:bg-emerald-400"
+              >
+                Tentar novamente
+                <Icon icon="solar:refresh-bold" />
+              </button>
+              <Link to="/settings" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white hover:bg-white/5">
+                Ver configuracao
+                <Icon icon="solar:settings-bold" />
+              </Link>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   const healthEntries = Object.entries(summary.data.health).filter(([key]) => key !== 'version');

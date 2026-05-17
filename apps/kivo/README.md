@@ -15,7 +15,8 @@ Required server secrets for zero-mock startup:
 - `STELLAR_HORIZON_URL`
 - `X402_PLATFORM_KEY`
 - `ETHERFUSE_API_KEY` for live Etherfuse sandbox/production calls
-- `SUPABASE_JWT_SECRET` when `KIVO_REQUIRE_AUTH=true`
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` when `KIVO_REQUIRE_AUTH=true`
+- `SUPABASE_JWT_SECRET` is optional legacy fallback for local JWT validation
 
 ## Run
 
@@ -69,7 +70,7 @@ fly secrets set REDIS_URL="..."
 fly secrets set KIVO_SECRET_ENCRYPTION_KEY="..."
 fly secrets set SUPABASE_URL="https://<project-ref>.supabase.co"
 fly secrets set SUPABASE_SERVICE_ROLE_KEY="..."
-fly secrets set SUPABASE_JWT_SECRET="..."
+fly secrets set SUPABASE_JWT_SECRET="..." # optional fallback only
 fly secrets set X402_PLATFORM_KEY="G..."
 fly secrets set ETHERFUSE_API_KEY="api_sand:..."
 fly secrets set ETHERFUSE_WEBHOOK_URL="https://<project-ref>.supabase.co/functions/v1/kivo-etherfuse-webhook"

@@ -47,6 +47,34 @@ func TestProtectedRoutesRequireJWTOrAPIKeyWhenEnabled(t *testing.T) {
 	}
 }
 
+func TestProtectedRoutesAcceptSupabaseAccessToken(t *testing.T) {
+	authServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/auth/v1/user" {
+			t.Fatalf("unexpected Supabase Auth path: %s", r.URL.Path)
+		}
+		if r.Header.Get("Authorization") != "Bearer user-access-token" {
+			t.Fatalf("unexpected authorization header: %q", r.Header.Get("Authorization"))
+		}
+		if r.Header.Get("apikey") != "server-key" {
+			t.Fatalf("unexpected apikey header: %q", r.Header.Get("apikey"))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"id":"11111111-1111-4111-8111-111111111111","email":"operator@kivo.pay","role":"authenticated"}`))
+	}))
+	defer authServer.Close()
+
+	server := NewServer(NewMemoryStore(), Config{
+		Version:                "test",
+		RequireAuth:            true,
+		SupabaseURL:            authServer.URL,
+		SupabaseServiceRoleKey: "server-key",
+	})
+	allowed := doRequest(server, http.MethodGet, "/v1/dashboard", nil, map[string]string{"Authorization": "Bearer user-access-token"})
+	if allowed.Code != http.StatusOK {
+		t.Fatalf("expected dashboard with Supabase token to pass, got %d: %s", allowed.Code, allowed.Body.String())
+	}
+}
+
 func TestDevicePaymentAndX402Flow(t *testing.T) {
 	horizon := newHorizonStub(t)
 	server := NewServer(NewMemoryStore(), Config{Version: "test", X402PlatformKey: "GDESTINATION", StellarHorizonURL: horizon.URL})

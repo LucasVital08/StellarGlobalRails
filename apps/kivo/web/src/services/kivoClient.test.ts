@@ -91,6 +91,29 @@ describe('HttpKivoApiClient', () => {
     expect(JSON.parse(body)).toMatchObject({ method: 'tools/call', params: { name: 'kivo_check_status' } });
     expect(result.output).toEqual({ status: 'confirmed' });
   });
+
+  it('surfaces API error messages instead of raw JSON strings', async () => {
+    const client = createKivoClient({
+      baseUrl: 'https://api.kivo.example',
+      fetcher: async () =>
+        jsonResponse(
+          {
+            code: 'unauthorized',
+            message: 'valid Supabase JWT or Kivo API key is required',
+          },
+          401,
+        ),
+    });
+
+    let errorMessage = '';
+    try {
+      await client.getDashboardSummary();
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error);
+    }
+
+    expect(errorMessage).toBe('valid Supabase JWT or Kivo API key is required');
+  });
 });
 
 const jsonResponse = (payload: unknown, status = 200) =>

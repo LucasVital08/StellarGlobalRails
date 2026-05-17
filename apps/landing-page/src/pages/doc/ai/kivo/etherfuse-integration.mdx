@@ -780,12 +780,12 @@ curl -X POST https://api.sand.etherfuse.com/ramp/webhook \
   -H "Content-Type: application/json" \
   -d '{
     "id": "2fd4db1f-9642-4c78-b43a-08227806ea91",
-    "event_type": "order_updated",
+    "eventType": "order_updated",
     "url": "https://<ngrok-host>/v1/etherfuse/webhook"
   }'
 ```
 
-Store the returned `secret` as `ETHERFUSE_WEBHOOK_SECRET`.
+Etherfuse expects `eventType` in camelCase for webhook registration. Store the returned `secret` as `ETHERFUSE_WEBHOOK_SECRET`.
 
 ### 4. Create or select wallet
 
@@ -919,4 +919,3 @@ Reuse the operational lessons from those files, especially:
 - Sandbox fiat simulation is a test helper, not a production endpoint.
 
 Do not copy Next.js route code into Kivo. Port the behavior into Go/Fiber and keep the Kivo dashboard talking only to Kivo's own API.
-

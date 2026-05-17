@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/services/supabase';
+import { getRegistrationOutcome } from './authRegistration';
+import type { RegistrationOutcome } from './authRegistration';
 
 export interface AppUser {
   id: string;
@@ -16,7 +18,7 @@ interface AuthState {
   authMode: 'supabase';
   initialize: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<RegistrationOutcome>;
   logout: () => Promise<void>;
 }
 
@@ -80,7 +82,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (!data.user) {
       throw new Error('Supabase Auth nao retornou usuario.');
     }
-    set({ user: fromSupabaseUser(data.user), loading: false });
+    const outcome = getRegistrationOutcome(data);
+    if (!outcome.requiresEmailConfirmation) {
+      set({ user: fromSupabaseUser(data.user), loading: false });
+    } else {
+      set({ user: null, loading: false });
+    }
+    return outcome;
   },
   logout: async () => {
     if (supabase) {
