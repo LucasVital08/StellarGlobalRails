@@ -10,9 +10,10 @@ import {
   getTemplateById,
   soloMvpTemplates,
 } from '@/data/soloMvp';
-import type { CreateFlowDraft, KivoTemplateId } from '@/types/kivo';
+import type { CreateFlowDraft, KivoFlowUnit, KivoTemplateId } from '@/types/kivo';
 
 const steps = ['Template', 'Pricing', 'Integrate', 'Test', 'Publish'];
+const units: KivoFlowUnit[] = ['session', 'kWh', 'minute', 'request', 'reading', 'package'];
 
 const inputClass =
   'mt-2 w-full rounded-xl border border-white/10 bg-neutral-950/70 px-3 py-2.5 text-sm text-white outline-none transition focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10';
@@ -38,8 +39,28 @@ export default function CreateFlowPage() {
     setDraft(createDefaultFlowDraft(templateId));
   };
 
-  const updateDraft = (field: keyof CreateFlowDraft, value: string) => {
-    setDraft((current) => ({ ...current, [field]: value }));
+  const updateName = (name: string) => {
+    setDraft((current) => ({ ...current, name }));
+  };
+
+  const updatePrice = (price: string) => {
+    setDraft((current) => ({ ...current, price }));
+  };
+
+  const updateUnit = (unit: KivoFlowUnit) => {
+    setDraft((current) => ({ ...current, unit }));
+  };
+
+  const updateUnitFromValue = (value: string) => {
+    const unit = units.find((item) => item === value);
+
+    if (unit) {
+      updateUnit(unit);
+    }
+  };
+
+  const updateResource = (resource: string) => {
+    setDraft((current) => ({ ...current, resource }));
   };
 
   return (
@@ -124,7 +145,7 @@ export default function CreateFlowPage() {
               Nome
               <input
                 value={draft.name}
-                onChange={(event) => updateDraft('name', event.target.value)}
+                onChange={(event) => updateName(event.target.value)}
                 className={inputClass}
               />
             </label>
@@ -132,18 +153,24 @@ export default function CreateFlowPage() {
               Preco
               <input
                 value={draft.price}
-                onChange={(event) => updateDraft('price', event.target.value)}
+                onChange={(event) => updatePrice(event.target.value)}
                 className={inputClass}
                 inputMode="decimal"
               />
             </label>
             <label className="text-sm font-semibold text-neutral-300">
               Unidade
-              <input
+              <select
                 value={draft.unit}
-                onChange={(event) => updateDraft('unit', event.target.value)}
+                onChange={(event) => updateUnitFromValue(event.target.value)}
                 className={inputClass}
-              />
+              >
+                {units.map((unit) => (
+                  <option key={unit} value={unit} className="bg-neutral-950 text-white">
+                    {unit}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="text-sm font-semibold text-neutral-300">
               Asset
@@ -155,7 +182,7 @@ export default function CreateFlowPage() {
             Resource path
             <input
               value={draft.resource}
-              onChange={(event) => updateDraft('resource', event.target.value)}
+              onChange={(event) => updateResource(event.target.value)}
               className={inputClass}
             />
           </label>
