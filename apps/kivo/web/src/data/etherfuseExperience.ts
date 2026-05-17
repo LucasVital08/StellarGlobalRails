@@ -164,7 +164,7 @@ export const formatEtherfuseErrorMessage = (message: string): string => {
     return 'Customer ID e Bank Account ID precisam ser UUIDs gerados pelo Kivo ou retornados do onboarding Etherfuse.';
   }
   if (normalized.includes('forbidden')) {
-    return 'A Etherfuse recusou a chamada. Verifique se a credencial sandbox tem permissao de ramp e se customerId, bankAccountId e wallet pertencem ao mesmo onboarding.';
+    return 'A Etherfuse recusou a chamada. Verifique se a credencial do ambiente de teste tem permissao de ramp e se customerId, bankAccountId e wallet pertencem ao mesmo onboarding.';
   }
   return message || 'Nao foi possivel concluir a etapa Etherfuse.';
 };

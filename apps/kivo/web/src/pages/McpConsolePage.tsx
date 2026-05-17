@@ -55,7 +55,7 @@ export default function McpConsolePage() {
         title="Agentes usando Kivo como wallet e contrato de pagamento"
         icon="solar:cpu-bolt-bold-duotone"
         tone="active"
-        description="O MCP deixa de ser playground isolado: ele mostra como um agente cria pagamento, checa status e respeita gates humanos para valores maiores."
+        description="O MCP mostra como um agente cria pagamento, checa status e respeita gates humanos para valores maiores."
         checkpoints={['Tools com exemplos', 'Approval gates', 'Config copiavel']}
         primaryAction={{ to: '/integrations', label: 'Hub de integracao' }}
         secondaryAction={{ to: '/checkout', label: 'Ver usuario final' }}

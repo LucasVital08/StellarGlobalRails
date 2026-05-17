@@ -66,25 +66,26 @@ export default function WorkspaceHomePage() {
 
   const workspaceName = user?.organization?.trim() || 'Kivo workspace';
   const summaryData = summary.data;
-  const paymentData = payments.data ?? [];
-  const deviceData = devices.data ?? [];
-  const pricingRuleData = pricingRules.data ?? [];
 
   const flows = useMemo(
     () =>
       deriveSoloFlows({
-        devices: deviceData,
-        payments: paymentData,
-        pricingRules: pricingRuleData,
+        devices: devices.data ?? [],
+        payments: payments.data ?? [],
+        pricingRules: pricingRules.data ?? [],
       }).sort((left, right) => sortByNewest(left.lastActivityAt, right.lastActivityAt)),
-    [deviceData, paymentData, pricingRuleData],
+    [devices.data, payments.data, pricingRules.data],
   );
 
   const activeFlows = flows.filter((flow) => flow.status === 'active');
   const recentFlows = flows.slice(0, 4);
-  const recentPayments = [...paymentData]
-    .sort((left, right) => sortByNewest(left.createdAt, right.createdAt))
-    .slice(0, 4);
+  const recentPayments = useMemo(
+    () =>
+      [...(payments.data ?? [])]
+        .sort((left, right) => sortByNewest(left.createdAt, right.createdAt))
+        .slice(0, 4),
+    [payments.data],
+  );
   const completedSetupItems = flows.reduce(
     (total, flow) => total + flow.setupChecklist.filter((item) => item.complete).length,
     0,
@@ -94,7 +95,7 @@ export default function WorkspaceHomePage() {
   const apiStatus = summaryData?.health.api ?? 'degraded';
   const apiLabelStatus = apiStatus === 'ok' ? 'online' : apiStatus;
   const hasFlows = flows.length > 0;
-  const hasPayments = paymentData.length > 0;
+  const hasPayments = (payments.data?.length ?? 0) > 0;
   const loaders = [
     { id: 'summary', label: loaderLabels.summary, state: summary },
     { id: 'payments', label: loaderLabels.payments, state: payments },

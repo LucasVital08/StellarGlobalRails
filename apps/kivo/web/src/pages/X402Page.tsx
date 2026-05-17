@@ -71,7 +71,7 @@ export default function X402Page() {
         asset,
         maxTimeout,
         enabled: true,
-        description: 'Regra operacional do playground x402.',
+        description: 'Regra operacional para recursos protegidos por x402.',
       });
       notify({ type: 'success', title: 'Regra x402 salva', message: `${rule.amount} em ${rule.resource}` });
       await pricing.reload();

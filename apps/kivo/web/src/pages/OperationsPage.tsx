@@ -25,7 +25,7 @@ export default function OperationsPage() {
         eyebrow="Operacao"
         title="Infraestrutura M2M"
         icon="solar:devices-bold-duotone"
-        description="Acompanhe devices, sessoes, filas e incidentes como operador do negocio, nao como sandbox de desenvolvimento."
+        description="Acompanhe devices, sessoes, filas e incidentes como operador do negocio em uma operacao real."
         action={
           <Link to="/devices" className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black hover:bg-emerald-400">
             Gerenciar devices

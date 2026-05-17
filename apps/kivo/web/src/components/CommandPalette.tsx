@@ -23,7 +23,7 @@ const commands = [
   { label: 'Hub de integracao', path: '/integrations', icon: 'solar:code-square-bold-duotone', keywords: 'builder api webhooks mcp templates' },
   { label: 'Financeiro', path: '/finance', icon: 'solar:chart-square-bold-duotone', keywords: 'recebiveis conciliacao settlement receita' },
   { label: 'Time e escala', path: '/team', icon: 'solar:users-group-rounded-bold-duotone', keywords: 'workspace roles solo team enterprise' },
-  { label: 'Console tecnico', path: '/ops-dashboard', icon: 'solar:widget-5-bold-duotone', keywords: 'metrics health dashboard advanced' },
+  { label: 'Advanced tools', path: '/ops-dashboard', icon: 'solar:widget-5-bold-duotone', keywords: 'metrics health dashboard advanced' },
   ...advancedCommands,
 ];
 
