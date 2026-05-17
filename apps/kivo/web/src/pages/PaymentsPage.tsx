@@ -48,71 +48,110 @@ export default function PaymentsPage() {
 
   const deviceName = (id: string) => devices.data?.find((device) => device.id === id)?.name ?? id;
   const canCreate = Boolean(fromDeviceId && toDeviceId && fromDeviceId !== toDeviceId && amount);
+  const totalPayments = payments.data?.length ?? 0;
 
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="Payment gateway"
-        title="Pagamentos M2M"
+        title="Payments"
         icon="solar:wallet-money-bold-duotone"
-        description="Crie, filtre e acompanhe pagamentos imediatos ou condicionais sobre Stellar."
-        action={<button onClick={() => setModalOpen(true)} className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black">Novo pagamento</button>}
+        description="Ledger legivel para acompanhar pagamentos, status Stellar, falhas e comprovantes."
+        action={<Link to="/checkout" className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black hover:bg-emerald-400">Testar pagamento</Link>}
       />
 
       <WorkspaceContextBanner
         eyebrow="Ledger compartilhado"
-        title="O mesmo pagamento visto por operador, usuario e financeiro"
+        title="Linha do tempo dos pagamentos do workspace"
         icon="solar:wallet-money-bold-duotone"
         tone="active"
-        description="Pagamentos conectam device, checkout x402, liquidacao Stellar e conciliacao financeira dentro do mesmo workspace."
-        checkpoints={['Origem e destino', 'Condicao de uso', 'Status de liquidacao']}
+        description="Acompanhe cada cobranca como registro auditavel: origem, destino, condicao, liquidacao Stellar e conciliacao financeira no mesmo workspace."
+        checkpoints={['Registro auditavel', 'Status Stellar', 'Falhas e comprovantes']}
         primaryAction={{ to: '/finance', label: 'Ver financeiro' }}
-        secondaryAction={{ to: '/checkout', label: 'Simular checkout' }}
+        secondaryAction={{ to: '/checkout', label: 'Testar pagamento' }}
       />
 
       <Card>
-        <div className="flex flex-wrap gap-2">
-          {(['all', 'pending', 'processing', 'confirmed', 'failed'] as const).map((item) => (
-            <button key={item} onClick={() => setStatus(item)} className={`rounded-xl border px-3 py-2 text-xs font-bold ${status === item ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-white/10 bg-white/5 text-neutral-500'}`}>
-              {item === 'all' ? 'Todos' : statusLabel(item)}
-            </button>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Filtro do ledger</p>
+            <p className="mt-1 text-sm text-neutral-400">{filtered.length} de {totalPayments} pagamentos em exibicao</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(['all', 'pending', 'processing', 'confirmed', 'failed'] as const).map((item) => (
+              <button key={item} onClick={() => setStatus(item)} className={`rounded-xl border px-3 py-2 text-xs font-bold ${status === item ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-white/10 bg-white/5 text-neutral-500 hover:bg-white/10'}`}>
+                {item === 'all' ? 'Todos' : statusLabel(item)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card className="min-w-0 overflow-hidden">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Ledger</p>
+            <h2 className="mt-1 font-bricolage text-2xl font-bold text-white">Pagamentos registrados</h2>
+          </div>
+          <p className="text-xs text-neutral-500">Abra um registro para ver o comprovante e detalhes operacionais.</p>
+        </div>
+
+        <div className="mt-5 divide-y divide-white/5">
+          {filtered.map((payment) => (
+            <Link
+              key={payment.id}
+              to={`/payments/${payment.id}`}
+              className="grid min-w-0 gap-4 py-4 transition-colors hover:bg-white/[0.02] sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)_auto]"
+            >
+              <div className="min-w-0">
+                <p className="font-mono text-xs text-emerald-400">{shortId(payment.id)}</p>
+                <p className="mt-1 break-words text-lg font-bold text-white">{payment.amount} {payment.assetCode}</p>
+                <p className="mt-1 text-xs text-neutral-500">{formatDateTime(payment.createdAt)}</p>
+              </div>
+              <div className="grid min-w-0 gap-3 md:grid-cols-2">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">Origem</p>
+                  <p className="mt-1 truncate text-sm text-neutral-300" title={deviceName(payment.fromDeviceId)}>{deviceName(payment.fromDeviceId)}</p>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">Destino</p>
+                  <p className="mt-1 truncate text-sm text-neutral-300" title={deviceName(payment.toDeviceId)}>{deviceName(payment.toDeviceId)}</p>
+                </div>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">Condicao</p>
+                <p className="mt-1 break-words text-sm text-neutral-400">{payment.conditionType}{payment.conditionValue ? ` = ${payment.conditionValue}` : ''}</p>
+              </div>
+              <div className="flex items-start sm:justify-end">
+                <Badge tone={payment.status}>{statusLabel(payment.status)}</Badge>
+              </div>
+            </Link>
           ))}
+          {!filtered.length && (
+            <div className="rounded-2xl border border-white/5 bg-black/25 p-6 text-sm text-neutral-400">
+              Nenhum pagamento encontrado para este filtro.
+            </div>
+          )}
         </div>
       </Card>
 
       <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="text-xs uppercase tracking-wider text-neutral-500">
-              <tr className="border-b border-white/5">
-                <th className="py-3">Pagamento</th>
-                <th>Origem</th>
-                <th>Destino</th>
-                <th>Condição</th>
-                <th>Status</th>
-                <th>Criado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filtered.map((payment) => (
-                <tr key={payment.id} className="hover:bg-white/[0.02]">
-                  <td className="py-4">
-                    <Link to={`/payments/${payment.id}`} className="font-mono text-xs text-emerald-400 hover:text-emerald-300">{shortId(payment.id)}</Link>
-                    <p className="mt-1 font-bold text-white">{payment.amount} {payment.assetCode}</p>
-                  </td>
-                  <td className="text-neutral-300">{deviceName(payment.fromDeviceId)}</td>
-                  <td className="text-neutral-300">{deviceName(payment.toDeviceId)}</td>
-                  <td className="text-neutral-400">{payment.conditionType}{payment.conditionValue ? ` = ${payment.conditionValue}` : ''}</td>
-                  <td><Badge tone={payment.status}>{statusLabel(payment.status)}</Badge></td>
-                  <td className="text-neutral-500">{formatDateTime(payment.createdAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Advanced</p>
+            <h2 className="mt-1 font-bricolage text-2xl font-bold text-white">Advanced: criar pagamento manual</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
+              Use apenas para montar um pagamento direto entre devices quando precisar validar casos fora do checkout guiado.
+            </p>
+          </div>
+          <button onClick={() => setModalOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white hover:bg-white/5">
+            Criar pagamento manual
+            <Icon icon="solar:arrow-right-up-bold" />
+          </button>
         </div>
       </Card>
 
-      <Modal open={modalOpen} title="Criar pagamento" onClose={() => setModalOpen(false)}>
+      <Modal open={modalOpen} title="Advanced: criar pagamento manual" onClose={() => setModalOpen(false)}>
         <form onSubmit={submit} className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <select value={fromDeviceId} onChange={(event) => setFromDeviceId(event.target.value)} className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-emerald-500">
@@ -138,7 +177,7 @@ export default function PaymentsPage() {
               <option value="custom">custom</option>
             </select>
           </div>
-          {conditionType !== 'none' && <input value={conditionValue} onChange={(event) => setConditionValue(event.target.value)} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Valor da condição" />}
+          {conditionType !== 'none' && <input value={conditionValue} onChange={(event) => setConditionValue(event.target.value)} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Valor da condicao" />}
           <input value={memo} onChange={(event) => setMemo(event.target.value)} maxLength={28} className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Memo Stellar" />
           <button disabled={!canCreate} className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black disabled:cursor-not-allowed disabled:opacity-50">
             Criar pagamento

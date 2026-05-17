@@ -92,10 +92,11 @@ fly secrets set ETHERFUSE_WEBHOOK_SECRET="..."
 - `GET|PUT /v1/x402/pricing-rules`
 - `GET /api/x402/data`
 - `GET /v1/etherfuse/status`
+- `POST /v1/etherfuse/onboarding-url`
 - `GET /v1/etherfuse/assets`
 - `POST /v1/etherfuse/quotes`
 - `POST /v1/etherfuse/orders`
-- `POST /v1/etherfuse/orders/:id/fiat-received`
+- `POST /v1/etherfuse/orders/:id/simulate-fiat-received` (sandbox; `/fiat-received` remains as compatibility alias)
 - `POST /v1/etherfuse/webhook`
 
 ## Supabase

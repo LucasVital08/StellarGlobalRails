@@ -2,11 +2,11 @@ import { Icon } from '@iconify/react';
 import { NavLink } from 'react-router-dom';
 
 const items = [
-  { to: '/dashboard', icon: 'solar:home-angle-bold-duotone', label: 'Inicio' },
-  { to: '/operations', icon: 'solar:devices-bold-duotone', label: 'Operar' },
-  { to: '/checkout', icon: 'solar:card-transfer-bold-duotone', label: 'Pagar' },
-  { to: '/integrations', icon: 'solar:code-square-bold-duotone', label: 'Integrar' },
-  { to: '/finance', icon: 'solar:chart-square-bold-duotone', label: 'Financeiro' },
+  { to: '/dashboard', icon: 'solar:home-angle-bold-duotone', label: 'Home' },
+  { to: '/create-flow', icon: 'solar:add-circle-bold-duotone', label: 'Criar' },
+  { to: '/flows', icon: 'solar:bolt-circle-bold-duotone', label: 'Flows' },
+  { to: '/payments', icon: 'solar:wallet-money-bold-duotone', label: 'Pay' },
+  { to: '/advanced', icon: 'solar:settings-bold-duotone', label: 'Adv' },
 ];
 
 export default function BottomNav() {

@@ -1,57 +1,26 @@
 import { Icon } from '@iconify/react';
+import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
-
-const templates = [
-  {
-    name: 'EV Charging Network',
-    icon: 'solar:bolt-circle-bold-duotone',
-    description: 'Carro cria pagamento condicionado a kWh entregue; charger submete proof e recebe USDC.',
-    endpoints: ['POST /v1/payments', 'POST /v1/payments/:id/condition', 'GET /v1/payments/:id/status'],
-  },
-  {
-    name: 'P2P Energy Trading',
-    icon: 'solar:sun-bold-duotone',
-    description: 'Medidores solares vendem excedente em micropagamentos com settlement em segundos.',
-    endpoints: ['POST /v1/devices', 'POST /v1/payments', 'POST /v1/webhooks'],
-  },
-  {
-    name: 'AI Agent Economy',
-    icon: 'solar:cpu-bolt-bold-duotone',
-    description: 'Agente encontra API paga, usa MCP, paga via x402 e continua a tarefa autonomamente.',
-    endpoints: ['kivo_create_payment', 'kivo_check_status', 'GET /api/x402/data'],
-  },
-  {
-    name: 'IoT Data Marketplace',
-    icon: 'solar:database-bold-duotone',
-    description: 'Sensores monetizam dados premium por request, com proof de pagamento como credencial.',
-    endpoints: ['X-PAYMENT-REQUIRED', 'X-PAYMENT', 'Webhook payment.confirmed'],
-  },
-  {
-    name: 'Edge Compute',
-    icon: 'solar:server-square-cloud-bold-duotone',
-    description: 'Cliente paga GPU seconds ou compute units sem conta humana ou faturamento mensal.',
-    endpoints: ['POST /v1/payments', 'payment channels', 'webhooks'],
-  },
-];
+import { createFlowRoute, soloMvpTemplates } from '@/data/soloMvp';
 
 export default function TemplatesPage() {
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Use cases" title="Templates operacionais" icon="solar:bolt-circle-bold-duotone" description="Modelos prontos para montar fluxos reais de M2M sem virar material de marketing." />
+      <PageHeader eyebrow="MVP flows" title="Templates operacionais" icon="solar:bolt-circle-bold-duotone" description="Pontos de partida para os tres fluxos do Solo MVP: device pay, API paga e feed de dados IoT." />
       <WorkspaceContextBanner
-        eyebrow="Jornada do integrador"
-        title="Comece por um caso de uso, nao por endpoint"
+        eyebrow="Inicio rapido"
+        title="Escolha um dos tres fluxos base"
         icon="solar:bolt-circle-bold-duotone"
         tone="ready"
-        description="Templates agora funcionam como ponto de entrada para pequenos times e usuarios solo escolherem o primeiro fluxo operacional."
-        checkpoints={['EV charging', 'AI agents', 'IoT data marketplace']}
-        primaryAction={{ to: '/integrations', label: 'Hub de integracao' }}
-        secondaryAction={{ to: '/operations', label: 'Ver operacao' }}
+        description="Esta tela nao e catalogo amplo: os templates apenas preenchem o create flow com o caminho minimo para validar um MVP operacional."
+        checkpoints={['Device pay', 'Paid API', 'IoT data feed']}
+        primaryAction={{ to: createFlowRoute(soloMvpTemplates[0].id), label: 'Criar flow' }}
+        secondaryAction={{ to: '/create-flow', label: 'Abrir criador' }}
       />
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {templates.map((template) => (
+        {soloMvpTemplates.map((template) => (
           <Card key={template.name} className="relative overflow-hidden">
             <Icon icon={template.icon} className="absolute -bottom-6 -right-5 text-[8rem] text-white/[0.03]" />
             <div className="relative z-10">
@@ -60,11 +29,16 @@ export default function TemplatesPage() {
               </div>
               <h2 className="font-bricolage text-xl font-bold text-white">{template.name}</h2>
               <p className="mt-3 text-sm leading-6 text-neutral-400">{template.description}</p>
+              <p className="mt-3 text-xs leading-5 text-neutral-500">{template.bestFor}</p>
               <div className="mt-5 flex flex-wrap gap-2">
-                {template.endpoints.map((endpoint) => (
-                  <code key={endpoint} className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-emerald-300">{endpoint}</code>
-                ))}
+                <code className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-emerald-300">{template.defaultPrice} USDC</code>
+                <code className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-emerald-300">por {template.defaultUnit}</code>
+                <code className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-emerald-300">{template.integrationMode}</code>
               </div>
+              <Link to={createFlowRoute(template.id)} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black transition-colors hover:bg-emerald-400">
+                {template.primaryActionLabel}
+                <Icon icon="solar:arrow-right-linear" className="text-base" />
+              </Link>
             </div>
           </Card>
         ))}

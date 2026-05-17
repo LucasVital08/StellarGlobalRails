@@ -34,7 +34,7 @@ describe('x402Experience', () => {
     expect(x402CheckoutResources[0]).toMatchObject({
       label: 'Sessao de recarga EV',
       customer: 'Motorista',
-      settlementRail: 'Etherfuse sandbox + Stellar testnet',
+      settlementRail: 'Etherfuse testnet + Stellar testnet',
     });
     expect(x402CheckoutResources.every((resource) => resource.resource.startsWith('/api/x402/data'))).toBe(true);
   });

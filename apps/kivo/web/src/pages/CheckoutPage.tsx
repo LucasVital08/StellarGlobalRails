@@ -6,6 +6,24 @@ import { Card } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { PageHeader } from '@/components/ui/PageHeader';
 import {
+  buildEtherfuseOnboardingPayload,
+  buildEtherfuseOrderPayload,
+  buildEtherfuseQuotePayload,
+  createEtherfuseUUID,
+  DEFAULT_ETHERFUSE_ANCHOR_WALLET,
+  DEFAULT_ETHERFUSE_BANK_ACCOUNT_ID,
+  DEFAULT_ETHERFUSE_CUSTOMER_ID,
+  DEFAULT_ETHERFUSE_TARGET_ASSET,
+  extractExistingEtherfuseCustomerId,
+  extractEtherfuseId,
+  formatEtherfuseErrorMessage,
+  getEtherfuseAssets,
+  loadEtherfuseOnboardingDraft,
+  previewEtherfuseJson,
+  saveEtherfuseOnboardingDraft,
+  selectEtherfuseTargetAsset,
+} from '@/data/etherfuseExperience';
+import {
   formatX402AssetLabel,
   getX402CheckoutState,
   previewPublicKey,
@@ -13,7 +31,25 @@ import {
 } from '@/data/x402Experience';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
-import type { X402Challenge, X402PaidResponse, X402UnlockedResponse } from '@/types/kivo';
+import type {
+  EtherfuseAssetsResponse,
+  EtherfuseOnboardingResponse,
+  EtherfuseOrderResponse,
+  EtherfuseQuoteResponse,
+  X402Challenge,
+  X402PaidResponse,
+  X402UnlockedResponse,
+} from '@/types/kivo';
+
+type AnchorStep = 'onboarding' | 'assets' | 'quote' | 'order' | 'fiat';
+
+const shortAsset = (asset: string) => {
+  const [code, issuer] = asset.split(':');
+  if (!issuer) {
+    return asset;
+  }
+  return `${code}:${issuer.slice(0, 6)}...${issuer.slice(-5)}`;
+};
 
 export default function CheckoutPage() {
   const etherfuse = useAsyncData(() => kivoClient.getEtherfuseStatus(), []);
@@ -25,8 +61,33 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const [anchorWallet, setAnchorWallet] = useState(DEFAULT_ETHERFUSE_ANCHOR_WALLET);
+  const [customerId, setCustomerId] = useState(() => DEFAULT_ETHERFUSE_CUSTOMER_ID ?? loadEtherfuseOnboardingDraft(DEFAULT_ETHERFUSE_ANCHOR_WALLET)?.customerId ?? createEtherfuseUUID());
+  const [bankAccountId, setBankAccountId] = useState(() => DEFAULT_ETHERFUSE_BANK_ACCOUNT_ID ?? loadEtherfuseOnboardingDraft(DEFAULT_ETHERFUSE_ANCHOR_WALLET)?.bankAccountId ?? createEtherfuseUUID());
+  const [sourceAmount, setSourceAmount] = useState('100');
+  const [onboarding, setOnboarding] = useState<EtherfuseOnboardingResponse | null>(() => {
+    const draft = loadEtherfuseOnboardingDraft(DEFAULT_ETHERFUSE_ANCHOR_WALLET);
+    return draft?.onboardingUrl ? { presigned_url: draft.onboardingUrl } : null;
+  });
+  const [anchorAssets, setAnchorAssets] = useState<EtherfuseAssetsResponse | null>(null);
+  const [anchorQuote, setAnchorQuote] = useState<EtherfuseQuoteResponse | null>(null);
+  const [anchorOrder, setAnchorOrder] = useState<EtherfuseOrderResponse | null>(null);
+  const [anchorLoading, setAnchorLoading] = useState<AnchorStep | null>(null);
+  const [anchorError, setAnchorError] = useState('');
+
   const checkoutState = getX402CheckoutState({ challenge, paid, unlocked });
   const asset = challenge ? formatX402AssetLabel(challenge.asset) : null;
+  const fiatCurrency = etherfuse.data?.default_fiat ?? 'MXN';
+  const assets = getEtherfuseAssets(anchorAssets);
+  const targetAsset = selectEtherfuseTargetAsset({
+    assets,
+    allowedAssets: etherfuse.data?.allowed_assets,
+    fallbackAsset: DEFAULT_ETHERFUSE_TARGET_ASSET,
+  });
+  const quoteId = extractEtherfuseId(anchorQuote, ['quoteId', 'id']);
+  const orderId = extractEtherfuseId(anchorOrder, ['orderId', 'id']);
+  const onboardingUrl = onboarding?.presigned_url ?? onboarding?.presignedUrl ?? onboarding?.url;
+  const anchorPreview = anchorOrder ?? anchorQuote ?? anchorAssets ?? onboarding ?? etherfuse.data;
 
   const resetPaymentState = () => {
     setChallenge(null);
@@ -36,13 +97,141 @@ export default function CheckoutPage() {
     setError('');
   };
 
+  const runAnchorStep = async <T,>(step: AnchorStep, action: () => Promise<T>, onSuccess: (value: T) => void) => {
+    setAnchorLoading(step);
+    setAnchorError('');
+    try {
+      onSuccess(await action());
+    } catch (err) {
+      setAnchorError(formatEtherfuseErrorMessage(err instanceof Error ? err.message : 'Nao foi possivel concluir a etapa Etherfuse.'));
+    } finally {
+      setAnchorLoading(null);
+    }
+  };
+
+  const createOnboardingUrl = () => {
+    const wallet = anchorWallet.trim();
+    if (!wallet || !customerId.trim() || !bankAccountId.trim()) {
+      setAnchorError('Wallet, customerId e bankAccountId sao obrigatorios para criar onboarding.');
+      return;
+    }
+
+    const payload = buildEtherfuseOnboardingPayload({
+      customerId: customerId.trim(),
+      bankAccountId: bankAccountId.trim(),
+      publicKey: wallet,
+      email: 'operator@kivo.example',
+      displayName: 'Kivo Operator',
+    });
+
+    setAnchorLoading('onboarding');
+    setAnchorError('');
+    kivoClient
+      .createEtherfuseOnboardingUrl(payload)
+      .then((response) => {
+        const url = response.presigned_url ?? response.presignedUrl ?? response.url;
+        setOnboarding(response);
+        saveEtherfuseOnboardingDraft({
+          wallet,
+          customerId: customerId.trim(),
+          bankAccountId: bankAccountId.trim(),
+          ...(url ? { onboardingUrl: url } : {}),
+        });
+        setAnchorQuote(null);
+        setAnchorOrder(null);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : 'Nao foi possivel concluir a etapa Etherfuse.';
+        const existingCustomerId = extractExistingEtherfuseCustomerId(message);
+        if (existingCustomerId) {
+          setCustomerId(existingCustomerId);
+          saveEtherfuseOnboardingDraft({
+            wallet,
+            customerId: existingCustomerId,
+            bankAccountId: bankAccountId.trim(),
+          });
+        }
+        setAnchorError(formatEtherfuseErrorMessage(message));
+      })
+      .finally(() => setAnchorLoading(null));
+  };
+
+  const discoverEtherfuseAssets = () => {
+    const wallet = anchorWallet.trim();
+    if (!wallet) {
+      setAnchorError('Informe uma Stellar public key para consultar assets na Etherfuse.');
+      return;
+    }
+
+    void runAnchorStep('assets', () => kivoClient.listEtherfuseAssets(wallet, fiatCurrency), (response) => {
+      setAnchorAssets(response);
+      setAnchorQuote(null);
+      setAnchorOrder(null);
+    });
+  };
+
+  const createQuote = () => {
+    const wallet = anchorWallet.trim();
+    if (!wallet || !customerId.trim() || !sourceAmount.trim()) {
+      setAnchorError('Wallet, customerId e valor fiat sao obrigatorios para criar quote.');
+      return;
+    }
+
+    const payload = buildEtherfuseQuotePayload({
+      quoteId: createEtherfuseUUID(),
+      customerId: customerId.trim(),
+      sourceAmount: sourceAmount.trim(),
+      sourceAsset: fiatCurrency,
+      targetAsset,
+      walletAddress: wallet,
+    });
+
+    void runAnchorStep('quote', () => kivoClient.createEtherfuseQuote(payload), (response) => {
+      setAnchorQuote(response);
+      setAnchorOrder(null);
+    });
+  };
+
+  const createOrder = () => {
+    if (!quoteId) {
+      setAnchorError('Crie uma quote Etherfuse antes de gerar a order.');
+      return;
+    }
+    if (!bankAccountId.trim() || !anchorWallet.trim()) {
+      setAnchorError('bankAccountId e publicKey sao obrigatorios para criar a order.');
+      return;
+    }
+
+    const payload = buildEtherfuseOrderPayload({
+      orderId: createEtherfuseUUID(),
+      bankAccountId: bankAccountId.trim(),
+      publicKey: anchorWallet.trim(),
+      quoteId,
+    });
+
+    void runAnchorStep('order', () => kivoClient.createEtherfuseOrder(payload), setAnchorOrder);
+  };
+
+  const simulateFiatReceived = () => {
+    if (!orderId) {
+      setAnchorError('Crie uma order Etherfuse antes de confirmar recebimento.');
+      return;
+    }
+
+    void runAnchorStep('fiat', () => kivoClient.simulateEtherfuseFiatReceived(orderId), setAnchorOrder);
+  };
+
   const requestPrice = async () => {
     setLoading(true);
     setError('');
     setPaid(null);
     setUnlocked(null);
     try {
-      setChallenge(await kivoClient.getX402Challenge(selectedResource.resource));
+      const nextChallenge = await kivoClient.getX402Challenge(selectedResource.resource);
+      setChallenge(nextChallenge);
+      if (!anchorWallet.trim()) {
+        setAnchorWallet(nextChallenge.payTo);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Nao foi possivel iniciar o checkout.');
     } finally {
@@ -68,12 +257,181 @@ export default function CheckoutPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Usuario final"
-        title="Pagar recurso protegido"
+        eyebrow="Test Payment"
+        title="Teste o pagamento do flow"
         icon="solar:card-transfer-bold-duotone"
-        description="Fluxo MVP do cliente: escolhe um recurso, recebe o challenge x402, assina o pagamento USDC na Stellar testnet e desbloqueia o acesso com X-PAYMENT."
-        action={<Link to="/x402" className="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white hover:bg-white/5">Playground tecnico</Link>}
+        description="Use este passo para validar funding, challenge x402, assinatura Stellar e liberacao do recurso antes de publicar."
+        action={<Link to="/x402" className="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white hover:bg-white/5">Advanced x402</Link>}
       />
+
+      <Card className="min-w-0 overflow-hidden border-emerald-500/15">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone={etherfuse.data?.configured ? 'ready' : 'warning'}>{etherfuse.data?.configured ? 'Etherfuse configurada' : 'aguardando API key'}</Badge>
+              <Badge tone="neutral">{etherfuse.data?.network ?? 'testnet'}</Badge>
+              <Badge tone="neutral">{fiatCurrency} onramp</Badge>
+            </div>
+            <h2 className="mt-3 font-bricolage text-2xl font-bold text-white">Anchor Etherfuse antes do x402</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-400">
+              Este bloco chama os endpoints reais `/v1/etherfuse/*` no backend. A chave da Etherfuse fica no servidor; se o provedor negar customer, bank account ou quote, o erro aparece aqui em vez de fingir liquidacao.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/5 bg-black/25 p-4 xl:w-72">
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Wallet destino</p>
+            <p className="mt-2 break-all font-mono text-xs text-emerald-100">{anchorWallet}</p>
+            <p className="mt-2 text-xs text-neutral-500">A Etherfuse abastece esta wallet; o x402 cobra desta trilha na Stellar.</p>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-3">
+            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">Stellar public key</label>
+            <input
+              value={anchorWallet}
+              onChange={(event) => setAnchorWallet(event.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-3 font-mono text-xs text-emerald-100 outline-none focus:border-emerald-500"
+            />
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">Customer ID</label>
+                <input
+                  value={customerId}
+                  onChange={(event) => setCustomerId(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-3 font-mono text-xs text-neutral-200 outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">Bank account ID</label>
+                <input
+                  value={bankAccountId}
+                  onChange={(event) => setBankAccountId(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-3 font-mono text-xs text-neutral-200 outline-none focus:border-emerald-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-[0.45fr_0.55fr]">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">Valor fiat</label>
+                <input
+                  value={sourceAmount}
+                  onChange={(event) => setSourceAmount(event.target.value)}
+                  inputMode="decimal"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm font-bold text-white outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">Target asset</label>
+                <p className="mt-2 rounded-xl border border-white/10 bg-black/40 px-3 py-3 font-mono text-xs text-neutral-200">{shortAsset(targetAsset)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {[
+              {
+                key: 'onboarding' as const,
+                title: '0. Onboarding',
+                icon: 'solar:user-check-bold-duotone',
+                detail: onboardingUrl ? 'URL gerada para KYC/banco' : 'Vincula customer, banco e wallet',
+                action: createOnboardingUrl,
+                disabled: false,
+              },
+              {
+                key: 'assets' as const,
+                title: '1. Assets',
+                icon: 'solar:database-bold-duotone',
+                detail: assets.length ? `${assets.length} asset(s) retornados` : 'Descobre USDC/rails disponiveis',
+                action: discoverEtherfuseAssets,
+                disabled: false,
+              },
+              {
+                key: 'quote' as const,
+                title: '2. Quote',
+                icon: 'solar:tag-price-bold-duotone',
+                detail: quoteId ? previewPublicKey(quoteId) : `${sourceAmount || '100'} ${fiatCurrency} -> USDC`,
+                action: createQuote,
+                disabled: false,
+              },
+              {
+                key: 'order' as const,
+                title: '3. Order',
+                icon: 'solar:bill-list-bold-duotone',
+                detail: orderId ? previewPublicKey(orderId) : 'Converte quote em ordem Etherfuse',
+                action: createOrder,
+                disabled: !quoteId,
+              },
+              {
+                key: 'fiat' as const,
+                title: '4. Fiat recebido',
+                icon: 'solar:card-recive-bold-duotone',
+                detail: anchorOrder?.status ? String(anchorOrder.status) : 'Confirma recebimento no ambiente de teste',
+                action: simulateFiatReceived,
+                disabled: !orderId,
+              },
+            ].map((step) => (
+              <button
+                key={step.key}
+                type="button"
+                onClick={step.action}
+                disabled={step.disabled || anchorLoading !== null}
+                className="rounded-2xl border border-white/5 bg-black/25 p-4 text-left transition-colors hover:border-emerald-500/25 hover:bg-emerald-500/5 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <Icon icon={step.icon} className="text-2xl text-emerald-300" />
+                  {anchorLoading === step.key ? <Icon icon="solar:refresh-circle-bold" className="text-xl text-amber-300" /> : <Icon icon="solar:round-arrow-right-up-bold" className="text-xl text-neutral-500" />}
+                </div>
+                <p className="mt-3 text-sm font-bold text-white">{anchorLoading === step.key ? 'Chamando...' : step.title}</p>
+                <p className="mt-1 break-words text-xs leading-5 text-neutral-500">{step.detail}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {anchorError && <p className="mt-5 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">{anchorError}</p>}
+
+        {onboardingUrl && (
+          <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">Onboarding Etherfuse</p>
+              <p className="mt-1 break-all text-xs text-emerald-100">{onboardingUrl}</p>
+              <p className="mt-2 text-xs text-neutral-500">Abra esta URL, conclua KYC/conta bancaria de teste e depois rode Quote e Order com os mesmos IDs.</p>
+            </div>
+            <a href={onboardingUrl} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black hover:bg-emerald-400">
+              Abrir onboarding
+              <Icon icon="solar:arrow-right-up-bold" />
+            </a>
+          </div>
+        )}
+
+        <div className="mt-5 grid gap-4 xl:grid-cols-[0.45fr_0.55fr]">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Provider</p>
+              <p className="mt-2 text-sm font-bold text-white">{etherfuse.data?.mode ?? 'ambiente de teste'}</p>
+              <p className="mt-1 text-xs text-neutral-500">{etherfuse.loading ? 'checando...' : etherfuse.error ?? 'via backend Kivo'}</p>
+            </div>
+            <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Quote</p>
+              <p className="mt-2 text-sm font-bold text-white">{quoteId ? 'criada' : 'pendente'}</p>
+              <p className="mt-1 break-all text-xs text-neutral-500">{quoteId ?? 'sem quoteId ainda'}</p>
+            </div>
+            <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Order</p>
+              <p className="mt-2 text-sm font-bold text-white">{anchorOrder?.status ? String(anchorOrder.status) : 'pendente'}</p>
+              <p className="mt-1 break-all text-xs text-neutral-500">{orderId ?? 'sem orderId ainda'}</p>
+            </div>
+          </div>
+          <details className="rounded-2xl border border-white/5 bg-black/25 p-4">
+            <summary className="cursor-pointer text-sm font-bold text-white">Ver payload tecnico</summary>
+            <pre className="mt-4 max-h-52 overflow-auto whitespace-pre-wrap break-all rounded-2xl border border-white/5 bg-black/35 p-4 text-xs text-emerald-100">
+              {previewEtherfuseJson(anchorPreview)}
+            </pre>
+          </details>
+        </div>
+      </Card>
 
       <section className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
         <Card className="min-w-0">
@@ -159,7 +517,7 @@ export default function CheckoutPage() {
           <div className="mt-6 grid gap-4 lg:grid-cols-3">
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Anchor</p>
-              <p className="mt-2 text-sm font-bold text-white">Etherfuse {etherfuse.data?.mode ?? 'sandbox'}</p>
+              <p className="mt-2 text-sm font-bold text-white">Etherfuse {etherfuse.data?.mode ?? 'ambiente de teste'}</p>
               <p className="mt-1 text-xs text-neutral-500">{etherfuse.loading ? 'checando status...' : etherfuse.error ?? (etherfuse.data?.configured ? 'configurado no backend' : 'aguardando secrets')}</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
@@ -169,7 +527,7 @@ export default function CheckoutPage() {
             </div>
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Moeda base</p>
-              <p className="mt-2 text-sm font-bold text-white">{etherfuse.data?.default_fiat ?? 'MXN'}</p>
+              <p className="mt-2 text-sm font-bold text-white">{fiatCurrency}</p>
               <p className="mt-1 text-xs text-neutral-500">conversao anchor-side</p>
             </div>
           </div>
@@ -212,7 +570,7 @@ export default function CheckoutPage() {
                 Enviar pagamento e liberar
                 <Icon icon="solar:lock-keyhole-unlocked-bold" />
               </button>
-              <p className="text-xs text-neutral-500">Sem XDR assinado, o backend retorna erro em vez de simular sucesso.</p>
+              <p className="text-xs text-neutral-500">Sem XDR assinado, o backend retorna erro em vez de marcar sucesso.</p>
             </div>
           </div>
 

@@ -71,7 +71,7 @@ export default function X402Page() {
         asset,
         maxTimeout,
         enabled: true,
-        description: 'Regra operacional do playground x402.',
+        description: 'Regra operacional para recursos protegidos por x402.',
       });
       notify({ type: 'success', title: 'Regra x402 salva', message: `${rule.amount} em ${rule.resource}` });
       await pricing.reload();
@@ -110,9 +110,9 @@ if (initial.status === 402) {
     <div className="space-y-8">
       <PageHeader
         eyebrow="HTTP 402"
-        title="x402 Playground"
+        title="x402 Rules"
         icon="solar:shield-keyhole-bold-duotone"
-        description="Bancada tecnica para validar pricing rules, challenge, XDR assinado, header X-PAYMENT e recurso liberado no backend real."
+        description="Configure protected resources and inspect payment headers for advanced integrations."
       />
       <WorkspaceContextBanner
         eyebrow="Ponte usuario final + integrador"
@@ -121,7 +121,7 @@ if (initial.status === 402) {
         tone="active"
         description="O usuario final usa Checkout. Aqui o integrador configura recurso, preco, timeout, asset USDC e inspeciona os headers que o cliente precisa implementar."
         checkpoints={['Pricing rule', 'HTTP 402', 'Retry com X-PAYMENT']}
-        primaryAction={{ to: '/checkout', label: 'Ver checkout' }}
+        primaryAction={{ to: '/checkout', label: 'Testar pagamento' }}
         secondaryAction={{ to: '/integrations', label: 'Hub integrador' }}
       />
 

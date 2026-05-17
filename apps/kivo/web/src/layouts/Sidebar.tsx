@@ -5,35 +5,21 @@ import { useAuthStore, useUIStore } from '@/stores';
 
 const navGroups = [
   {
-    title: 'Workspace',
+    title: 'Produto',
     items: [
-      { to: '/dashboard', icon: 'solar:home-angle-bold-duotone', label: 'Inicio' },
-      { to: '/team', icon: 'solar:users-group-rounded-bold-duotone', label: 'Time e escala' },
+      { to: '/dashboard', icon: 'solar:home-angle-bold-duotone', label: 'Home' },
+      { to: '/create-flow', icon: 'solar:add-circle-bold-duotone', label: 'Create Flow' },
+      { to: '/flows', icon: 'solar:bolt-circle-bold-duotone', label: 'Flows' },
+      { to: '/payments', icon: 'solar:wallet-money-bold-duotone', label: 'Payments' },
+      { to: '/advanced', icon: 'solar:settings-bold-duotone', label: 'Advanced' },
     ],
   },
   {
-    title: 'Jornadas',
+    title: 'Atalhos',
     items: [
+      { to: '/checkout', icon: 'solar:card-transfer-bold-duotone', label: 'Test Payment' },
       { to: '/operations', icon: 'solar:devices-bold-duotone', label: 'Operacao' },
-      { to: '/checkout', icon: 'solar:card-transfer-bold-duotone', label: 'Checkout x402' },
-      { to: '/integrations', icon: 'solar:code-square-bold-duotone', label: 'Integracao' },
-      { to: '/finance', icon: 'solar:chart-square-bold-duotone', label: 'Financeiro' },
-    ],
-  },
-  {
-    title: 'Avancado',
-    items: [
-      { to: '/ops-dashboard', icon: 'solar:widget-5-bold-duotone', label: 'Console tecnico' },
-      { to: '/devices', icon: 'solar:devices-bold-duotone', label: 'Devices' },
-      { to: '/payments', icon: 'solar:wallet-money-bold-duotone', label: 'Pagamentos' },
-      { to: '/templates', icon: 'solar:bolt-circle-bold-duotone', label: 'Templates' },
-      { to: '/api-keys', icon: 'solar:key-minimalistic-bold-duotone', label: 'API Keys' },
-      { to: '/webhooks', icon: 'solar:widget-2-bold-duotone', label: 'Webhooks' },
-      { to: '/mcp', icon: 'solar:cpu-bolt-bold-duotone', label: 'MCP Console' },
-      { to: '/x402', icon: 'solar:shield-keyhole-bold-duotone', label: 'x402 Playground' },
-      { to: '/workflows', icon: 'solar:routing-2-bold-duotone', label: 'Workflows' },
-      { to: '/deploy', icon: 'solar:rocket-bold-duotone', label: 'Deploy' },
-      { to: '/settings', icon: 'solar:settings-bold-duotone', label: 'Configuracoes' },
+      { to: '/finance', icon: 'solar:chart-square-bold-duotone', label: 'Finance' },
     ],
   },
 ];
@@ -65,7 +51,7 @@ export default function Sidebar() {
           <p className="mt-1 text-[11px] text-neutral-500">{user.email}</p>
           <div className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-            Testnet ativa
+            Solo workspace
           </div>
         </div>
       )}

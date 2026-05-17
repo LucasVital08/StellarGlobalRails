@@ -36,7 +36,7 @@ export const x402CheckoutResources: X402CheckoutResource[] = [
     resource: '/api/x402/data',
     detail: 'Libera o recibo tecnico de uma sessao de recarga depois do pagamento.',
     outcome: 'Acesso ao recibo, kWh consumidos e prova de liquidacao.',
-    settlementRail: 'Etherfuse sandbox + Stellar testnet',
+    settlementRail: 'Etherfuse testnet + Stellar testnet',
     icon: 'solar:electric-refueling-bold-duotone',
   },
   {
@@ -46,7 +46,7 @@ export const x402CheckoutResources: X402CheckoutResource[] = [
     resource: '/api/x402/data?dataset=iot',
     detail: 'Libera uma amostra premium de sensores para integradores ou agentes.',
     outcome: 'Dataset assinado, timestamp e evento de entrega.',
-    settlementRail: 'Etherfuse sandbox + Stellar testnet',
+    settlementRail: 'Etherfuse testnet + Stellar testnet',
     icon: 'solar:server-square-cloud-bold-duotone',
   },
   {
@@ -56,7 +56,7 @@ export const x402CheckoutResources: X402CheckoutResource[] = [
     resource: '/api/x402/data?tool=agent',
     detail: 'Libera uma chamada protegida por x402 para um agente continuar a tarefa.',
     outcome: 'Resposta premium, payment header e hash Stellar.',
-    settlementRail: 'Etherfuse sandbox + Stellar testnet',
+    settlementRail: 'Etherfuse testnet + Stellar testnet',
     icon: 'solar:cpu-bolt-bold-duotone',
   },
 ];

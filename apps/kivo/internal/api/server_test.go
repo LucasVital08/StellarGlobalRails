@@ -251,6 +251,75 @@ func TestEtherfuseStatusAndWebhookContract(t *testing.T) {
 	}
 }
 
+func TestEtherfuseOnboardingURLProxy(t *testing.T) {
+	var forwardedPath string
+	var forwardedBody map[string]any
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		forwardedPath = r.URL.Path
+		if err := json.NewDecoder(r.Body).Decode(&forwardedBody); err != nil {
+			t.Fatalf("decode forwarded body: %v", err)
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"presigned_url": "https://onboard.etherfuse.example/session"})
+	}))
+	t.Cleanup(upstream.Close)
+
+	server := NewServer(NewMemoryStore(), Config{
+		Version:          "test",
+		EtherfuseMode:    "sandbox",
+		EtherfuseBaseURL: upstream.URL,
+		EtherfuseAPIKey:  "secret",
+	})
+
+	result := doJSON(t, server, http.MethodPost, "/v1/etherfuse/onboarding-url", map[string]any{
+		"customerId":    "2a1d9134-e6d0-4b7e-bf88-00b79c25155b",
+		"bankAccountId": "80dd9b70-581f-4b43-b634-b4cfdd481d6d",
+		"publicKey":     "GDESTINATION",
+		"blockchain":    "stellar",
+	})
+
+	if forwardedPath != "/ramp/onboarding-url" {
+		t.Fatalf("unexpected Etherfuse path: %s", forwardedPath)
+	}
+	if forwardedBody["customerId"] != "2a1d9134-e6d0-4b7e-bf88-00b79c25155b" {
+		t.Fatalf("expected onboarding payload to be forwarded, got %#v", forwardedBody)
+	}
+	if result["presigned_url"] == "" {
+		t.Fatalf("expected onboarding url response, got %#v", result)
+	}
+}
+
+func TestEtherfuseSandboxFiatReceivedUsesDocumentedOrderID(t *testing.T) {
+	var forwardedPath string
+	var forwardedBody map[string]any
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		forwardedPath = r.URL.Path
+		if err := json.NewDecoder(r.Body).Decode(&forwardedBody); err != nil {
+			t.Fatalf("decode forwarded body: %v", err)
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"orderId": forwardedBody["orderId"], "status": "funded"})
+	}))
+	t.Cleanup(upstream.Close)
+
+	server := NewServer(NewMemoryStore(), Config{
+		Version:          "test",
+		EtherfuseMode:    "sandbox",
+		EtherfuseBaseURL: upstream.URL,
+		EtherfuseAPIKey:  "secret",
+	})
+
+	result := doJSON(t, server, http.MethodPost, "/v1/etherfuse/orders/ed14a9d7-f9be-4584-8f11-527d32ddab31/simulate-fiat-received", nil)
+
+	if forwardedPath != "/ramp/order/fiat_received" {
+		t.Fatalf("unexpected Etherfuse path: %s", forwardedPath)
+	}
+	if forwardedBody["orderId"] != "ed14a9d7-f9be-4584-8f11-527d32ddab31" {
+		t.Fatalf("expected Etherfuse sandbox orderId field, got %#v", forwardedBody)
+	}
+	if result["status"] != "funded" {
+		t.Fatalf("expected upstream response to be forwarded, got %#v", result)
+	}
+}
+
 func doJSON(t *testing.T, handler http.Handler, method string, path string, body any) map[string]any {
 	t.Helper()
 

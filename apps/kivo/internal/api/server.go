@@ -472,6 +472,8 @@ func (s *Server) handleEtherfuse(w http.ResponseWriter, r *http.Request, rest st
 		writeJSON(w, http.StatusOK, s.etherfuseStatus())
 	case rest == "assets" && r.Method == http.MethodGet:
 		s.handleEtherfuseAssets(w, r)
+	case rest == "onboarding-url" && r.Method == http.MethodPost:
+		s.proxyEtherfusePOST(w, r, "/ramp/onboarding-url")
 	case rest == "quotes" && r.Method == http.MethodPost:
 		s.proxyEtherfusePOST(w, r, "/ramp/quote")
 	case rest == "orders" && r.Method == http.MethodPost:
@@ -479,8 +481,9 @@ func (s *Server) handleEtherfuse(w http.ResponseWriter, r *http.Request, rest st
 	case strings.HasPrefix(rest, "orders/") && r.Method == http.MethodGet:
 		orderID := strings.TrimPrefix(rest, "orders/")
 		s.proxyEtherfuseGET(w, r, "/ramp/order/"+url.PathEscape(orderID), nil)
-	case strings.HasPrefix(rest, "orders/") && strings.HasSuffix(rest, "/fiat-received") && r.Method == http.MethodPost:
-		orderID := strings.TrimSuffix(strings.TrimPrefix(rest, "orders/"), "/fiat-received")
+	case strings.HasPrefix(rest, "orders/") && r.Method == http.MethodPost && (strings.HasSuffix(rest, "/fiat-received") || strings.HasSuffix(rest, "/simulate-fiat-received")):
+		orderID := strings.TrimPrefix(rest, "orders/")
+		orderID = strings.TrimSuffix(strings.TrimSuffix(orderID, "/simulate-fiat-received"), "/fiat-received")
 		s.handleEtherfuseFiatReceived(w, r, orderID)
 	case rest == "webhook" && r.Method == http.MethodPost:
 		s.handleEtherfuseWebhook(w, r)
@@ -530,7 +533,7 @@ func (s *Server) handleEtherfuseFiatReceived(w http.ResponseWriter, r *http.Requ
 		writeError(w, http.StatusPreconditionFailed, "etherfuse_not_configured", "ETHERFUSE_API_KEY is required")
 		return
 	}
-	body := map[string]any{"order_id": orderID}
+	body := map[string]any{"orderId": orderID}
 	payload, _ := json.Marshal(body)
 	req, err := http.NewRequest(http.MethodPost, s.cfg.EtherfuseBaseURL+"/ramp/order/fiat_received", bytes.NewReader(payload))
 	if err != nil {
