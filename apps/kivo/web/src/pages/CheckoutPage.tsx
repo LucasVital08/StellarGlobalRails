@@ -214,7 +214,7 @@ export default function CheckoutPage() {
 
   const simulateFiatReceived = () => {
     if (!orderId) {
-      setAnchorError('Crie uma order Etherfuse antes de simular fiat recebido.');
+      setAnchorError('Crie uma order Etherfuse antes de avancar sandbox Etherfuse.');
       return;
     }
 
@@ -257,11 +257,11 @@ export default function CheckoutPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Usuario final"
-        title="Pagar recurso protegido"
+        eyebrow="Test Payment"
+        title="Teste o pagamento do flow"
         icon="solar:card-transfer-bold-duotone"
-        description="Fluxo MVP do cliente: Etherfuse prepara liquidez na wallet Stellar testnet, o Kivo emite o challenge x402 e o recurso so abre com X-PAYMENT valido."
-        action={<Link to="/x402" className="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white hover:bg-white/5">Playground tecnico</Link>}
+        description="Use este passo para validar funding, challenge x402, assinatura Stellar e liberacao do recurso antes de publicar."
+        action={<Link to="/x402" className="rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white hover:bg-white/5">Advanced x402</Link>}
       />
 
       <Card className="min-w-0 overflow-hidden border-emerald-500/15">
@@ -424,7 +424,12 @@ export default function CheckoutPage() {
               <p className="mt-1 break-all text-xs text-neutral-500">{orderId ?? 'sem orderId ainda'}</p>
             </div>
           </div>
-          <pre className="max-h-52 overflow-auto whitespace-pre-wrap break-all rounded-2xl border border-white/5 bg-black/35 p-4 text-xs text-emerald-100">{previewEtherfuseJson(anchorPreview)}</pre>
+          <details className="rounded-2xl border border-white/5 bg-black/25 p-4">
+            <summary className="cursor-pointer text-sm font-bold text-white">Ver payload tecnico</summary>
+            <pre className="mt-4 max-h-52 overflow-auto whitespace-pre-wrap break-all rounded-2xl border border-white/5 bg-black/35 p-4 text-xs text-emerald-100">
+              {previewEtherfuseJson(anchorPreview)}
+            </pre>
+          </details>
         </div>
       </Card>
 
@@ -565,7 +570,7 @@ export default function CheckoutPage() {
                 Enviar pagamento e liberar
                 <Icon icon="solar:lock-keyhole-unlocked-bold" />
               </button>
-              <p className="text-xs text-neutral-500">Sem XDR assinado, o backend retorna erro em vez de simular sucesso.</p>
+              <p className="text-xs text-neutral-500">Sem XDR assinado, o backend retorna erro em vez de marcar sucesso.</p>
             </div>
           </div>
 
