@@ -1,5 +1,6 @@
 import type {
   Device,
+  CreateFlowDraft,
   KivoFlow,
   KivoFlowUnit,
   KivoTemplate,
@@ -74,6 +75,19 @@ export function getTemplateById(id: KivoTemplateId): KivoTemplate {
   }
 
   return template;
+}
+
+export function createDefaultFlowDraft(templateId: KivoTemplateId): CreateFlowDraft {
+  const template = getTemplateById(templateId);
+  const slug = slugify(template.defaultResourceName);
+
+  return {
+    templateId,
+    name: template.defaultResourceName,
+    price: template.defaultPrice,
+    unit: template.defaultUnit,
+    resource: buildDefaultResourcePath(templateId, slug),
+  };
 }
 
 export function buildIntegrationSnippet(input: IntegrationSnippetInput): string {
@@ -234,6 +248,25 @@ function getDeviceTemplateId(device: Device): KivoTemplateId {
 
 function isKivoTemplateId(value: string | undefined): value is KivoTemplateId {
   return soloMvpTemplates.some((template) => template.id === value);
+}
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function buildDefaultResourcePath(templateId: KivoTemplateId, slug: string): string {
+  if (templateId === 'device-pay-ev-charging') {
+    return `/devices/${slug}/session`;
+  }
+
+  if (templateId === 'iot-data-feed') {
+    return `/data/${slug}`;
+  }
+
+  return `/api/${slug}`;
 }
 
 function sumConfirmedUsdc(payments: Payment[]): number {

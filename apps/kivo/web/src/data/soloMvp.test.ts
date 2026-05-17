@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildIntegrationSnippet,
+  createDefaultFlowDraft,
   deriveSoloFlows,
   getTemplateById,
   soloMvpTemplates,
@@ -88,6 +89,15 @@ describe('soloMvp', () => {
 
   it('finds templates by id', () => {
     expect(getTemplateById('paid-api-endpoint').name).toBe('Paid API Endpoint');
+  });
+
+  it('creates a default draft from a template', () => {
+    const draft = createDefaultFlowDraft('device-pay-ev-charging');
+
+    expect(draft.name).toBe('Garage charger');
+    expect(draft.price).toBe('0.50');
+    expect(draft.unit).toBe('kWh');
+    expect(draft.resource).toBe('/devices/garage-charger/session');
   });
 
   it('derives pricing-rule flows for x402 resources', () => {
