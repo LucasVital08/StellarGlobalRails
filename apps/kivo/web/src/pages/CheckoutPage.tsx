@@ -367,7 +367,7 @@ export default function CheckoutPage() {
                 key: 'fiat' as const,
                 title: '4. Fiat recebido',
                 icon: 'solar:card-recive-bold-duotone',
-                detail: anchorOrder?.status ? String(anchorOrder.status) : 'Avanca o sandbox da Etherfuse',
+                detail: anchorOrder?.status ? String(anchorOrder.status) : 'Confirma recebimento no ambiente de teste',
                 action: simulateFiatReceived,
                 disabled: !orderId,
               },
