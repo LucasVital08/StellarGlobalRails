@@ -1,13 +1,17 @@
 import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout';
 import AuthGuard from '@/layouts/AuthGuard';
+import AdvancedPage from '@/pages/AdvancedPage';
 import ApiKeysPage from '@/pages/ApiKeysPage';
 import CheckoutPage from '@/pages/CheckoutPage';
+import CreateFlowPage from '@/pages/CreateFlowPage';
 import DashboardPage from '@/pages/DashboardPage';
 import DeployPage from '@/pages/DeployPage';
 import DeviceDetailPage from '@/pages/DeviceDetailPage';
 import DevicesPage from '@/pages/DevicesPage';
 import FinancePage from '@/pages/FinancePage';
+import FlowDetailPage from '@/pages/FlowDetailPage';
+import FlowsPage from '@/pages/FlowsPage';
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
 import IntegrationsPage from '@/pages/IntegrationsPage';
 import LoginPage from '@/pages/LoginPage';
@@ -36,6 +40,10 @@ export default function App() {
           <Route element={<AuthGuard />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<WorkspaceHomePage />} />
+            <Route path="create-flow" element={<CreateFlowPage />} />
+            <Route path="flows" element={<FlowsPage />} />
+            <Route path="flows/:id" element={<FlowDetailPage />} />
+            <Route path="advanced" element={<AdvancedPage />} />
             <Route path="operations" element={<OperationsPage />} />
             <Route path="checkout" element={<CheckoutPage />} />
             <Route path="integrations" element={<IntegrationsPage />} />

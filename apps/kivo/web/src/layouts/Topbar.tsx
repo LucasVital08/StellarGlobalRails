@@ -4,6 +4,9 @@ import { useAuthStore, useUIStore } from '@/stores';
 
 const routeTitles: Record<string, { title: string; icon: string }> = {
   '/dashboard': { title: 'Inicio', icon: 'solar:home-angle-bold-duotone' },
+  '/create-flow': { title: 'Create Flow', icon: 'solar:add-circle-bold-duotone' },
+  '/flows': { title: 'Flows', icon: 'solar:bolt-circle-bold-duotone' },
+  '/advanced': { title: 'Advanced', icon: 'solar:settings-bold-duotone' },
   '/team': { title: 'Time e escala', icon: 'solar:users-group-rounded-bold-duotone' },
   '/operations': { title: 'Operacao', icon: 'solar:devices-bold-duotone' },
   '/checkout': { title: 'Checkout x402', icon: 'solar:card-transfer-bold-duotone' },
@@ -41,7 +44,7 @@ export default function Topbar() {
         </div>
         <div className="min-w-0">
           <h1 className="truncate font-bricolage text-xl font-bold text-white">{info.title}</h1>
-          <p className="hidden text-xs text-neutral-500 sm:block">Workspace M2M, x402 e Stellar para equipes reais</p>
+          <p className="hidden text-xs text-neutral-500 sm:block">Monetize machines, APIs and data streams with x402</p>
         </div>
       </div>
 
