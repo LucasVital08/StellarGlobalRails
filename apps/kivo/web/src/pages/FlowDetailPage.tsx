@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { buildIntegrationSnippet, deriveSoloFlows } from '@/data/soloMvp';
+import { buildIntegrationSnippet, deriveSoloFlows, isDirectPricingRulePayment } from '@/data/soloMvp';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import type { KivoFlow, KivoFlowStatus, Payment } from '@/types/kivo';
@@ -274,14 +274,10 @@ export default function FlowDetailPage() {
               <div className="min-w-0">
                 <h2 className="font-bricolage text-xl font-bold text-white">Pagamentos relacionados</h2>
                 <p className="mt-1 text-sm leading-6 text-neutral-500">
-                  {paymentMatches.isHeuristic
-                    ? 'Pagamentos com perfil compativel com este tipo de recurso.'
-                    : 'Transacoes associadas ao device ou ao recurso deste flow.'}
+                  Transacoes associadas ao device ou ao resource deste flow.
                 </p>
               </div>
-              <Badge tone={paymentMatches.isHeuristic ? 'warning' : 'neutral'}>
-                {paymentMatches.isHeuristic ? `${relatedPayments.length} possiveis` : `${relatedPayments.length} registros`}
-              </Badge>
+              <Badge tone="neutral">{relatedPayments.length} registros</Badge>
             </div>
 
             {relatedPayments.length ? (
@@ -365,26 +361,8 @@ function findRelatedPayments(payments: Payment[], flow: KivoFlow) {
 
   const directMatches = payments.filter((payment) => isDirectPricingRulePayment(payment, flow));
 
-  if (directMatches.length > 0) {
-    return {
-      payments: directMatches.sort((left, right) => sortByNewest(left.createdAt, right.createdAt)),
-      isHeuristic: false,
-    };
-  }
-
   return {
-    payments: payments
-      .filter((payment) => ['service_complete', 'none'].includes(payment.conditionType) && Boolean(payment.status))
-      .sort((left, right) => sortByNewest(left.createdAt, right.createdAt)),
-    isHeuristic: true,
+    payments: directMatches.sort((left, right) => sortByNewest(left.createdAt, right.createdAt)),
+    isHeuristic: false,
   };
-}
-
-function isDirectPricingRulePayment(payment: Payment, flow: KivoFlow) {
-  const memo = payment.memo?.toLowerCase() ?? '';
-  const resourceMatch = memo.includes(flow.resource.toLowerCase());
-  const ruleMatch = flow.pricingRuleId ? memo.includes(flow.pricingRuleId.toLowerCase()) : false;
-  const nameMatch = memo.includes(flow.name.toLowerCase());
-
-  return resourceMatch || ruleMatch || nameMatch;
 }

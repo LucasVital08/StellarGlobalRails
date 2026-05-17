@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildIntegrationSnippet,
   createDefaultFlowDraft,
+  createFlowRoute,
   deriveSoloFlows,
   getTemplateById,
   soloMvpTemplates,
@@ -15,7 +16,13 @@ const device: Device = {
   apiKeyPreview: 'kivo_dev_1234',
   stellarPublicKey: 'GDEVICEPUBLICKEY',
   status: 'active',
-  metadata: { location: 'Garage', templateId: 'device-pay-ev-charging' },
+  metadata: {
+    location: 'Garage',
+    price: '0.75',
+    resource: '/devices/charger-a1/session',
+    templateId: 'device-pay-ev-charging',
+    unit: 'session',
+  },
   balances: [{ assetCode: 'USDC', amount: '10.5' }],
   createdAt: '2026-05-17T10:00:00Z',
   updatedAt: '2026-05-17T10:00:00Z',
@@ -42,6 +49,19 @@ const payment: Payment = {
   conditionValue: '1',
   status: 'confirmed',
   createdAt: '2026-05-17T11:00:00Z',
+  events: [],
+};
+
+const pricingRulePayment: Payment = {
+  id: 'pay_x402_1',
+  fromDeviceId: 'dev_customer',
+  toDeviceId: 'kivo_platform',
+  amount: '0.05',
+  assetCode: 'USDC',
+  conditionType: 'service_complete',
+  status: 'confirmed',
+  memo: 'paid access to /api/x402/data',
+  createdAt: '2026-05-17T11:30:00Z',
   events: [],
 };
 
@@ -92,6 +112,9 @@ describe('soloMvp', () => {
       id: 'flow_dev_ev_1',
       templateId: 'device-pay-ev-charging',
       status: 'active',
+      price: '0.75',
+      unit: 'session',
+      resource: '/devices/charger-a1/session',
       revenueUsdc: 0.5,
       paymentsCount: 1,
       sessionsCount: 1,
@@ -112,6 +135,10 @@ describe('soloMvp', () => {
     expect(draft.resource).toBe('/devices/garage-charger/session');
   });
 
+  it('builds template-aware create flow routes', () => {
+    expect(createFlowRoute('paid-api-endpoint')).toBe('/create-flow?template=paid-api-endpoint');
+  });
+
   it('derives pricing-rule flows for x402 resources', () => {
     const [flow] = deriveSoloFlows({
       devices: [],
@@ -125,6 +152,22 @@ describe('soloMvp', () => {
       status: 'active',
       unit: 'reading',
       resource: '/api/x402/data',
+    });
+  });
+
+  it('aggregates direct pricing-rule payments by memo resource', () => {
+    const [flow] = deriveSoloFlows({
+      devices: [],
+      payments: [pricingRulePayment],
+      pricingRules: [pricingRule],
+    });
+
+    expect(flow).toMatchObject({
+      revenueUsdc: 0.05,
+      sessionsCount: 1,
+      paymentsCount: 1,
+      failedPaymentsCount: 0,
+      lastActivityAt: '2026-05-17T11:30:00Z',
     });
   });
 });

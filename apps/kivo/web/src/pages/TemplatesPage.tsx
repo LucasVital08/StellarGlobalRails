@@ -3,9 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
-import { soloMvpTemplates } from '@/data/soloMvp';
-
-const createFlowRoute = (templateId: string) => `/create-flow?template=${templateId}`;
+import { createFlowRoute, soloMvpTemplates } from '@/data/soloMvp';
 
 export default function TemplatesPage() {
   return (

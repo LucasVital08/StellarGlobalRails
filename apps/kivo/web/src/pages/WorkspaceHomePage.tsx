@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatCard } from '@/components/ui/StatCard';
-import { deriveSoloFlows, soloMvpTemplates } from '@/data/soloMvp';
+import { createFlowRoute, deriveSoloFlows, soloMvpTemplates } from '@/data/soloMvp';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { useAuthStore } from '@/stores';
@@ -237,7 +237,7 @@ export default function WorkspaceHomePage() {
             {soloMvpTemplates.map((template) => (
               <Link
                 key={template.id}
-                to="/create-flow"
+                to={createFlowRoute(template.id)}
                 className="group rounded-2xl border border-white/5 bg-black/25 p-4 transition hover:border-emerald-400/35 hover:bg-white/[0.04]"
               >
                 <div className="flex items-start justify-between gap-3">

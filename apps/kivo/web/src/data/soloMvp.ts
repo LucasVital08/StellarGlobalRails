@@ -54,6 +54,10 @@ export const soloMvpTemplates: KivoTemplate[] = [
   },
 ];
 
+export const KIVO_DEFAULT_USDC_ASSET = 'USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
+
+const kivoFlowUnits: KivoFlowUnit[] = ['session', 'kWh', 'minute', 'request', 'reading', 'package'];
+
 interface IntegrationSnippetInput {
   templateId: KivoTemplateId;
   resource?: string;
@@ -65,6 +69,14 @@ interface DeriveSoloFlowsInput {
   devices: Device[];
   payments: Payment[];
   pricingRules: X402PricingRule[];
+}
+
+interface PricingRulePaymentTarget {
+  id?: string;
+  pricingRuleId?: string;
+  resource: string;
+  description?: string;
+  name?: string;
 }
 
 export function getTemplateById(id: KivoTemplateId): KivoTemplate {
@@ -88,6 +100,10 @@ export function createDefaultFlowDraft(templateId: KivoTemplateId): CreateFlowDr
     unit: template.defaultUnit,
     resource: buildDefaultResourcePath(templateId, slug),
   };
+}
+
+export function createFlowRoute(templateId: KivoTemplateId): string {
+  return `/create-flow?template=${encodeURIComponent(templateId)}`;
 }
 
 export function buildIntegrationSnippet(input: IntegrationSnippetInput): string {
@@ -147,14 +163,35 @@ export async function publishReading(reading: Record<string, unknown>) {
 
 export function deriveSoloFlows(input: DeriveSoloFlowsInput): KivoFlow[] {
   const deviceFlows = input.devices.map((device) => buildDeviceFlow(device, input.payments));
-  const pricingRuleFlows = input.pricingRules.map(buildPricingRuleFlow);
+  const pricingRuleFlows = input.pricingRules.map((rule) => buildPricingRuleFlow(rule, input.payments));
 
   return [...deviceFlows, ...pricingRuleFlows];
+}
+
+export function isDirectPricingRulePayment(payment: Payment, target: PricingRulePaymentTarget): boolean {
+  const memo = payment.memo?.toLowerCase() ?? '';
+
+  if (!memo) {
+    return false;
+  }
+
+  const searchableTokens = [
+    target.resource,
+    target.id,
+    target.pricingRuleId,
+    target.description,
+    target.name,
+  ]
+    .map((token) => token?.trim().toLowerCase())
+    .filter((token): token is string => Boolean(token));
+
+  return searchableTokens.some((token) => memo.includes(token));
 }
 
 function buildDeviceFlow(device: Device, payments: Payment[]): KivoFlow {
   const templateId = getDeviceTemplateId(device);
   const template = getTemplateById(templateId);
+  const unit = getDeviceFlowUnit(device, template.defaultUnit);
   const relatedPayments = payments.filter(
     (payment) => payment.fromDeviceId === device.id || payment.toDeviceId === device.id,
   );
@@ -166,9 +203,9 @@ function buildDeviceFlow(device: Device, payments: Payment[]): KivoFlow {
     templateId,
     name: device.name,
     status: device.status === 'active' ? 'active' : 'needs_setup',
-    price: template.defaultPrice,
-    unit: template.defaultUnit,
-    resource: device.metadata.location ?? template.defaultResourceName,
+    price: device.metadata.price ?? template.defaultPrice,
+    unit,
+    resource: device.metadata.resource ?? device.metadata.location ?? template.defaultResourceName,
     integrationMode: template.integrationMode,
     deviceId: device.id,
     revenueUsdc: sumConfirmedUsdc(confirmedPayments),
@@ -196,10 +233,13 @@ function buildDeviceFlow(device: Device, payments: Payment[]): KivoFlow {
   };
 }
 
-function buildPricingRuleFlow(rule: X402PricingRule): KivoFlow {
+function buildPricingRuleFlow(rule: X402PricingRule, payments: Payment[]): KivoFlow {
   const isDataResource = rule.resource.toLowerCase().includes('data');
   const template = getTemplateById(isDataResource ? 'iot-data-feed' : 'paid-api-endpoint');
   const unit: KivoFlowUnit = isDataResource ? 'reading' : 'request';
+  const relatedPayments = payments.filter((payment) => isDirectPricingRulePayment(payment, rule));
+  const confirmedPayments = relatedPayments.filter((payment) => payment.status === 'confirmed');
+  const failedPayments = relatedPayments.filter((payment) => payment.status === 'failed');
 
   return {
     id: `flow_${rule.id}`,
@@ -211,11 +251,11 @@ function buildPricingRuleFlow(rule: X402PricingRule): KivoFlow {
     resource: rule.resource,
     integrationMode: template.integrationMode,
     pricingRuleId: rule.id,
-    revenueUsdc: 0,
-    sessionsCount: 0,
-    paymentsCount: 0,
-    failedPaymentsCount: 0,
-    lastActivityAt: rule.updatedAt,
+    revenueUsdc: sumConfirmedUsdc(confirmedPayments),
+    sessionsCount: relatedPayments.length,
+    paymentsCount: relatedPayments.length,
+    failedPaymentsCount: failedPayments.length,
+    lastActivityAt: getLatestActivityAt([rule.updatedAt, ...relatedPayments.map((payment) => payment.createdAt)]),
     setupChecklist: [
       {
         id: 'pricing-configured',
@@ -248,6 +288,16 @@ function getDeviceTemplateId(device: Device): KivoTemplateId {
 
 function isKivoTemplateId(value: string | undefined): value is KivoTemplateId {
   return soloMvpTemplates.some((template) => template.id === value);
+}
+
+function getDeviceFlowUnit(device: Device, fallback: KivoFlowUnit): KivoFlowUnit {
+  const unit = device.metadata.unit;
+
+  if (kivoFlowUnits.includes(unit as KivoFlowUnit)) {
+    return unit as KivoFlowUnit;
+  }
+
+  return fallback;
 }
 
 function slugify(value: string): string {
