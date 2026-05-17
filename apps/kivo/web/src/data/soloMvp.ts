@@ -56,7 +56,7 @@ export const soloMvpTemplates: KivoTemplate[] = [
 
 interface IntegrationSnippetInput {
   templateId: KivoTemplateId;
-  resourceName?: string;
+  resource?: string;
   price?: string;
   unit?: KivoFlowUnit;
 }
@@ -92,7 +92,7 @@ export function createDefaultFlowDraft(templateId: KivoTemplateId): CreateFlowDr
 
 export function buildIntegrationSnippet(input: IntegrationSnippetInput): string {
   const template = getTemplateById(input.templateId);
-  const resourceName = input.resourceName ?? template.defaultResourceName;
+  const resource = input.resource ?? createDefaultFlowDraft(input.templateId).resource;
   const price = input.price ?? template.defaultPrice;
   const unit = input.unit ?? template.defaultUnit;
 
@@ -106,7 +106,7 @@ const kivo = new KivoGateway({
 
 export async function authorizeSession() {
   return kivo.authorize({
-    resource: ${JSON.stringify(resourceName)},
+    resource: ${JSON.stringify(resource)},
     amount: ${JSON.stringify(price)},
     unit: ${JSON.stringify(unit)},
   });
@@ -121,7 +121,7 @@ const paywall = new KivoPaywall({
 });
 
 export const GET = paywall.requirePayment({
-  resource: ${JSON.stringify(resourceName)},
+  resource: ${JSON.stringify(resource)},
   amount: ${JSON.stringify(price)},
   unit: ${JSON.stringify(unit)},
   handler: async () => Response.json({ unlocked: true }),
@@ -137,7 +137,7 @@ const feed = new KivoDataFeed({
 
 export async function publishReading(reading: Record<string, unknown>) {
   return feed.publishPaidReading({
-    resource: ${JSON.stringify(resourceName)},
+    resource: ${JSON.stringify(resource)},
     amount: ${JSON.stringify(price)},
     unit: ${JSON.stringify(unit)},
     reading,

@@ -58,7 +58,7 @@ describe('soloMvp', () => {
     for (const template of soloMvpTemplates) {
       const snippet = buildIntegrationSnippet({
         templateId: template.id,
-        resourceName: template.defaultResourceName,
+        resource: template.defaultResourceName,
         price: template.defaultPrice,
         unit: template.defaultUnit,
       });
@@ -66,6 +66,18 @@ describe('soloMvp', () => {
       expect(snippet).toContain('Kivo');
       expect(snippet).not.toMatch(/REPLACE_ME|YOUR_/i);
     }
+  });
+
+  it('uses the flow resource path in integration snippets', () => {
+    const snippet = buildIntegrationSnippet({
+      templateId: 'device-pay-ev-charging',
+      resource: '/devices/garage-charger/session',
+      price: '0.50',
+      unit: 'kWh',
+    });
+
+    expect(snippet).toContain('resource: "/devices/garage-charger/session"');
+    expect(snippet).not.toContain('resource: "Garage charger"');
   });
 
   it('derives a device flow from an active device and confirmed payment', () => {

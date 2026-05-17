@@ -26,7 +26,7 @@ export default function CreateFlowPage() {
     () =>
       buildIntegrationSnippet({
         templateId: draft.templateId,
-        resourceName: draft.name,
+        resource: draft.resource,
         price: draft.price,
         unit: draft.unit,
       }),
