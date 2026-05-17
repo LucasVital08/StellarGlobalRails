@@ -66,6 +66,95 @@ describe('HttpKivoApiClient', () => {
     expect(paid.stellarHash).toBe('hash_real');
   });
 
+  it('proxies Etherfuse quote creation through the Kivo API', async () => {
+    let requestedUrl = '';
+    let body = '';
+    const input = {
+      quoteId: '6edc1703-e8f6-47b1-a33a-ac776d01332a',
+      customerId: '2a1d9134-e6d0-4b7e-bf88-00b79c25155b',
+      blockchain: 'stellar' as const,
+      quoteAssets: {
+        type: 'onramp' as const,
+        sourceAsset: 'MXN',
+        targetAsset: 'USDC:GTEST',
+      },
+      sourceAmount: '100',
+      walletAddress: 'GDESTINATION',
+    };
+    const client = createKivoClient({
+      baseUrl: 'https://api.kivo.example',
+      fetcher: async (inputUrl, init) => {
+        requestedUrl = String(inputUrl);
+        body = String(init?.body);
+        return jsonResponse({ quoteId: input.quoteId, expiresAt: '2026-05-16T18:00:00Z' });
+      },
+    });
+
+    const quote = await client.createEtherfuseQuote(input);
+
+    expect(requestedUrl).toBe('https://api.kivo.example/v1/etherfuse/quotes');
+    expect(JSON.parse(body)).toEqual(input);
+    expect(quote.quoteId).toBe(input.quoteId);
+  });
+
+  it('creates Etherfuse onboarding URLs through the server-side proxy', async () => {
+    let requestedUrl = '';
+    let body = '';
+    const input = {
+      customerId: '2a1d9134-e6d0-4b7e-bf88-00b79c25155b',
+      bankAccountId: '80dd9b70-581f-4b43-b634-b4cfdd481d6d',
+      publicKey: 'GDESTINATION',
+      blockchain: 'stellar' as const,
+      userInfo: { email: 'operator@kivo.example', displayName: 'Kivo Operator' },
+    };
+    const client = createKivoClient({
+      baseUrl: 'https://api.kivo.example',
+      fetcher: async (inputUrl, init) => {
+        requestedUrl = String(inputUrl);
+        body = String(init?.body);
+        return jsonResponse({ presigned_url: 'https://onboard.etherfuse.example/session' });
+      },
+    });
+
+    const onboarding = await client.createEtherfuseOnboardingUrl(input);
+
+    expect(requestedUrl).toBe('https://api.kivo.example/v1/etherfuse/onboarding-url');
+    expect(JSON.parse(body)).toEqual(input);
+    expect(onboarding.presigned_url).toContain('etherfuse');
+  });
+
+  it('creates and advances Etherfuse sandbox orders through documented Kivo routes', async () => {
+    const requested: Array<{ url: string; method?: string; body?: string }> = [];
+    const client = createKivoClient({
+      baseUrl: 'https://api.kivo.example',
+      fetcher: async (inputUrl, init) => {
+        requested.push({ url: String(inputUrl), method: init?.method, body: String(init?.body ?? '') });
+        if (String(inputUrl).endsWith('/simulate-fiat-received')) {
+          return jsonResponse({ orderId: 'ed14a9d7-f9be-4584-8f11-527d32ddab31', status: 'funded' });
+        }
+        return jsonResponse({ orderId: 'ed14a9d7-f9be-4584-8f11-527d32ddab31', status: 'created' });
+      },
+    });
+    const input = {
+      orderId: 'ed14a9d7-f9be-4584-8f11-527d32ddab31',
+      bankAccountId: '80dd9b70-581f-4b43-b634-b4cfdd481d6d',
+      publicKey: 'GDESTINATION',
+      quoteId: '6edc1703-e8f6-47b1-a33a-ac776d01332a',
+    };
+
+    const order = await client.createEtherfuseOrder(input);
+    const advanced = await client.simulateEtherfuseFiatReceived(input.orderId);
+
+    expect(requested[0]).toMatchObject({ url: 'https://api.kivo.example/v1/etherfuse/orders', method: 'POST' });
+    expect(JSON.parse(requested[0].body ?? '{}')).toEqual(input);
+    expect(requested[1]).toMatchObject({
+      url: 'https://api.kivo.example/v1/etherfuse/orders/ed14a9d7-f9be-4584-8f11-527d32ddab31/simulate-fiat-received',
+      method: 'POST',
+    });
+    expect(order.status).toBe('created');
+    expect(advanced.status).toBe('funded');
+  });
+
   it('calls MCP tools through JSON-RPC instead of a simulate endpoint', async () => {
     let requestedUrl = '';
     let body = '';

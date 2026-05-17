@@ -11,6 +11,12 @@ import type {
   Device,
   DeviceRegistrationResult,
   EtherfuseAssetsResponse,
+  EtherfuseOnboardingInput,
+  EtherfuseOnboardingResponse,
+  EtherfuseOrderInput,
+  EtherfuseOrderResponse,
+  EtherfuseQuoteInput,
+  EtherfuseQuoteResponse,
   EtherfuseStatus,
   McpAgentConfig,
   McpTool,
@@ -63,6 +69,11 @@ export interface KivoApiClient {
   listDeployServices(): Promise<DeployServiceStatus[]>;
   getEtherfuseStatus(): Promise<EtherfuseStatus>;
   listEtherfuseAssets(wallet?: string, currency?: string): Promise<EtherfuseAssetsResponse>;
+  createEtherfuseOnboardingUrl(input: EtherfuseOnboardingInput): Promise<EtherfuseOnboardingResponse>;
+  createEtherfuseQuote(input: EtherfuseQuoteInput): Promise<EtherfuseQuoteResponse>;
+  createEtherfuseOrder(input: EtherfuseOrderInput): Promise<EtherfuseOrderResponse>;
+  getEtherfuseOrder(orderId: string): Promise<EtherfuseOrderResponse>;
+  simulateEtherfuseFiatReceived(orderId: string): Promise<EtherfuseOrderResponse>;
 }
 
 type Fetcher = typeof fetch;
@@ -235,6 +246,26 @@ export class HttpKivoApiClient implements KivoApiClient {
   async listEtherfuseAssets(wallet = '', currency = 'MXN'): Promise<EtherfuseAssetsResponse> {
     const params = new URLSearchParams({ wallet, currency });
     return this.request(`/v1/etherfuse/assets?${params.toString()}`);
+  }
+
+  async createEtherfuseOnboardingUrl(input: EtherfuseOnboardingInput): Promise<EtherfuseOnboardingResponse> {
+    return this.request('/v1/etherfuse/onboarding-url', { method: 'POST', body: JSON.stringify(input) });
+  }
+
+  async createEtherfuseQuote(input: EtherfuseQuoteInput): Promise<EtherfuseQuoteResponse> {
+    return this.request('/v1/etherfuse/quotes', { method: 'POST', body: JSON.stringify(input) });
+  }
+
+  async createEtherfuseOrder(input: EtherfuseOrderInput): Promise<EtherfuseOrderResponse> {
+    return this.request('/v1/etherfuse/orders', { method: 'POST', body: JSON.stringify(input) });
+  }
+
+  async getEtherfuseOrder(orderId: string): Promise<EtherfuseOrderResponse> {
+    return this.request(`/v1/etherfuse/orders/${encodeURIComponent(orderId)}`);
+  }
+
+  async simulateEtherfuseFiatReceived(orderId: string): Promise<EtherfuseOrderResponse> {
+    return this.request(`/v1/etherfuse/orders/${encodeURIComponent(orderId)}/simulate-fiat-received`, { method: 'POST' });
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {

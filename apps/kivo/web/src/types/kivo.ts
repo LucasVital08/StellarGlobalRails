@@ -296,6 +296,76 @@ export interface EtherfuseAssetsResponse {
   assets: EtherfuseAsset[];
 }
 
+export interface EtherfuseOnboardingInput {
+  customerId: string;
+  bankAccountId: string;
+  publicKey: string;
+  blockchain: 'stellar';
+  userInfo?: {
+    email?: string;
+    displayName?: string;
+  };
+  [key: string]: unknown;
+}
+
+export interface EtherfuseOnboardingResponse {
+  presigned_url?: string;
+  presignedUrl?: string;
+  url?: string;
+  expiresAt?: string;
+  [key: string]: unknown;
+}
+
+export interface EtherfuseQuoteInput {
+  quoteId: string;
+  customerId: string;
+  blockchain: 'stellar';
+  quoteAssets: {
+    type: 'onramp' | 'offramp' | 'swap';
+    sourceAsset: string;
+    targetAsset: string;
+  };
+  sourceAmount: string;
+  walletAddress: string;
+  partnerFeeBps?: number;
+  [key: string]: unknown;
+}
+
+export interface EtherfuseOrderInput {
+  orderId: string;
+  bankAccountId: string;
+  publicKey: string;
+  quoteId: string;
+  memo?: string;
+  [key: string]: unknown;
+}
+
+export interface EtherfuseQuoteResponse {
+  quoteId?: string;
+  id?: string;
+  status?: string;
+  type?: 'onramp' | 'offramp' | 'swap';
+  expiresAt?: string;
+  sourceAmount?: string;
+  destinationAmount?: string;
+  quoteAssets?: unknown;
+  [key: string]: unknown;
+}
+
+export interface EtherfuseOrderResponse {
+  orderId?: string;
+  id?: string;
+  quoteId?: string;
+  status?: string;
+  kivoStatus?: 'pending' | 'processing' | 'confirmed' | 'failed' | 'expired' | 'refunded';
+  statusPage?: string;
+  statusPageUrl?: string;
+  providerStatus?: string;
+  stellarClaimTransaction?: string;
+  confirmedTxSignature?: string;
+  [key: string]: unknown;
+}
+
 export interface DashboardSummary {
   totalDevices: number;
   activeDevices: number;
