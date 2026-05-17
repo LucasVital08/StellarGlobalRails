@@ -3,6 +3,56 @@ export type PaymentStatus = 'pending' | 'processing' | 'confirmed' | 'failed' | 
 export type ConditionType = 'none' | 'energy_kwh' | 'time_elapsed' | 'service_complete' | 'custom';
 export type AssetCode = 'USDC' | 'XLM';
 export type ApiHealth = 'ok' | 'degraded' | 'down';
+export type KivoTemplateId = 'device-pay-ev-charging' | 'paid-api-endpoint' | 'iot-data-feed';
+export type KivoFlowStatus = 'draft' | 'testing' | 'active' | 'needs_setup' | 'failed';
+export type KivoFlowUnit = 'session' | 'kWh' | 'minute' | 'request' | 'reading' | 'package';
+export type KivoIntegrationMode = 'gateway_sdk' | 'api_middleware' | 'data_feed';
+
+export interface KivoTemplate {
+  id: KivoTemplateId;
+  name: string;
+  shortName: string;
+  category: 'Device Pay' | 'API Pay' | 'Data Feed';
+  icon: string;
+  description: string;
+  bestFor: string;
+  defaultResourceName: string;
+  defaultPrice: string;
+  defaultUnit: KivoFlowUnit;
+  integrationMode: KivoIntegrationMode;
+  primaryActionLabel: string;
+}
+
+export interface KivoFlow {
+  id: string;
+  templateId: KivoTemplateId;
+  name: string;
+  status: KivoFlowStatus;
+  price: string;
+  unit: KivoFlowUnit;
+  resource: string;
+  integrationMode: KivoIntegrationMode;
+  deviceId?: string;
+  pricingRuleId?: string;
+  revenueUsdc: number;
+  sessionsCount: number;
+  paymentsCount: number;
+  failedPaymentsCount: number;
+  lastActivityAt?: string;
+  setupChecklist: Array<{
+    id: string;
+    label: string;
+    complete: boolean;
+  }>;
+}
+
+export interface CreateFlowDraft {
+  templateId: KivoTemplateId;
+  name: string;
+  price: string;
+  unit: KivoFlowUnit;
+  resource: string;
+}
 
 export interface AssetBalance {
   assetCode: AssetCode;
