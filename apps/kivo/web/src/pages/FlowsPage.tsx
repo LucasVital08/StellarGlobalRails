@@ -64,7 +64,8 @@ export default function FlowsPage() {
     { id: 'pricingRules', label: loaderLabels.pricingRules, state: pricingRules },
   ];
   const failedLoaders = loaders.filter((loader) => loader.state.error);
-  const isInitialLoad = loaders.some((loader) => loader.state.loading) && loaders.every((loader) => !loader.state.data);
+  const pendingLoaders = loaders.filter((loader) => loader.state.loading && loader.state.data === null);
+  const hasPendingLoaders = pendingLoaders.length > 0;
   const hasLoadErrors = failedLoaders.length > 0;
 
   const retryFailedLoaders = () => {
@@ -89,7 +90,7 @@ export default function FlowsPage() {
         }
       />
 
-      {(hasLoadErrors || isInitialLoad) && (
+      {(hasLoadErrors || hasPendingLoaders) && (
         <Card className={hasLoadErrors ? 'border-amber-500/20 bg-amber-500/[0.06]' : 'border-blue-500/20 bg-blue-500/[0.06]'}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
@@ -135,7 +136,7 @@ export default function FlowsPage() {
                 <Icon icon="solar:refresh-linear" />
               </button>
             ) : (
-              <Badge tone="processing">Carregando</Badge>
+              <Badge tone="processing">{pendingLoaders.length} carregando</Badge>
             )}
           </div>
         </Card>
@@ -187,7 +188,7 @@ export default function FlowsPage() {
           ))}
         </div>
       ) : (
-        !isInitialLoad && (
+        !hasPendingLoaders && (
           <Card className="border-dashed border-white/10 bg-black/25">
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">

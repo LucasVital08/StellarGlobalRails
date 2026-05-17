@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { buildIntegrationSnippet, deriveSoloFlows } from '@/data/soloMvp';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
-import type { KivoFlowStatus, Payment } from '@/types/kivo';
+import type { KivoFlow, KivoFlowStatus, Payment } from '@/types/kivo';
 import { formatCurrency, formatDateTime, statusLabel } from '@/utils/format';
 
 const flowTone: Record<KivoFlowStatus, string> = {
@@ -60,15 +60,14 @@ export default function FlowDetailPage() {
   );
   const flow = flows.find((item) => item.id === id);
 
-  const relatedPayments = useMemo(() => {
+  const paymentMatches = useMemo(() => {
     if (!flow) {
-      return [];
+      return { payments: [], isHeuristic: false };
     }
 
-    return (payments.data ?? [])
-      .filter((payment) => isRelatedPayment(payment, flow.deviceId, flow.pricingRuleId, flow.resource, flow.name))
-      .sort((left, right) => sortByNewest(left.createdAt, right.createdAt));
+    return findRelatedPayments(payments.data ?? [], flow);
   }, [flow, payments.data]);
+  const relatedPayments = paymentMatches.payments;
 
   const snippet = flow
     ? buildIntegrationSnippet({
@@ -86,14 +85,15 @@ export default function FlowDetailPage() {
     { id: 'pricingRules', label: loaderLabels.pricingRules, state: pricingRules },
   ];
   const failedLoaders = loaders.filter((loader) => loader.state.error);
-  const isInitialLoad = loaders.some((loader) => loader.state.loading) && loaders.every((loader) => !loader.state.data);
+  const pendingLoaders = loaders.filter((loader) => loader.state.loading && loader.state.data === null);
+  const hasPendingLoaders = pendingLoaders.length > 0;
   const hasLoadErrors = failedLoaders.length > 0;
 
   const retryFailedLoaders = () => {
     void Promise.all(failedLoaders.map((loader) => loader.state.reload()));
   };
 
-  if (!flow && !isInitialLoad && !hasLoadErrors) {
+  if (!flow && !hasPendingLoaders && !hasLoadErrors) {
     return (
       <div className="space-y-8">
         <PageHeader
@@ -153,7 +153,7 @@ export default function FlowDetailPage() {
         }
       />
 
-      {(hasLoadErrors || isInitialLoad) && (
+      {(hasLoadErrors || hasPendingLoaders) && (
         <Card className={hasLoadErrors ? 'border-amber-500/20 bg-amber-500/[0.06]' : 'border-blue-500/20 bg-blue-500/[0.06]'}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
@@ -199,7 +199,7 @@ export default function FlowDetailPage() {
                 <Icon icon="solar:refresh-linear" />
               </button>
             ) : (
-              <Badge tone="processing">Carregando</Badge>
+              <Badge tone="processing">{pendingLoaders.length} carregando</Badge>
             )}
           </div>
         </Card>
@@ -274,10 +274,14 @@ export default function FlowDetailPage() {
               <div className="min-w-0">
                 <h2 className="font-bricolage text-xl font-bold text-white">Pagamentos relacionados</h2>
                 <p className="mt-1 text-sm leading-6 text-neutral-500">
-                  Transacoes associadas ao device ou ao recurso deste flow.
+                  {paymentMatches.isHeuristic
+                    ? 'Pagamentos com perfil compativel com este tipo de recurso.'
+                    : 'Transacoes associadas ao device ou ao recurso deste flow.'}
                 </p>
               </div>
-              <Badge tone="neutral">{relatedPayments.length} registros</Badge>
+              <Badge tone={paymentMatches.isHeuristic ? 'warning' : 'neutral'}>
+                {paymentMatches.isHeuristic ? `${relatedPayments.length} possiveis` : `${relatedPayments.length} registros`}
+              </Badge>
             </div>
 
             {relatedPayments.length ? (
@@ -349,15 +353,38 @@ function MetricCard({
   );
 }
 
-function isRelatedPayment(payment: Payment, deviceId?: string, pricingRuleId?: string, resource?: string, flowName?: string) {
-  if (deviceId && (payment.fromDeviceId === deviceId || payment.toDeviceId === deviceId)) {
-    return true;
+function findRelatedPayments(payments: Payment[], flow: KivoFlow) {
+  if (flow.deviceId) {
+    return {
+      payments: payments
+        .filter((payment) => payment.fromDeviceId === flow.deviceId || payment.toDeviceId === flow.deviceId)
+        .sort((left, right) => sortByNewest(left.createdAt, right.createdAt)),
+      isHeuristic: false,
+    };
   }
 
+  const directMatches = payments.filter((payment) => isDirectPricingRulePayment(payment, flow));
+
+  if (directMatches.length > 0) {
+    return {
+      payments: directMatches.sort((left, right) => sortByNewest(left.createdAt, right.createdAt)),
+      isHeuristic: false,
+    };
+  }
+
+  return {
+    payments: payments
+      .filter((payment) => ['service_complete', 'none'].includes(payment.conditionType) && Boolean(payment.status))
+      .sort((left, right) => sortByNewest(left.createdAt, right.createdAt)),
+    isHeuristic: true,
+  };
+}
+
+function isDirectPricingRulePayment(payment: Payment, flow: KivoFlow) {
   const memo = payment.memo?.toLowerCase() ?? '';
-  const resourceMatch = resource ? memo.includes(resource.toLowerCase()) : false;
-  const ruleMatch = pricingRuleId ? memo.includes(pricingRuleId.toLowerCase()) : false;
-  const nameMatch = flowName ? memo.includes(flowName.toLowerCase()) : false;
+  const resourceMatch = memo.includes(flow.resource.toLowerCase());
+  const ruleMatch = flow.pricingRuleId ? memo.includes(flow.pricingRuleId.toLowerCase()) : false;
+  const nameMatch = memo.includes(flow.name.toLowerCase());
 
   return resourceMatch || ruleMatch || nameMatch;
 }
