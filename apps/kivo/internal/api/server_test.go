@@ -216,7 +216,7 @@ func TestMCPServerExposesOnlyRealTools(t *testing.T) {
 }
 
 func TestEtherfuseAssetsRequireRealConfiguration(t *testing.T) {
-	server := NewServer(NewMemoryStore(), Config{Version: "test", EtherfuseMode: "sandbox"})
+	server := NewServer(NewMemoryStore(), Config{Version: "test", EtherfuseMode: "devnet"})
 
 	rec := doRequest(server, http.MethodGet, "/v1/etherfuse/assets?wallet=GDESTINATION", nil, nil)
 	if rec.Code != http.StatusPreconditionFailed {
@@ -227,7 +227,7 @@ func TestEtherfuseAssetsRequireRealConfiguration(t *testing.T) {
 func TestEtherfuseStatusAndWebhookContract(t *testing.T) {
 	server := NewServer(NewMemoryStore(), Config{
 		Version:                "test",
-		EtherfuseMode:          "sandbox",
+		EtherfuseMode:          "devnet",
 		EtherfuseBaseURL:       "https://api.sand.etherfuse.com",
 		EtherfuseAPIKey:        "secret",
 		EtherfuseWebhookURL:    "https://api.example.test/v1/etherfuse/webhook",
@@ -237,7 +237,7 @@ func TestEtherfuseStatusAndWebhookContract(t *testing.T) {
 	})
 
 	status := doJSON(t, server, http.MethodGet, "/v1/etherfuse/status", nil)
-	if status["configured"] != true || status["mode"] != "sandbox" {
+	if status["configured"] != true || status["mode"] != "devnet" {
 		t.Fatalf("unexpected etherfuse status: %#v", status)
 	}
 
@@ -247,7 +247,7 @@ func TestEtherfuseStatusAndWebhookContract(t *testing.T) {
 		"status":  "completed",
 	})
 	if evt["accepted"] != true {
-		t.Fatalf("webhook should be accepted in unverified sandbox mode, got %#v", evt)
+		t.Fatalf("webhook should be accepted in unverified devnet mode, got %#v", evt)
 	}
 }
 
@@ -265,7 +265,7 @@ func TestEtherfuseOnboardingURLProxy(t *testing.T) {
 
 	server := NewServer(NewMemoryStore(), Config{
 		Version:          "test",
-		EtherfuseMode:    "sandbox",
+		EtherfuseMode:    "devnet",
 		EtherfuseBaseURL: upstream.URL,
 		EtherfuseAPIKey:  "secret",
 	})
@@ -288,7 +288,7 @@ func TestEtherfuseOnboardingURLProxy(t *testing.T) {
 	}
 }
 
-func TestEtherfuseSandboxFiatReceivedUsesDocumentedOrderID(t *testing.T) {
+func TestEtherfuseDevnetFiatReceivedUsesDocumentedOrderID(t *testing.T) {
 	var forwardedPath string
 	var forwardedBody map[string]any
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -302,7 +302,7 @@ func TestEtherfuseSandboxFiatReceivedUsesDocumentedOrderID(t *testing.T) {
 
 	server := NewServer(NewMemoryStore(), Config{
 		Version:          "test",
-		EtherfuseMode:    "sandbox",
+		EtherfuseMode:    "devnet",
 		EtherfuseBaseURL: upstream.URL,
 		EtherfuseAPIKey:  "secret",
 	})
@@ -313,7 +313,7 @@ func TestEtherfuseSandboxFiatReceivedUsesDocumentedOrderID(t *testing.T) {
 		t.Fatalf("unexpected Etherfuse path: %s", forwardedPath)
 	}
 	if forwardedBody["orderId"] != "ed14a9d7-f9be-4584-8f11-527d32ddab31" {
-		t.Fatalf("expected Etherfuse sandbox orderId field, got %#v", forwardedBody)
+		t.Fatalf("expected Etherfuse devnet orderId field, got %#v", forwardedBody)
 	}
 	if result["status"] != "funded" {
 		t.Fatalf("expected upstream response to be forwarded, got %#v", result)

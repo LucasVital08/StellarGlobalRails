@@ -36,7 +36,7 @@ func NewServer(store KivoStore, cfg Config) http.Handler {
 		cfg.EtherfuseBaseURL = "https://api.sand.etherfuse.com"
 	}
 	if cfg.EtherfuseMode == "" {
-		cfg.EtherfuseMode = "sandbox"
+		cfg.EtherfuseMode = "devnet"
 	}
 	if cfg.EtherfuseDefaultFiat == "" {
 		cfg.EtherfuseDefaultFiat = "MXN"
@@ -525,7 +525,7 @@ func (s *Server) handleEtherfuseAssets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleEtherfuseFiatReceived(w http.ResponseWriter, r *http.Request, orderID string) {
-	if s.cfg.EtherfuseMode != "sandbox" {
+	if !isEtherfuseDevnetMode(s.cfg.EtherfuseMode) {
 		writeError(w, http.StatusForbidden, "devnet_only", "fiat receipt signal is allowed only in devnet mode")
 		return
 	}
@@ -884,6 +884,10 @@ func (s *Server) deployServices(r *http.Request) []DeployServiceStatus {
 		{ID: "api", Name: "Kivo Go API", Environment: "local", Status: "online", Region: "local", URL: base + "/v1/health", Description: "MVP API process.", UpdatedAt: now},
 		{ID: "etherfuse", Name: "Etherfuse Anchor", Environment: s.cfg.EtherfuseMode, Status: mapBoolStatus(s.cfg.EtherfuseAPIKey != ""), URL: s.cfg.EtherfuseBaseURL, Description: "Devnet/production anchor proxy.", UpdatedAt: now},
 	}
+}
+
+func isEtherfuseDevnetMode(mode string) bool {
+	return mode == "devnet" || mode == "sandbox"
 }
 
 func mapBoolStatus(ok bool) string {

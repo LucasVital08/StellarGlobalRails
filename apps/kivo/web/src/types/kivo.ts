@@ -320,7 +320,7 @@ export interface DeployServiceStatus {
 }
 
 export interface EtherfuseStatus {
-  mode: 'sandbox' | 'production';
+  mode: 'devnet' | 'sandbox' | 'production';
   configured: boolean;
   base_url: string;
   webhook_url?: string;
@@ -342,7 +342,7 @@ export interface EtherfuseAsset {
 }
 
 export interface EtherfuseAssetsResponse {
-  providerMode?: 'sandbox' | 'production';
+  providerMode?: 'devnet' | 'sandbox' | 'production';
   assets: EtherfuseAsset[];
 }
 

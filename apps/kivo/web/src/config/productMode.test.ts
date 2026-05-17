@@ -10,6 +10,7 @@ describe('productMode', () => {
   });
 
   it('maps provider modes to product-safe labels', () => {
+    expect(formatProviderModeLabel('devnet')).toBe('Devnet');
     expect(formatProviderModeLabel('sandbox')).toBe('Devnet');
     expect(formatProviderModeLabel('production')).toBe('Producao');
     expect(formatProviderModeLabel('mock')).toBe('Nao configurado');

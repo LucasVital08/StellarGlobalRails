@@ -1,24 +1,24 @@
-# Kivo MVP API
+# Kivo MVP
 
-Go API for the Kivo Pay MVP vertical:
+Kivo is the M2M payment product for solo operators who want to monetize a device, paid API, or IoT data feed with Stellar/x402 and Etherfuse rails.
 
 ```txt
-device wallet -> Etherfuse sandbox funding -> x402 challenge -> payment proof -> dashboard status
+operator creates flow -> Etherfuse Devnet funding -> x402 challenge -> signed Stellar tx -> protected resource unlock -> dashboard status
 ```
 
-The current implementation runs in zero-mock mode: the API requires Postgres/Supabase configuration, submits signed Stellar XDR payloads to Horizon, and proxies Etherfuse only from the server side so anchor credentials never reach the browser.
+The current implementation runs in real-mode: the API requires Postgres/Supabase configuration, submits signed Stellar XDR payloads to Horizon, and proxies Etherfuse only from the server side so anchor credentials never reach the browser.
 
-Required server secrets for zero-mock startup:
+Required server secrets:
 
 - `DATABASE_URL`
 - `KIVO_SECRET_ENCRYPTION_KEY`
 - `STELLAR_HORIZON_URL`
 - `X402_PLATFORM_KEY`
-- `ETHERFUSE_API_KEY` for live Etherfuse sandbox/production calls
+- `ETHERFUSE_API_KEY` for live Etherfuse Devnet/production calls
 - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` when `KIVO_REQUIRE_AUTH=true`
 - `SUPABASE_JWT_SECRET` is optional legacy fallback for local JWT validation
 
-## Run
+## Run API
 
 ```bash
 cd apps/kivo
@@ -35,6 +35,8 @@ cd apps/kivo/web
 VITE_KIVO_API_URL=http://localhost:8080
 npm run dev
 ```
+
+Set `VITE_KIVO_ENABLE_DEV_CONTROLS=true` only when you need operator-only Devnet controls. It is off by default so the product UI does not expose test harness actions.
 
 ## Verify
 
@@ -72,7 +74,7 @@ fly secrets set SUPABASE_URL="https://<project-ref>.supabase.co"
 fly secrets set SUPABASE_SERVICE_ROLE_KEY="..."
 fly secrets set SUPABASE_JWT_SECRET="..." # optional fallback only
 fly secrets set X402_PLATFORM_KEY="G..."
-fly secrets set ETHERFUSE_API_KEY="api_sand:..."
+fly secrets set ETHERFUSE_API_KEY="ef_sand_..."
 fly secrets set ETHERFUSE_WEBHOOK_URL="https://<project-ref>.supabase.co/functions/v1/kivo-etherfuse-webhook"
 fly secrets set ETHERFUSE_WEBHOOK_SECRET="..."
 ```
@@ -96,7 +98,7 @@ fly secrets set ETHERFUSE_WEBHOOK_SECRET="..."
 - `GET /v1/etherfuse/assets`
 - `POST /v1/etherfuse/quotes`
 - `POST /v1/etherfuse/orders`
-- `POST /v1/etherfuse/orders/:id/simulate-fiat-received` (sandbox; `/fiat-received` remains as compatibility alias)
+- `POST /v1/etherfuse/orders/:id/fiat-received` (Devnet operator control; hidden from product UI unless dev controls are enabled)
 - `POST /v1/etherfuse/webhook`
 
 ## Supabase

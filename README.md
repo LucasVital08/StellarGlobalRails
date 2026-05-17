@@ -41,17 +41,17 @@ apps/socialpay/      → Next.js + Supabase Auth
 ---
 
 ### Kivo Pay
-**M2M SDK + Programmable Gateway + MCP for autonomous agents.**
+**x402 payment flows for devices, paid APIs, and IoT data feeds.**
 
-The payment layer for machines and AI. Electric vehicles pay charging stations. Solar panels sell energy peer-to-peer. AI agents pay for compute. All autonomous, all on Stellar, zero human intervention.
+The payment layer for solo operators shipping machine-to-machine products. A user creates a flow, connects Kivo SDK/middleware, receives an x402 challenge, signs a Stellar transaction, and unlocks the paid resource.
 
 - x402 Protocol (HTTP 402) for machine-to-machine payments
-- Conditional payment execution (pay when condition is met)
-- MCP server — connect any AI agent to Kivo's payment tools
-- Path payments across currencies via Stellar DEX
+- Etherfuse Devnet funding/on-ramp path proxied server-side
+- MCP/advanced tools kept behind the product workflow
+- Supabase Auth/Postgres for workspace, devices, payments, and webhooks
 
 ```
-apps/kivo/           → Go (Fiber) + sqlc + pgx · [in development]
+apps/kivo/           → Go API + React/Vite product front
 ```
 
 ---
@@ -63,7 +63,7 @@ StellarGlobalRails/
 ├── apps/
 │   ├── contractease/          # React + Vite frontend
 │   ├── socialpay/             # Next.js app
-│   └── kivo/                  # Go (Fiber) API [WIP]
+│   └── kivo/                  # Kivo Go API + React/Vite front
 ├── landing-page-astro/        # Marketing site + documentation
 │   └── src/pages/doc/ai/
 │       ├── contractease/      # 10 ADR/Living docs
@@ -139,7 +139,11 @@ npm run dev
 ```bash
 cd apps/kivo
 cp .env.example .env
-go run ./cmd/server   # http://localhost:8080
+go run ./cmd/api      # http://localhost:8080
+
+cd web
+npm install
+npm run dev           # http://localhost:5174
 ```
 
 ---
