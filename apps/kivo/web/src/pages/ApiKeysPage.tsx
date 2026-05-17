@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SecretReveal } from '@/components/ui/SecretReveal';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { useNotificationStore } from '@/stores';
@@ -58,6 +59,17 @@ export default function ApiKeysPage() {
         icon="solar:key-minimalistic-bold-duotone"
         description="Chaves nomeadas com scopes para dashboard, devices e agentes."
         action={<button type="button" onClick={() => setModalOpen(true)} className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black">Criar key</button>}
+      />
+
+      <WorkspaceContextBanner
+        eyebrow="Jornada do integrador"
+        title="Credenciais por produto, device ou agente"
+        icon="solar:key-minimalistic-bold-duotone"
+        tone="ready"
+        description="API keys continuam tecnicas, mas agora aparecem como parte do onboarding de integracao: cada chave tem dono, escopo e ciclo de vida no workspace."
+        checkpoints={['Scopes por responsabilidade', 'Revogacao auditavel', 'Raw key exibida uma vez']}
+        primaryAction={{ to: '/integrations', label: 'Voltar ao hub' }}
+        secondaryAction={{ to: '/team', label: 'Ver roles' }}
       />
       <div className="grid gap-4 md:grid-cols-2">
         {(keys.data ?? []).map((key) => (

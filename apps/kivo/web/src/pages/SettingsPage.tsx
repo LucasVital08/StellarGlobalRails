@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAuthStore, useUIStore } from '@/stores';
 
 export default function SettingsPage() {
@@ -12,6 +13,16 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       <PageHeader eyebrow="Workspace" title="Configuracoes" icon="solar:settings-bold-duotone" description="Preferencias locais do console e integracoes reais obrigatorias do Kivo." />
+      <WorkspaceContextBanner
+        eyebrow="Conta e ambiente"
+        title="Configuracoes como painel de workspace"
+        icon="solar:settings-bold-duotone"
+        tone="ready"
+        description="Esta tela deixa de ser so variavel de ambiente: ela mostra quem esta no workspace, qual ambiente esta ativo e onde conferir readiness."
+        checkpoints={['Usuario autenticado', 'Ambiente testnet/mainnet', 'API e Supabase conectados']}
+        primaryAction={{ to: '/team', label: 'Time e escala' }}
+        secondaryAction={{ to: '/deploy', label: 'Checklist deploy' }}
+      />
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <h2 className="font-bricolage text-xl font-bold text-white">Conta Supabase</h2>

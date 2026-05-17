@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { useNotificationStore } from '@/stores';
@@ -65,6 +66,16 @@ if (initial.status === 402) {
   return (
     <div className="space-y-8">
       <PageHeader eyebrow="HTTP 402" title="x402 Playground" icon="solar:shield-keyhole-bold-duotone" description="Visualize o fluxo Payment Required -> X-PAYMENT -> recurso liberado." />
+      <WorkspaceContextBanner
+        eyebrow="Ponte usuario final + integrador"
+        title="Regra de preco por recurso, com checkout real separado"
+        icon="solar:shield-keyhole-bold-duotone"
+        tone="active"
+        description="Esta tela virou a bancada avancada do x402: o usuario final usa Checkout, enquanto o integrador ajusta recurso, preco, timeout e headers aqui."
+        checkpoints={['Pricing rule', 'HTTP 402', 'Retry com X-PAYMENT']}
+        primaryAction={{ to: '/checkout', label: 'Ver checkout' }}
+        secondaryAction={{ to: '/integrations', label: 'Hub integrador' }}
+      />
       <div className="grid gap-6 xl:grid-cols-3">
         <Card>
           <h2 className="font-bricolage text-xl font-bold text-white">Request</h2>

@@ -17,6 +17,7 @@ out/
 dist/
 build/
 coverage/
+.superpowers/
 
 # Env
 .env

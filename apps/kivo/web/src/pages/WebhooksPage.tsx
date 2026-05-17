@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SecretReveal } from '@/components/ui/SecretReveal';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { useNotificationStore } from '@/stores';
@@ -68,6 +69,17 @@ export default function WebhooksPage() {
         icon="solar:widget-2-bold-duotone"
         description="Receba eventos HMAC-signed de pagamentos, falhas e expiracao."
         action={<button type="button" onClick={() => setModalOpen(true)} className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black">Novo webhook</button>}
+      />
+
+      <WorkspaceContextBanner
+        eyebrow="Jornada do integrador"
+        title="Eventos que conectam Kivo ao produto do cliente"
+        icon="solar:widget-2-bold-duotone"
+        tone="ready"
+        description="Webhooks sao a ponte entre pagamentos reais e a experiencia final: liberar acesso, registrar sessao, avisar financeiro ou acionar um worker."
+        checkpoints={['Assinatura HMAC', 'Retry e falha visiveis', 'Entrega auditavel']}
+        primaryAction={{ to: '/integrations', label: 'Hub de integracao' }}
+        secondaryAction={{ to: '/finance', label: 'Impacto financeiro' }}
       />
 
       <div className="grid gap-6 xl:grid-cols-3">

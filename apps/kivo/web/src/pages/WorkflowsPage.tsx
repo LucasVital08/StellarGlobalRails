@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { formatDateTime, statusLabel } from '@/utils/format';
@@ -16,6 +17,17 @@ export default function WorkflowsPage() {
         icon="solar:routing-2-bold-duotone"
         description="Observabilidade dos workers Redis atuais e visão futura de Temporal para retries duráveis, signals e long-running sessions."
       />
+      <WorkspaceContextBanner
+        eyebrow="Readiness de operacao grande"
+        title="Jobs que sustentam confianca operacional"
+        icon="solar:routing-2-bold-duotone"
+        tone="planned"
+        description="Workflows nao sao so tecnologia interna: eles mostram para equipes maiores como pagamentos, webhooks e liquidacao continuam observaveis."
+        checkpoints={['Workers Redis hoje', 'Retries visiveis', 'Temporal como direcao futura']}
+        primaryAction={{ to: '/operations', label: 'Ver operacao' }}
+        secondaryAction={{ to: '/team', label: 'Ver escala' }}
+      />
+
       <div className="grid gap-6 lg:grid-cols-2">
         {(workflows.data ?? []).map((workflow) => (
           <Card key={workflow.id}>

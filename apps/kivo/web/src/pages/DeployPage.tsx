@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { formatDateTime, statusLabel } from '@/utils/format';
@@ -67,6 +68,17 @@ export default function DeployPage() {
         title="Deploy readiness"
         icon="solar:rocket-bold-duotone"
         description="Checklist operacional para publicar o front MVP, API Go, Etherfuse e Supabase local."
+      />
+
+      <WorkspaceContextBanner
+        eyebrow="Readiness enterprise"
+        title="Do demo local ao ambiente de cliente"
+        icon="solar:rocket-bold-duotone"
+        tone="warning"
+        description="Deploy continua avancado, mas agora serve para provar que o workspace pode sair do modo solo e virar operacao real com secrets, API, Supabase e Etherfuse."
+        checkpoints={['Fly API', 'Supabase Auth/DB', 'Etherfuse anchor']}
+        primaryAction={{ to: '/team', label: 'Ver escala' }}
+        secondaryAction={{ to: '/settings', label: 'Configuracoes' }}
       />
 
       <div className="grid gap-6 xl:grid-cols-3">

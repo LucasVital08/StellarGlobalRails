@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { formatDateTime, shortId, statusLabel } from '@/utils/format';
@@ -45,6 +46,17 @@ export default function PaymentDetailPage() {
         icon="solar:wallet-money-bold-duotone"
         description={`${payment.amount} ${payment.assetCode} · ${fromDevice?.name ?? payment.fromDeviceId} → ${toDevice?.name ?? payment.toDeviceId}`}
         action={<Badge tone={payment.status}>{statusLabel(payment.status)}</Badge>}
+      />
+
+      <WorkspaceContextBanner
+        eyebrow="Prova de liquidacao"
+        title="Pagamento como trilha comum entre produto e financeiro"
+        icon="solar:wallet-money-bold-duotone"
+        tone={payment.status}
+        description="O detalhe mostra o ciclo completo: evento de uso, condicao, XDR, hash Stellar, devices participantes e auditoria para conciliacao."
+        checkpoints={['Timeline', 'Condicao/proof', 'Hash Stellar']}
+        primaryAction={{ to: '/finance', label: 'Ver financeiro' }}
+        secondaryAction={{ to: '/payments', label: 'Lista de pagamentos' }}
       />
 
       <div className="grid gap-6 xl:grid-cols-3">

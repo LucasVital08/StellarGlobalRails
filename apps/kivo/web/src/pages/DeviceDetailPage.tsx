@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { formatDateTime, shortId, statusLabel } from '@/utils/format';
@@ -30,6 +31,17 @@ export default function DeviceDetailPage() {
         icon="solar:devices-bold-duotone"
         description="Chave Stellar, saldos reportados pela API, metadata e histórico de pagamentos do device."
         action={<Badge tone={device.status}>{statusLabel(device.status)}</Badge>}
+      />
+
+      <WorkspaceContextBanner
+        eyebrow="Ativo operacional"
+        title="Um device visto como ponto de receita e risco"
+        icon="solar:devices-bold-duotone"
+        tone={device.status}
+        description="Detalhe do device conecta operador, integrador e financeiro: wallet, API key, metadata, saldo e pagamentos relacionados em um unico contexto."
+        checkpoints={['Wallet copiavel', 'Status governado', 'Pagamentos relacionados']}
+        primaryAction={{ to: '/operations', label: 'Voltar a operacao' }}
+        secondaryAction={{ to: '/payments', label: 'Ver pagamentos' }}
       />
 
       <div className="grid gap-6 xl:grid-cols-3">

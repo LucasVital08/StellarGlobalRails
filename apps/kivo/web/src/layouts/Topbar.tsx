@@ -3,7 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore, useUIStore } from '@/stores';
 
 const routeTitles: Record<string, { title: string; icon: string }> = {
-  '/dashboard': { title: 'Dashboard', icon: 'solar:widget-5-bold-duotone' },
+  '/dashboard': { title: 'Inicio', icon: 'solar:home-angle-bold-duotone' },
+  '/team': { title: 'Time e escala', icon: 'solar:users-group-rounded-bold-duotone' },
+  '/operations': { title: 'Operacao', icon: 'solar:devices-bold-duotone' },
+  '/checkout': { title: 'Checkout x402', icon: 'solar:card-transfer-bold-duotone' },
+  '/integrations': { title: 'Integracao', icon: 'solar:code-square-bold-duotone' },
+  '/finance': { title: 'Financeiro', icon: 'solar:chart-square-bold-duotone' },
+  '/ops-dashboard': { title: 'Console tecnico', icon: 'solar:widget-5-bold-duotone' },
   '/devices': { title: 'Devices', icon: 'solar:devices-bold-duotone' },
   '/payments': { title: 'Pagamentos', icon: 'solar:wallet-money-bold-duotone' },
   '/webhooks': { title: 'Webhooks', icon: 'solar:widget-2-bold-duotone' },
@@ -12,7 +18,8 @@ const routeTitles: Record<string, { title: string; icon: string }> = {
   '/x402': { title: 'x402 Playground', icon: 'solar:shield-keyhole-bold-duotone' },
   '/templates': { title: 'Templates', icon: 'solar:bolt-circle-bold-duotone' },
   '/workflows': { title: 'Workflows', icon: 'solar:routing-2-bold-duotone' },
-  '/settings': { title: 'Configurações', icon: 'solar:settings-bold-duotone' },
+  '/deploy': { title: 'Deploy', icon: 'solar:rocket-bold-duotone' },
+  '/settings': { title: 'Configuracoes', icon: 'solar:settings-bold-duotone' },
 };
 
 export default function Topbar() {
@@ -34,7 +41,7 @@ export default function Topbar() {
         </div>
         <div className="min-w-0">
           <h1 className="truncate font-bricolage text-xl font-bold text-white">{info.title}</h1>
-          <p className="hidden text-xs text-neutral-500 sm:block">Gateway M2M, x402 e MCP sobre Stellar</p>
+          <p className="hidden text-xs text-neutral-500 sm:block">Workspace M2M, x402 e Stellar para equipes reais</p>
         </div>
       </div>
 
@@ -62,7 +69,7 @@ export default function Topbar() {
           ))}
         </div>
 
-        <Link to="/settings" className="hidden rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-neutral-400 hover:bg-white/10 hover:text-white lg:block">
+        <Link to="/team" className="hidden rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-neutral-400 hover:bg-white/10 hover:text-white lg:block">
           {user?.name ?? 'Conta'}
         </Link>
 

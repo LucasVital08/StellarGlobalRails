@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatCard } from '@/components/ui/StatCard';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { formatCurrency, formatDateTime, shortId, statusLabel } from '@/utils/format';
@@ -89,6 +90,17 @@ export default function DashboardPage() {
             <Icon icon="solar:add-circle-bold" />
           </Link>
         }
+      />
+
+      <WorkspaceContextBanner
+        eyebrow="Console avancado"
+        title="Painel tecnico para operador e equipe de produto"
+        icon="solar:widget-5-bold-duotone"
+        tone="active"
+        description="Esta area continua existindo para debug, saude e filas. A primeira experiencia do usuario agora fica na Home do workspace."
+        checkpoints={['Health API', 'Worker queue', 'Atividade recente']}
+        primaryAction={{ to: '/dashboard', label: 'Home do workspace' }}
+        secondaryAction={{ to: '/operations', label: 'Operacao' }}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">

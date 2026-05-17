@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import type { AssetCode, ConditionType, PaymentStatus } from '@/types/kivo';
@@ -56,6 +57,17 @@ export default function PaymentsPage() {
         icon="solar:wallet-money-bold-duotone"
         description="Crie, filtre e acompanhe pagamentos imediatos ou condicionais sobre Stellar."
         action={<button onClick={() => setModalOpen(true)} className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black">Novo pagamento</button>}
+      />
+
+      <WorkspaceContextBanner
+        eyebrow="Ledger compartilhado"
+        title="O mesmo pagamento visto por operador, usuario e financeiro"
+        icon="solar:wallet-money-bold-duotone"
+        tone="active"
+        description="Pagamentos conectam device, checkout x402, liquidacao Stellar e conciliacao financeira dentro do mesmo workspace."
+        checkpoints={['Origem e destino', 'Condicao de uso', 'Status de liquidacao']}
+        primaryAction={{ to: '/finance', label: 'Ver financeiro' }}
+        secondaryAction={{ to: '/checkout', label: 'Simular checkout' }}
       />
 
       <Card>

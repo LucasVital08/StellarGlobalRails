@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import { useNotificationStore } from '@/stores';
@@ -48,6 +49,17 @@ export default function McpConsolePage() {
   return (
     <div className="space-y-8">
       <PageHeader eyebrow="Agent economy" title="MCP Console" icon="solar:cpu-bolt-bold-duotone" description="Ferramentas MCP genericas para agentes autonomos, sem acoplar o v1 a um provedor especifico." />
+
+      <WorkspaceContextBanner
+        eyebrow="Jornada do integrador"
+        title="Agentes usando Kivo como wallet e contrato de pagamento"
+        icon="solar:cpu-bolt-bold-duotone"
+        tone="active"
+        description="O MCP deixa de ser playground isolado: ele mostra como um agente cria pagamento, checa status e respeita gates humanos para valores maiores."
+        checkpoints={['Tools com exemplos', 'Approval gates', 'Config copiavel']}
+        primaryAction={{ to: '/integrations', label: 'Hub de integracao' }}
+        secondaryAction={{ to: '/checkout', label: 'Ver usuario final' }}
+      />
       <div className="grid gap-6 xl:grid-cols-3">
         <Card>
           <h2 className="font-bricolage text-xl font-bold text-white">Ferramentas</h2>

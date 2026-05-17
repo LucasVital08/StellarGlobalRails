@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SecretReveal } from '@/components/ui/SecretReveal';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { kivoClient } from '@/services/kivoClient';
 import type { DeviceRegistrationResult } from '@/types/kivo';
@@ -40,6 +41,17 @@ export default function DevicesPage() {
             <Icon icon="solar:add-circle-bold" />
           </button>
         }
+      />
+
+      <WorkspaceContextBanner
+        eyebrow="Jornada do operador"
+        title="Ativos que geram receita no workspace"
+        icon="solar:station-bold-duotone"
+        tone="ready"
+        description="Esta tela representa a camada fisica e logica do negocio: estacoes, sensores, agentes ou servicos que podem cobrar, receber e provar uso."
+        checkpoints={['Wallet Stellar por device', 'API key aparece uma vez', 'Status afeta operacao']}
+        primaryAction={{ to: '/operations', label: 'Ver operacao' }}
+        secondaryAction={{ to: '/checkout', label: 'Testar uso pago' }}
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

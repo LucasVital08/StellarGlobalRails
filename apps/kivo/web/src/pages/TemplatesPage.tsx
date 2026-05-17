@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { Card } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { WorkspaceContextBanner } from '@/components/WorkspaceContextBanner';
 
 const templates = [
   {
@@ -39,6 +40,16 @@ export default function TemplatesPage() {
   return (
     <div className="space-y-8">
       <PageHeader eyebrow="Use cases" title="Templates operacionais" icon="solar:bolt-circle-bold-duotone" description="Modelos prontos para montar fluxos reais de M2M sem virar material de marketing." />
+      <WorkspaceContextBanner
+        eyebrow="Jornada do integrador"
+        title="Comece por um caso de uso, nao por endpoint"
+        icon="solar:bolt-circle-bold-duotone"
+        tone="ready"
+        description="Templates agora funcionam como ponto de entrada para pequenos times e usuarios solo escolherem o primeiro fluxo operacional."
+        checkpoints={['EV charging', 'AI agents', 'IoT data marketplace']}
+        primaryAction={{ to: '/integrations', label: 'Hub de integracao' }}
+        secondaryAction={{ to: '/operations', label: 'Ver operacao' }}
+      />
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {templates.map((template) => (
           <Card key={template.name} className="relative overflow-hidden">
