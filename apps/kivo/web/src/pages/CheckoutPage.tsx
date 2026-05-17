@@ -214,7 +214,7 @@ export default function CheckoutPage() {
 
   const simulateFiatReceived = () => {
     if (!orderId) {
-      setAnchorError('Crie uma order Etherfuse antes de avancar sandbox Etherfuse.');
+      setAnchorError('Crie uma order Etherfuse antes de confirmar recebimento.');
       return;
     }
 
@@ -274,7 +274,7 @@ export default function CheckoutPage() {
             </div>
             <h2 className="mt-3 font-bricolage text-2xl font-bold text-white">Anchor Etherfuse antes do x402</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-400">
-              Este bloco chama os endpoints reais `/v1/etherfuse/*` no backend. A chave da Etherfuse fica no servidor; se o sandbox negar customer, bank account ou quote, o erro aparece aqui em vez de fingir liquidacao.
+              Este bloco chama os endpoints reais `/v1/etherfuse/*` no backend. A chave da Etherfuse fica no servidor; se o provedor negar customer, bank account ou quote, o erro aparece aqui em vez de fingir liquidacao.
             </p>
           </div>
           <div className="rounded-2xl border border-white/5 bg-black/25 p-4 xl:w-72">
@@ -397,7 +397,7 @@ export default function CheckoutPage() {
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">Onboarding Etherfuse</p>
               <p className="mt-1 break-all text-xs text-emerald-100">{onboardingUrl}</p>
-              <p className="mt-2 text-xs text-neutral-500">Abra esta URL, conclua KYC/conta bancaria sandbox e depois rode Quote e Order com os mesmos IDs.</p>
+              <p className="mt-2 text-xs text-neutral-500">Abra esta URL, conclua KYC/conta bancaria de teste e depois rode Quote e Order com os mesmos IDs.</p>
             </div>
             <a href={onboardingUrl} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black hover:bg-emerald-400">
               Abrir onboarding
@@ -410,7 +410,7 @@ export default function CheckoutPage() {
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Provider</p>
-              <p className="mt-2 text-sm font-bold text-white">{etherfuse.data?.mode ?? 'sandbox'}</p>
+              <p className="mt-2 text-sm font-bold text-white">{etherfuse.data?.mode ?? 'ambiente de teste'}</p>
               <p className="mt-1 text-xs text-neutral-500">{etherfuse.loading ? 'checando...' : etherfuse.error ?? 'via backend Kivo'}</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
@@ -517,7 +517,7 @@ export default function CheckoutPage() {
           <div className="mt-6 grid gap-4 lg:grid-cols-3">
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Anchor</p>
-              <p className="mt-2 text-sm font-bold text-white">Etherfuse {etherfuse.data?.mode ?? 'sandbox'}</p>
+              <p className="mt-2 text-sm font-bold text-white">Etherfuse {etherfuse.data?.mode ?? 'ambiente de teste'}</p>
               <p className="mt-1 text-xs text-neutral-500">{etherfuse.loading ? 'checando status...' : etherfuse.error ?? (etherfuse.data?.configured ? 'configurado no backend' : 'aguardando secrets')}</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-black/25 p-4">
